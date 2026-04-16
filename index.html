@@ -1583,7 +1583,7 @@ function buildRapport(d){
   </div>`;
 }
 
-function openPDF(projId){
+function openPDF(projId,type){
   const proj=PROJECTEN.find(p=>p.id===projId);if(!proj)return;
   const dagen=wDagen(weekOff);
   const pAct=activiteit.filter(a=>dagen.includes(a.datum)&&a.project===projId);
@@ -1631,8 +1631,6 @@ function openPDF(projId){
     totDU,meetings,perPersoon,dagLog,afspraken:alleAfs
   };
 
-  document.getElementById('pdf-modal-title').textContent=proj.naam;
-  document.getElementById('pdf-modal-sub').textContent='Week: '+fmtS(ma)+' – '+fmtS(vr);
   document.getElementById('pdf-body').innerHTML=buildRapport(data);
   document.getElementById('pdf-modal').classList.add('open');
 }

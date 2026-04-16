@@ -1497,4 +1497,210 @@ async function init(){
 init();
 </script>
 </body>
-</html>
+</html>function stBadge(s){
+  const cfg={gewonnen:{bg:'#edfaf4',c:'#16713f'},gedaan:{bg:'#f2f4f7',c:'#404858'},gepland:{bg:'#eef3ff',c:'#1a48c4'}};
+  const x=cfg[s]||cfg.gepland;
+  return`<span style="font-size:10px;padding:2px 8px;border-radius:4px;font-weight:700;background:${x.bg};color:${x.c}">${s}</span>`;
+}
+
+function buildRapport(d){
+  const pct=Math.round((d.totA/d.doelA)*100);
+  const totMails=d.totMa+d.totAu;
+  const totMeetMin=d.meetings.reduce((s,m)=>s+(m.min||30),0);
+  const totUren=d.dagLog.reduce((s,r)=>s+r.uren,0);
+  return`<div style="font-family:Arial,sans-serif;max-width:700px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:22px;border-bottom:3px solid #16713f;margin-bottom:28px">
+      <div><div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        <div style="width:40px;height:40px;background:#16713f;border-radius:10px;display:flex;align-items:center;justify-content:center"><div style="width:9px;height:9px;background:#fff;border-radius:50%"></div></div>
+        <div><div style="font-size:24px;font-weight:800;color:#181c24;letter-spacing:-.02em">Leadscore</div>
+        <div style="font-size:11px;color:#6e7888;margin-top:1px">${d.isWeek?'Wekelijks activiteitsrapport':'Maandrapport — Facturatiebijlage'}</div></div>
+      </div></div>
+      <div style="text-align:right">
+        <div style="font-size:20px;font-weight:800;color:#181c24">${d.project}</div>
+        ${d.contact?`<div style="font-size:12px;color:#6e7888;margin-top:3px">t.a.v. ${d.contact}</div>`:''}
+        <div style="font-size:13px;font-weight:700;color:#16713f;margin-top:4px">${d.periode}</div>
+        <div style="font-size:10px;color:#adb5bd;margin-top:3px;font-family:monospace">Ref: ${d.ref}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px">
+      <div style="background:#f7f8fa;border:1.5px solid #dde2ea;border-radius:12px;padding:16px 12px;text-align:center">
+        <div style="font-size:30px;font-weight:800;color:#181c24;font-family:monospace;line-height:1">${d.totC}</div>
+        <div style="font-size:10px;color:#6e7888;text-transform:uppercase;letter-spacing:.08em;margin-top:5px">Cold calls</div>
+      </div>
+      <div style="background:#f7f8fa;border:1.5px solid #dde2ea;border-radius:12px;padding:16px 12px;text-align:center">
+        <div style="font-size:30px;font-weight:800;color:#181c24;font-family:monospace;line-height:1">${totMails}</div>
+        <div style="font-size:10px;color:#6e7888;text-transform:uppercase;letter-spacing:.08em;margin-top:5px">Mails</div>
+      </div>
+      <div style="background:#edfaf4;border:1.5px solid #7dd3a8;border-radius:12px;padding:16px 12px;text-align:center">
+        <div style="font-size:30px;font-weight:800;color:#16713f;font-family:monospace;line-height:1">${d.totA}</div>
+        <div style="font-size:10px;color:#16713f;text-transform:uppercase;letter-spacing:.08em;margin-top:5px">Afspraken</div>
+      </div>
+      <div style="background:${pct>=100?'#edfaf4':pct>=60?'#fff8e6':'#fff0f0'};border:1.5px solid ${pct>=100?'#7dd3a8':pct>=60?'#f0c040':'#f0a0a0'};border-radius:12px;padding:16px 12px;text-align:center">
+        <div style="font-size:30px;font-weight:800;color:${pct>=100?'#16713f':pct>=60?'#8a5200':'#8f1c1c'};font-family:monospace;line-height:1">${pct}%</div>
+        <div style="font-size:10px;color:${pct>=100?'#16713f':pct>=60?'#8a5200':'#8f1c1c'};text-transform:uppercase;letter-spacing:.08em;margin-top:5px">Doel (${d.doelA})</div>
+      </div>
+    </div>
+    <div style="margin-bottom:28px;background:#f7f8fa;border:1.5px solid #dde2ea;border-radius:12px;padding:16px 18px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:700">Voortgang afsprakendoel</div>
+        <div style="font-size:12px;font-family:monospace;font-weight:700;color:${pct>=100?'#16713f':pct>=60?'#8a5200':'#8f1c1c'}">${d.totA} / ${d.doelA} afspraken (${pct}%)</div>
+      </div>
+      <div style="height:10px;background:#e0e0e0;border-radius:5px;overflow:hidden">
+        <div style="height:100%;width:${Math.min(100,pct)}%;background:${pct>=100?'#16713f':pct>=60?'#f0c040':'#f0a0a0'};border-radius:5px"></div>
+      </div>
+    </div>
+    <div style="margin-bottom:24px">
+      <div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6e7888;margin-bottom:10px;padding-bottom:7px;border-bottom:1.5px solid #dde2ea">Volume detail</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <tr style="background:#f7f8fa"><td style="padding:9px 12px;border:1px solid #dde2ea;font-weight:700;width:50%">Cold calls</td><td style="padding:9px 12px;border:1px solid #dde2ea;font-family:monospace">${d.totC}</td></tr>
+        <tr><td style="padding:9px 12px;border:1px solid #dde2ea;font-weight:700">Manuele mails</td><td style="padding:9px 12px;border:1px solid #dde2ea;font-family:monospace">${d.totMa}</td></tr>
+        <tr style="background:#f7f8fa"><td style="padding:9px 12px;border:1px solid #dde2ea;font-weight:700">Automatische mails</td><td style="padding:9px 12px;border:1px solid #dde2ea;font-family:monospace">${d.totAu}</td></tr>
+        ${d.totDU>0?`<tr><td style="padding:9px 12px;border:1px solid #dde2ea;font-weight:700">Data / Scraping</td><td style="padding:9px 12px;border:1px solid #dde2ea;font-family:monospace">${d.totDU.toFixed(1)}u</td></tr>`:''}
+        ${d.meetings.length>0?`<tr style="background:#f7f8fa"><td style="padding:9px 12px;border:1px solid #dde2ea;font-weight:700">Meetings klant</td><td style="padding:9px 12px;border:1px solid #dde2ea;font-family:monospace">${d.meetings.length}× — ${d.meetings.map(m=>m.min+'min'+(m.omschr?' ('+m.omschr+')':'')).join(', ')}</td></tr>`:''}
+        <tr><td style="padding:9px 12px;border:1px solid #dde2ea;font-weight:700;color:#16713f">✓ Afspraken geboekt</td><td style="padding:9px 12px;border:1px solid #dde2ea;font-family:monospace;font-weight:800;color:#16713f">${d.totA} / ${d.doelA} (${pct}%)</td></tr>
+      </table>
+    </div>
+    ${!d.isWeek&&d.weken&&d.weken.length?`<div style="margin-bottom:24px">
+      <div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6e7888;margin-bottom:10px;padding-bottom:7px;border-bottom:1.5px solid #dde2ea">Overzicht per week</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="background:#f7f8fa">
+          <th style="padding:9px 12px;border:1px solid #dde2ea;text-align:left;font-weight:700">Week</th>
+          <th style="padding:9px 12px;border:1px solid #dde2ea;text-align:left;font-weight:700">Calls</th>
+          <th style="padding:9px 12px;border:1px solid #dde2ea;text-align:left;font-weight:700">Mails</th>
+          <th style="padding:9px 12px;border:1px solid #dde2ea;text-align:left;font-weight:700;color:#16713f">Afspraken</th>
+          <th style="padding:9px 12px;border:1px solid #dde2ea;text-align:left;font-weight:700">Doel</th>
+        </tr></thead>
+        <tbody>${d.weken.map((w,i)=>{const wp=d.doelA>0?Math.round((w.afs/d.doelA)*100):0;return`<tr ${i%2===0?'style="background:#f7f8fa"':''}>
+          <td style="padding:9px 12px;border:1px solid #dde2ea;font-family:monospace">${w.label}</td>
+          <td style="padding:9px 12px;border:1px solid #dde2ea;font-family:monospace">${w.calls}</td>
+          <td style="padding:9px 12px;border:1px solid #dde2ea;font-family:monospace">${w.mails}</td>
+          <td style="padding:9px 12px;border:1px solid #dde2ea;font-family:monospace;font-weight:800;color:${w.afs>=d.doelA?'#16713f':w.afs>=d.doelA*.6?'#8a5200':'#8f1c1c'}">${w.afs}</td>
+          <td style="padding:9px 12px;border:1px solid #dde2ea"><div style="display:flex;align-items:center;gap:8px"><div style="width:50px;height:5px;background:#e0e0e0;border-radius:3px;overflow:hidden"><div style="height:100%;width:${Math.min(100,wp)}%;background:${w.afs>=d.doelA?'#16713f':w.afs>=d.doelA*.6?'#f0c040':'#f0a0a0'};border-radius:3px"></div></div><span style="font-size:11px;font-family:monospace">${wp}%</span></div></td>
+        </tr>`;}).join('')}</tbody>
+      </table></div>`:''}
+    ${d.perPersoon.length>1?`<div style="margin-bottom:24px">
+      <div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6e7888;margin-bottom:10px;padding-bottom:7px;border-bottom:1.5px solid #dde2ea">Per medewerker</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="background:#f7f8fa">
+          <th style="padding:9px 12px;border:1px solid #dde2ea;text-align:left;font-weight:700">Naam</th>
+          <th style="padding:9px 12px;border:1px solid #dde2ea;text-align:left;font-weight:700">Calls</th>
+          <th style="padding:9px 12px;border:1px solid #dde2ea;text-align:left;font-weight:700">Mails</th>
+          <th style="padding:9px 12px;border:1px solid #dde2ea;text-align:left;font-weight:700;color:#16713f">Afspraken</th>
+        </tr></thead>
+        <tbody>${d.perPersoon.map((p,i)=>`<tr ${i%2===0?'style="background:#f7f8fa"':''}>
+          <td style="padding:9px 12px;border:1px solid #dde2ea;font-weight:700">${p.naam}</td>
+          <td style="padding:9px 12px;border:1px solid #dde2ea;font-family:monospace">${p.calls}</td>
+          <td style="padding:9px 12px;border:1px solid #dde2ea;font-family:monospace">${p.mails}</td>
+          <td style="padding:9px 12px;border:1px solid #dde2ea;font-family:monospace;font-weight:800;color:#16713f">${p.afs}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>`:''}
+    ${d.dagLog.length>0?`<div style="margin-bottom:24px">
+      <div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6e7888;margin-bottom:10px;padding-bottom:7px;border-bottom:1.5px solid #dde2ea">
+        Activiteitslog — ${d.dagLog.length} sessies · ${totUren.toFixed(1)}u totaal
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:#f7f8fa">
+          <th style="padding:8px 12px;border:1px solid #dde2ea;text-align:left;font-weight:700;width:110px">Datum</th>
+          <th style="padding:8px 12px;border:1px solid #dde2ea;text-align:left;font-weight:700;width:80px">Wie</th>
+          <th style="padding:8px 12px;border:1px solid #dde2ea;text-align:left;font-weight:700;width:55px">Uren</th>
+          <th style="padding:8px 12px;border:1px solid #dde2ea;text-align:left;font-weight:700">Activiteit / notities</th>
+        </tr></thead>
+        <tbody>
+          ${d.dagLog.map((r,i)=>`<tr style="background:${i%2===0?'#fff':'#f7f8fa'}">
+            <td style="padding:8px 12px;border:1px solid #dde2ea;font-family:monospace;font-size:11px;color:#404858">${r.datum}</td>
+            <td style="padding:8px 12px;border:1px solid #dde2ea;font-weight:700;font-size:12px">${r.naam}</td>
+            <td style="padding:8px 12px;border:1px solid #dde2ea;font-family:monospace;font-weight:700;color:#16713f;font-size:12px">${r.uren}u</td>
+            <td style="padding:8px 12px;border:1px solid #dde2ea;color:#404858;line-height:1.4">${r.notities}</td>
+          </tr>`).join('')}
+          <tr style="background:#edfaf4">
+            <td colspan="2" style="padding:9px 12px;border:1px solid #7dd3a8;color:#16713f;font-size:12px;font-weight:700">Totaal</td>
+            <td style="padding:9px 12px;border:1px solid #7dd3a8;font-family:monospace;font-weight:800;color:#16713f">${totUren.toFixed(1)}u</td>
+            <td style="padding:9px 12px;border:1px solid #7dd3a8;color:#16713f;font-size:12px">${d.dagLog.length} sessies geregistreerd</td>
+          </tr>
+        </tbody>
+      </table></div>`:''}
+    ${d.afspraken.length>0?`<div style="margin-bottom:28px">
+      <div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6e7888;margin-bottom:10px;padding-bottom:7px;border-bottom:1.5px solid #dde2ea">Afspraken detail (${d.afspraken.length})</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="background:#16713f">
+          <th style="padding:9px 12px;border:1px solid #0f5630;text-align:left;color:#fff;font-weight:700">#</th>
+          <th style="padding:9px 12px;border:1px solid #0f5630;text-align:left;color:#fff;font-weight:700">Naam klant</th>
+          <th style="padding:9px 12px;border:1px solid #0f5630;text-align:left;color:#fff;font-weight:700">Datum</th>
+          <th style="padding:9px 12px;border:1px solid #0f5630;text-align:left;color:#fff;font-weight:700">Type</th>
+          <th style="padding:9px 12px;border:1px solid #0f5630;text-align:left;color:#fff;font-weight:700">Status</th>
+          <th style="padding:9px 12px;border:1px solid #0f5630;text-align:left;color:#fff;font-weight:700">Door</th>
+        </tr></thead>
+        <tbody>${d.afspraken.map((af,i)=>`<tr style="background:${i%2===0?'#fff':'#f7f8fa'}">
+          <td style="padding:9px 12px;border:1px solid #dde2ea;color:#adb5bd;font-family:monospace;font-size:11px">${i+1}</td>
+          <td style="padding:9px 12px;border:1px solid #dde2ea;font-weight:700">${af.naam||'?'}</td>
+          <td style="padding:9px 12px;border:1px solid #dde2ea;font-family:monospace">${af.datum}</td>
+          <td style="padding:9px 12px;border:1px solid #dde2ea">${af.type==='online'?'🌐 Online':'🤝 Fysiek'}</td>
+          <td style="padding:9px 12px;border:1px solid #dde2ea">${stBadge(af.status||'gepland')}</td>
+          <td style="padding:9px 12px;border:1px solid #dde2ea;font-weight:600">${af.door||'—'}</td>
+        </tr>`).join('')}</tbody>
+      </table></div>`:''}
+    <div style="padding-top:16px;border-top:2px solid #16713f;display:flex;justify-content:space-between;align-items:center">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:28px;height:28px;background:#16713f;border-radius:6px;display:flex;align-items:center;justify-content:center"><div style="width:6px;height:6px;background:#fff;border-radius:50%"></div></div>
+        <div><div style="font-size:14px;font-weight:800;color:#16713f">Leadscore</div>
+        <div style="font-size:10px;color:#adb5bd">Sales activiteitsrapport</div></div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:#adb5bd;font-family:monospace">${d.project} · ${d.periode}</div>
+        <div style="font-size:10px;color:#c8cdd8;font-family:monospace;margin-top:2px">Ref: ${d.ref} · ${new Date().toLocaleDateString('nl-BE',{day:'numeric',month:'long',year:'numeric'})}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openPDF(projId){
+  const proj=PROJECTEN.find(p=>p.id===projId);if(!proj)return;
+  const fiche=ficheData?ficheData.find(f=>f.id===projId)||{}:{};
+  const dagen=wDagen(weekOff);
+  const pAct=activiteit.filter(a=>dagen.includes(a.datum)&&a.project===projId);
+  const alleAfs=pAct.flatMap(a=>(a.afspraken||[]).map(af=>({...af,door:a.naam})));
+  const meetings=pAct.filter(a=>a.meetMin>0).map(a=>({min:a.meetMin||30,type:a.meetType||'weekly',omschr:a.meetOmschr||''}));
+  const totC=pAct.reduce((s,a)=>s+(a.calls||0),0);
+  const totMa=pAct.reduce((s,a)=>s+(a.manueel||0),0);
+  const totAu=pAct.reduce((s,a)=>s+(a.auto||0),0);
+  const totA=pAct.reduce((s,a)=>s+(a.afs||0),0);
+  const totDU=pAct.reduce((s,a)=>s+(a.dataUren||0),0);
+  const ma=getMa(weekOff),vr=new Date(ma);vr.setDate(ma.getDate()+4);
+  const fs=d=>d.toLocaleDateString('nl-BE',{day:'numeric',month:'short'});
+  const fl=d=>d.toLocaleDateString('nl-BE',{day:'numeric',month:'long',year:'numeric'});
+  const ref=projId+'_'+wKey(weekOff).replace(/-/g,'');
+
+  // Dag log uit activiteit opbouwen
+  const dagNamen=['Zo','Ma','Di','Wo','Do','Vr','Za'];
+  const maandNamen=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const dagLog=pAct.map(a=>{
+    const d=new Date(a.datum);
+    const dagNm=dagNamen[d.getDay()]+' '+d.getDate()+' '+maandNamen[d.getMonth()];
+    const duur=(a.duur||a.min||60)/60;
+    const notities=[
+      a.calls?a.calls+' calls':'',
+      (a.manueel||a.auto)?(a.manueel||0)+(a.auto||0)+' mails':'',
+      a.afs?a.afs+' afspraken geboekt':'',
+      a.dataUren?'Data/scraping '+a.dataUren+'u'+(a.dataOmschr?' ('+a.dataOmschr+')':''):'',
+      a.meetMin?'Meeting '+a.meetMin+'min '+(a.meetType||'')+(a.meetOmschr?' — '+a.meetOmschr:''):'',
+    ].filter(Boolean).join(' · ');
+    return{datum:dagNm,naam:a.naam,uren:duur,notities:notities||'—'};
+  });
+
+  // Per persoon
+  const ppMap={};
+  pAct.forEach(a=>{if(!ppMap[a.naam])ppMap[a.naam]={calls:0,manueel:0,auto:0,afs:0};ppMap[a.naam].calls+=a.calls||0;ppMap[a.naam].manueel+=a.manueel||0;ppMap[a.naam].auto+=a.auto||0;ppMap[a.naam].afs+=a.afs||0;});
+  const perPersoon=Object.entries(ppMap).map(([naam,s])=>({naam,...s,mails:s.manueel+s.auto}));
+
+  const data={
+    project:proj.naam,contact:fiche.contact||'',ref,
+    periode:fs(ma)+' – '+fs(vr),isWeek:true,
+    totC,totMa,totAu,totA,doelA:proj.doelAfs||0,
+    totDU,meetings,perPersoon,dagLog,afspraken:alleAfs,weken:[]
+  };
+
+  document.getElementById('pdf-body').innerHTML=buildRapport(data);
+  document.getElementById('pdf-modal').classList.add('open');
+}
+
+

@@ -8,14 +8,14 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#f7f8fa;--w:#fff;--s1:#f2f4f7;--s2:#e8ecf2;--s3:#d8dde8;
+  --bg:#f7f8fa;--w:#fff;--s1:#f2f4f7;--s2:#e8ecf2;
   --b1:#dde2ea;--b2:#c4cad6;
   --tx:#181c24;--mu:#6e7888;--su:#404858;
   --green:#16713f;--gbg:#edfaf4;--gbr:#7dd3a8;
   --amber:#8a5200;--abg:#fff8e6;--abr:#f0c040;
   --red:#8f1c1c;--rbg:#fff0f0;--rbr:#f0a0a0;
   --blue:#1a48c4;--bbg:#eef3ff;--bbr:#8faaee;
-  --purple:#6d28d9;--pbg:#f5f3ff;--pbr:#c4b5fd;
+  --purple:#6d28d9;--pbg:#f5f3ff;
   --accent:#16713f;
   --r:8px;--rl:12px;--rx:18px;
   --fh:'Syne',sans-serif;--fm:'DM Mono',monospace;
@@ -25,7 +25,7 @@
 body{background:var(--bg);color:var(--tx);font-family:var(--fh);min-height:100vh}
 *{outline:none}
 input,select,button,textarea{font-family:var(--fh)}
-input[type=text],input[type=number],input[type=date],input[type=time],input[type=password],select,textarea{
+input[type=text],input[type=number],input[type=date],input[type=password],select,textarea{
   background:var(--w);border:1.5px solid var(--b1);color:var(--tx);border-radius:var(--r);
   padding:9px 12px;width:100%;font-size:14px;transition:border .15s,box-shadow .15s}
 input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(22,113,63,.1)}
@@ -38,106 +38,108 @@ label{font-size:11px;color:var(--mu);letter-spacing:.07em;text-transform:upperca
 .tlogo-dot{width:9px;height:9px;border-radius:50%;background:var(--accent)}
 .tlogo-name{font-size:17px;font-weight:800;letter-spacing:-.03em}
 .tnav{display:flex;gap:2px}
-.tnav-btn{padding:7px 14px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--mu);border-radius:var(--r);transition:all .15s}
-.tnav-btn:hover{background:var(--s1);color:var(--tx)}
-.tnav-btn.active{background:var(--gbg);color:var(--green);font-weight:700}
+.tb{padding:7px 13px;font-size:13px;font-weight:500;border:none;background:none;cursor:pointer;color:var(--mu);border-radius:var(--r);transition:all .15s}
+.tb:hover{background:var(--s1);color:var(--tx)}
+.tb.active{background:var(--gbg);color:var(--green);font-weight:700}
 .tright{display:flex;align-items:center;gap:8px}
 .wchip{font-size:11px;font-family:var(--fm);color:var(--mu);background:var(--s1);padding:5px 11px;border-radius:20px;border:1.5px solid var(--b1)}
 .wbtn{padding:5px 10px;font-size:13px;border:1.5px solid var(--b1);border-radius:var(--r);background:none;cursor:pointer;color:var(--su)}
 .wbtn:hover{background:var(--s2)}
 .who-pill{font-size:13px;font-weight:700;color:var(--green);padding:5px 14px;background:var(--gbg);border:1.5px solid var(--gbr);border-radius:20px}
 
-/* PAGE */
-.page{max-width:920px;margin:0 auto;padding:24px 20px 100px}
-
-/* PANELS */
+/* PAGE & PANELS */
+.page{max-width:940px;margin:0 auto;padding:24px 20px 100px}
 .pnl{display:none}.pnl.active{display:block}
-
-/* SECTIONS */
 .sec{margin-bottom:28px}
 .sec-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1.5px solid var(--b1)}
 .sec-title{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mu)}
 .sec-sub{font-size:11px;color:var(--mu);font-family:var(--fm)}
-.sec-act{font-size:12px;color:var(--accent);font-weight:700;border:none;background:none;cursor:pointer;padding:0}
+.sec-act{font-size:12px;color:var(--accent);font-weight:700;border:none;background:none;cursor:pointer}
+.sep{height:1.5px;background:var(--b1);margin:28px 0}
+.card{background:var(--w);border:1.5px solid var(--b1);border-radius:var(--rx);padding:22px 24px;box-shadow:var(--sh)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.fi{margin-bottom:14px}
 
-/* NAME PICKER */
+/* NAME TABS */
 .np{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
 .nt{padding:9px 22px;font-size:14px;font-weight:700;border:1.5px solid var(--b1);border-radius:var(--r);background:var(--w);cursor:pointer;color:var(--mu);transition:all .15s;box-shadow:var(--sh)}
 .nt:hover{border-color:var(--b2);color:var(--tx)}
 .nt.active{background:var(--gbg);color:var(--green);border-color:var(--gbr);box-shadow:0 0 0 3px rgba(22,113,63,.1)}
 
+/* DASH FILTER */
+.filter-tabs{display:flex;border:1.5px solid var(--b1);border-radius:var(--r);overflow:hidden}
+.ftab{padding:6px 16px;font-size:12px;font-weight:600;border:none;background:none;cursor:pointer;color:var(--mu);font-family:var(--fh);transition:all .15s}
+.ftab.active{background:var(--gbg);color:var(--green);font-weight:700}
+
 /* KPI CARDS */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
-.kc{background:var(--w);border:1.5px solid var(--b1);border-radius:var(--rx);padding:20px 22px;box-shadow:var(--sh);transition:box-shadow .2s}
-.kc:hover{box-shadow:var(--sh-md)}
+.kc{background:var(--w);border:1.5px solid var(--b1);border-radius:var(--rx);padding:20px 22px;box-shadow:var(--sh)}
 .kc.bereikt{border-color:var(--gbr);background:var(--gbg)}
 .kc.achter{border-color:var(--rbr)}
-.kc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.kc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
 .kc-name{font-size:15px;font-weight:800}
 .kc-tag{font-size:10px;padding:3px 9px;border-radius:5px;font-weight:700;font-family:var(--fm)}
-.kc-pct{font-size:42px;font-weight:800;font-family:var(--fm);line-height:1;margin-bottom:3px;transition:color .3s}
+.kc-pct{font-size:40px;font-weight:800;font-family:var(--fm);line-height:1;margin-bottom:3px}
 .kc-doel{font-size:12px;color:var(--mu);font-family:var(--fm);margin-bottom:12px}
 .pgbg{height:7px;background:var(--s2);border-radius:4px;overflow:hidden}
 .pgf{height:100%;border-radius:4px;transition:width .6s,background .3s}
 .kc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:14px}
 .ks{background:var(--s1);border-radius:var(--r);padding:9px 6px;text-align:center}
-.ks .n{font-size:18px;font-weight:800;font-family:var(--fm);line-height:1}
+.ks .n{font-size:17px;font-weight:800;font-family:var(--fm);line-height:1}
 .ks .l{font-size:9px;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
 .kc-afs{margin-top:14px;border-top:1.5px solid var(--b1);padding-top:12px}
-.afs-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--b1);font-size:12px;gap:8px}
+.afs-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--b1);font-size:12px;gap:8px}
 .afs-row:last-child{border-bottom:none}
 .afs-name{font-weight:600}
-.afs-meta{font-size:10px;color:var(--mu);font-family:var(--fm);margin-top:1px}
-.afs-badges{display:flex;gap:4px;align-items:center;flex-shrink:0}
+.afs-meta{font-size:10px;color:var(--mu);font-family:var(--fm)}
 .stbadge{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:700;font-family:var(--fm)}
 .st-gepland{background:var(--bbg);color:var(--blue)}
 .st-gedaan{background:var(--s2);color:var(--su)}
 .st-gewonnen{background:var(--gbg);color:var(--green)}
+.cat-hd{display:flex;align-items:center;gap:10px;margin:20px 0 12px}
+.cat-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.cat-label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.wk-mini{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:8px 12px;font-size:11px;font-family:var(--fm)}
 
-/* PDF SECTIE */
-.pdf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
-.pdf-card{background:var(--w);border:1.5px solid var(--b1);border-radius:var(--rl);padding:16px 18px;box-shadow:var(--sh);display:flex;justify-content:space-between;align-items:center}
-.pdf-name{font-size:14px;font-weight:800}
-.pdf-meta{font-size:11px;color:var(--mu);font-family:var(--fm);margin-top:3px}
-.pdf-btn{padding:8px 14px;font-size:12px;font-weight:700;background:var(--bbg);color:var(--blue);border:1.5px solid var(--bbr);border-radius:var(--r);cursor:pointer;white-space:nowrap}
-.pdf-btn:hover{background:#dbeafe}
-
-/* INVOER */
-.card{background:var(--w);border:1.5px solid var(--b1);border-radius:var(--rx);padding:22px 24px;box-shadow:var(--sh)}
-.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
-.fi{margin-bottom:14px}
+/* SESSIE INVOER */
+.type-block{border:1.5px solid var(--b1);border-radius:var(--rl);overflow:hidden;margin-bottom:12px}
+.type-block-hd{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;background:var(--s1);transition:background .15s;user-select:none}
+.type-block-hd:hover{background:var(--s2)}
+.type-block-hd.on{background:var(--gbg)}
+.type-block-icon{font-size:16px;flex-shrink:0}
+.type-block-name{font-size:13px;font-weight:700;flex:1}
+.toggle{width:34px;height:18px;border-radius:9px;background:var(--b1);position:relative;transition:background .2s;flex-shrink:0}
+.toggle.on{background:var(--green)}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s}
+.toggle.on::after{transform:translateX(16px)}
+.type-block-body{padding:14px 16px;display:none}
+.type-block-body.show{display:block}
 .arow{display:grid;grid-template-columns:1fr 120px 110px 30px;gap:8px;align-items:center;margin-bottom:8px}
-.arow input,.arow select{font-size:13px}
 .arow-hdr{display:grid;grid-template-columns:1fr 120px 110px 30px;gap:8px;margin-bottom:6px}
 .arow-hdr span{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
-.rm-btn{width:30px;height:30px;border:1.5px solid var(--b1);border-radius:var(--r);background:var(--s1);cursor:pointer;color:var(--mu);font-size:14px;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0}
+.rm-btn{width:28px;height:28px;border:1.5px solid var(--b1);border-radius:var(--r);background:var(--s1);cursor:pointer;color:var(--mu);font-size:14px;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0}
 .rm-btn:hover{background:var(--rbg);color:var(--red)}
 .log-item{background:var(--w);border:1.5px solid var(--b1);border-radius:var(--rl);padding:13px 16px;margin-bottom:8px;box-shadow:var(--sh)}
 .log-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;flex-wrap:wrap;gap:4px}
 .log-title{font-size:13px;font-weight:700}
 .log-time{font-size:11px;color:var(--mu);font-family:var(--fm)}
-.log-stats{display:flex;gap:10px;font-size:11px;font-family:var(--fm);color:var(--mu);flex-wrap:wrap}
+.log-chip{font-size:11px;font-family:var(--fm);background:var(--s1);padding:3px 9px;border-radius:4px;border:1px solid var(--b1)}
+.plan-chip{display:inline-block;font-size:11px;padding:3px 10px;border-radius:20px;font-family:var(--fm);font-weight:700;cursor:pointer;border:1px solid transparent;transition:opacity .15s}
+.plan-chip:hover{opacity:.8}
 
 /* PLANNING */
 .cap-card{background:var(--w);border:1.5px solid var(--b1);border-radius:var(--rx);padding:20px 22px;box-shadow:var(--sh);margin-bottom:16px}
-.cap-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
-.cap-title{font-size:15px;font-weight:800}
-.cap-sub{font-size:11px;color:var(--mu);font-family:var(--fm);margin-top:3px}
-.cap-big{font-size:32px;font-weight:800;font-family:var(--fm);line-height:1;transition:color .3s}
-.cap-lbl{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;text-align:right}
 .sbar{height:14px;border-radius:7px;overflow:hidden;display:flex;background:var(--s2);margin-bottom:10px}
-.ss{height:100%;transition:width .5s ease}
-.cap-ft{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
-.cap-leg{display:flex;gap:10px;flex-wrap:wrap}
+.ss{height:100%;transition:width .5s}
 .cl{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--su);font-family:var(--fm)}
 .cld{width:9px;height:9px;border-radius:2px;flex-shrink:0}
-.cap-st{font-size:12px;font-family:var(--fm);font-weight:700}
 .blok-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:10px;margin-bottom:12px}
 .blok{background:var(--w);border:1.5px solid var(--b1);border-radius:var(--rl);padding:13px 15px;position:relative;box-shadow:var(--sh)}
-.blok.kpi{border-left:4px solid var(--green)}
-.blok.vast{border-left:4px solid var(--amber)}
+.blok.cps{border-left:4px solid var(--green)}
 .blok.sdd{border-left:4px solid var(--blue)}
+.blok.overige{border-left:4px solid var(--amber)}
 .blok.custom{border-left:4px solid var(--purple)}
 .blok-name{font-size:13px;font-weight:700;margin-bottom:2px}
 .blok-meta{font-size:11px;color:var(--mu);font-family:var(--fm)}
@@ -147,14 +149,43 @@ label{font-size:11px;color:var(--mu);letter-spacing:.07em;text-transform:upperca
 .blok-rm:hover{background:var(--rbg);color:var(--red)}
 .add-blok{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--mu);cursor:pointer;padding:8px 12px;border:1.5px dashed var(--b2);border-radius:var(--r);background:none;transition:all .15s;font-family:var(--fh)}
 .add-blok:hover{border-color:var(--accent);color:var(--accent)}
-.team-plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.team-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .tpc{background:var(--w);border:1.5px solid var(--b1);border-radius:var(--rl);padding:16px 18px;box-shadow:var(--sh)}
 .tpc.me{border-color:var(--gbr);box-shadow:0 0 0 3px rgba(22,113,63,.08)}
-.tpc-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.tpc-name{font-size:14px;font-weight:800}
-.tpc-cap{font-size:12px;font-family:var(--fm);font-weight:700}
 .pgrow{margin-bottom:6px}
 .pgrow-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--mu);font-family:var(--fm);margin-bottom:3px}
+
+/* PDF */
+.pdf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.pdf-card{background:var(--w);border:1.5px solid var(--b1);border-radius:var(--rl);padding:16px 18px;box-shadow:var(--sh);display:flex;justify-content:space-between;align-items:center}
+.pdf-name{font-size:14px;font-weight:800}
+.pdf-meta{font-size:11px;color:var(--mu);font-family:var(--fm);margin-top:3px}
+.pdf-btn{padding:8px 14px;font-size:12px;font-weight:700;background:var(--bbg);color:var(--blue);border:1.5px solid var(--bbr);border-radius:var(--r);cursor:pointer;white-space:nowrap}
+.pdf-btn:hover{background:#dbeafe}
+.arch-card{background:var(--w);border:1.5px solid var(--b1);border-radius:var(--rl);padding:12px 16px;margin-bottom:8px;box-shadow:var(--sh);display:flex;justify-content:space-between;align-items:center}
+.arch-title{font-size:13px;font-weight:700}
+.arch-meta{font-size:11px;color:var(--mu);font-family:var(--fm);margin-top:2px}
+.arch-btn{padding:5px 10px;font-size:11px;font-weight:700;border-radius:var(--r);cursor:pointer;border:1.5px solid var(--bbr);background:var(--bbg);color:var(--blue);font-family:var(--fh)}
+
+/* PROJECTEN */
+.proj-cat-hd{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--rl);margin-bottom:10px}
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:20px}
+.proj-fiche{background:var(--w);border:1.5px solid var(--b1);border-radius:var(--rl);padding:16px 18px;box-shadow:var(--sh);cursor:pointer;transition:box-shadow .15s}
+.proj-fiche:hover{box-shadow:var(--sh-md)}
+.pf-name{font-size:14px;font-weight:800;margin-bottom:4px}
+.pf-cat{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:700;font-family:var(--fm)}
+.pf-info{font-size:12px;color:var(--mu);margin:6px 0;line-height:1.5}
+.pf-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.pf-badge{font-size:11px;font-family:var(--fm);background:var(--s1);padding:3px 8px;border-radius:4px;border:1px solid var(--b1)}
+
+/* MEDEWERKERS */
+.mw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.mw-card{background:var(--w);border:1.5px solid var(--b1);border-radius:var(--rl);padding:16px 18px;box-shadow:var(--sh);cursor:pointer;transition:box-shadow .15s}
+.mw-card:hover{box-shadow:var(--sh-md)}
+.mw-avatar{width:44px;height:44px;border-radius:50%;background:var(--gbg);border:2px solid var(--gbr);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:var(--green);flex-shrink:0}
+.mw-name{font-size:14px;font-weight:800;margin-bottom:2px}
+.mw-rol{font-size:12px;color:var(--mu);margin-bottom:8px}
+.mw-info{font-size:11px;color:var(--su);font-family:var(--fm);line-height:1.7}
 
 /* ADMIN */
 .adm-tbl{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--fm)}
@@ -165,19 +196,19 @@ label{font-size:11px;color:var(--mu);letter-spacing:.07em;text-transform:upperca
 /* BUTTONS */
 .savebtn{width:100%;padding:12px;font-size:14px;font-weight:800;background:var(--accent);border:none;border-radius:var(--r);cursor:pointer;color:#fff;transition:opacity .15s}
 .savebtn:hover{opacity:.87}
-.savebtn:active{transform:scale(.99)}
 .smsg{text-align:center;font-size:12px;margin-top:8px;min-height:18px;font-family:var(--fm)}
 .btn{padding:8px 14px;font-size:13px;font-weight:600;background:var(--s1);border:1.5px solid var(--b1);border-radius:var(--r);cursor:pointer;color:var(--su);font-family:var(--fh)}
 .btn:hover{background:var(--s2)}
-.sep{height:1.5px;background:var(--b1);margin:28px 0}
 
 /* MODAL */
 .mo{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.35);z-index:200;align-items:center;justify-content:center;padding:16px}
 .mo.open{display:flex}
 .md{background:var(--w);border:1.5px solid var(--b1);border-radius:var(--rx);padding:26px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;box-shadow:var(--sh-md)}
+.md-wide{max-width:700px}
 .md-title{font-size:16px;font-weight:800;margin-bottom:18px}
 .md-btns{display:flex;gap:8px;margin-top:20px}
 .btn-ok{flex:1;padding:11px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);cursor:pointer;font-size:14px;font-weight:800;font-family:var(--fh)}
+.btn-del{padding:11px 14px;background:var(--rbg);color:var(--red);border:1.5px solid var(--rbr);border-radius:var(--r);cursor:pointer;font-size:13px;font-family:var(--fh)}
 .btn-print{padding:11px 16px;background:var(--bbg);color:var(--blue);border:1.5px solid var(--bbr);border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:700;font-family:var(--fh)}
 .btn-cancel{padding:11px 16px;background:var(--s1);color:var(--su);border:1.5px solid var(--b1);border-radius:var(--r);cursor:pointer;font-size:13px;font-family:var(--fh)}
 
@@ -185,29 +216,9 @@ label{font-size:11px;color:var(--mu);letter-spacing:.07em;text-transform:upperca
 .rp-tbl th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:9px 11px;border-bottom:2px solid #1a1d23;text-align:left;font-weight:700;color:#404858}
 .rp-tbl td{padding:9px 11px;border-bottom:1px solid #dde2ea}
 .rp-tbl tr:nth-child(even) td{background:#f7f8fa}
-.rp-stitle{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6e7888;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #dde2ea}
+.rp-sec{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6e7888;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #dde2ea}
 
-/* BEHEER */
-.beheer-card{background:var(--w);border:1.5px solid var(--b1);border-radius:var(--rl);padding:14px 16px;margin-bottom:10px;box-shadow:var(--sh);display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
-.beheer-card.editing{border-color:var(--accent);box-shadow:0 0 0 3px rgba(22,113,63,.1)}
-.beheer-naam{font-size:14px;font-weight:800;margin-bottom:3px}
-.beheer-meta{font-size:11px;color:var(--mu);font-family:var(--fm)}
-.beheer-acties{display:flex;gap:6px;flex-shrink:0}
-.bact-btn{padding:6px 12px;font-size:12px;font-weight:700;border-radius:var(--r);cursor:pointer;border:1.5px solid var(--b1);background:var(--s1);color:var(--su);font-family:var(--fh)}
-.bact-btn:hover{background:var(--s2)}
-.bact-btn.del{background:var(--rbg);color:var(--red);border-color:var(--rbr)}
-.bact-btn.del:hover{opacity:.8}
-.beheer-edit-row{grid-column:1/-1;display:grid;grid-template-columns:1fr 120px 100px 80px;gap:8px;align-items:end;padding-top:10px;border-top:1px solid var(--b1);margin-top:4px}
-.beheer-edit-row .fi{margin-bottom:0}
-@media(max-width:600px){
-  .beheer-edit-row{grid-template-columns:1fr 1fr}
-}
-
-@media(max-width:600px){
-  .team-plan-grid,.kpi-grid,.pdf-grid{grid-template-columns:1fr}
-  .tnav .tnav-btn{padding:7px 9px;font-size:12px}
-  .arow{grid-template-columns:1fr 100px 95px 28px}
-}
+@media(max-width:600px){.team-grid,.kpi-grid,.pdf-grid,.proj-grid,.mw-grid{grid-template-columns:1fr}.tnav .tb{padding:6px 8px;font-size:11px}.arow{grid-template-columns:1fr 95px 90px 26px}}
 @media print{.topbar,.np,.md-btns,.tnav,.tright,.no-print{display:none!important}.mo{position:static;background:none;display:block}.md{box-shadow:none;border:none;padding:0;max-height:none}}
 </style>
 </head>
@@ -216,37 +227,65 @@ label{font-size:11px;color:var(--mu);letter-spacing:.07em;text-transform:upperca
 <div class="topbar">
   <div class="tlogo"><div class="tlogo-dot"></div><span class="tlogo-name">Leadscore</span></div>
   <div class="tnav">
-    <button class="tnav-btn active" onclick="setP('kpi')" id="nav-kpi">KPI & Afspraken</button>
-    <button class="tnav-btn" onclick="setP('invoer')" id="nav-invoer">Sessie invoer</button>
-    <button class="tnav-btn" onclick="setP('planning')" id="nav-planning">Planning</button>
-    <button class="tnav-btn" onclick="setP('pdf')" id="nav-pdf">PDF rapporten</button>
-    <button class="tnav-btn" onclick="setP('beheer')" id="nav-beheer">Projecten</button>
+    <button class="tb active" onclick="setP('dash')" id="nav-dash">Dashboard</button>
+    <button class="tb" onclick="setP('invoer')" id="nav-invoer">Sessie invoer</button>
+    <button class="tb" onclick="setP('planning')" id="nav-planning">Planning</button>
+    <button class="tb" onclick="setP('pdf')" id="nav-pdf">PDF rapporten</button>
+    <button class="tb" onclick="setP('projecten')" id="nav-projecten">Projecten</button>
+    <button class="tb" onclick="setP('medewerkers')" id="nav-medewerkers">Medewerkers</button>
   </div>
   <div class="tright">
-    <div class="wchip" id="wchip">—</div>
     <button class="wbtn" onclick="verschuif(-1)">←</button>
+    <div class="wchip" id="wchip" style="min-width:160px;text-align:center">—</div>
     <button class="wbtn" onclick="verschuif(1)">→</button>
-    <div class="who-pill" id="who-pill">Brieuc</div>
+    <button class="wbtn" onclick="gaNaarDezeWeek()" style="font-size:11px;color:var(--green);border-color:var(--gbr)">Vandaag</button>
   </div>
 </div>
+<div id="who-pill" style="display:none">—</div>
 
 <div class="page">
 
-  <div class="np">
-    <div class="nt active" onclick="setNaam('Brieuc')" id="nt-Brieuc">Brieuc</div>
-    <div class="nt" onclick="setNaam('Jacques')" id="nt-Jacques">Jacques</div>
-    <div class="nt" onclick="setNaam('Arthur')" id="nt-Arthur">Arthur</div>
-    <div class="nt" onclick="setNaam('Amaury')" id="nt-Amaury">Amaury</div>
-  </div>
 
-  <!-- ═══ KPI & AFSPRAKEN ═══ -->
-  <div class="pnl active" id="pnl-kpi">
+  <!-- ═══ DASHBOARD ═══ -->
+  <div class="pnl active" id="pnl-dash">
     <div class="sec">
       <div class="sec-hd">
-        <span class="sec-title">KPI — afspraken per project</span>
-        <span class="sec-sub" id="kpi-week-lbl">—</span>
+        <span class="sec-title">Dashboard — KPI & afspraken</span>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <div class="filter-tabs">
+            <button class="ftab active" id="df-week" onclick="setDashFilter('week')">Week</button>
+            <button class="ftab" id="df-month" onclick="setDashFilter('month')">Maand</button>
+          </div>
+          <span class="sec-sub" id="dash-period-lbl">—</span>
+        </div>
       </div>
-      <div class="kpi-grid" id="kpi-grid"></div>
+      <!-- Filters -->
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <div style="flex:1;min-width:160px">
+          <select id="dash-filter-mw" onchange="renderDash()" style="font-size:13px;padding:8px 12px">
+            <option value="">👤 Alle medewerkers</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:160px">
+          <select id="dash-filter-proj" onchange="renderDash()" style="font-size:13px;padding:8px 12px">
+            <option value="">📁 Alle projecten</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:160px">
+          <select id="dash-filter-cat" onchange="renderDash()" style="font-size:13px;padding:8px 12px">
+            <option value="">🏷 Alle categorieën</option>
+            <option value="cps">CPS</option>
+            <option value="sdd">SDD</option>
+            <option value="overige">Overige</option>
+          </select>
+        </div>
+      </div>
+      <!-- Team totalen -->
+      <div class="g4" style="margin-bottom:20px" id="dash-totals"></div>
+      <!-- Weken in maand (alleen maandview) -->
+      <div id="dash-weeks" style="display:none;margin-bottom:20px"></div>
+      <!-- KPI per project -->
+      <div id="dash-kpi"></div>
     </div>
   </div>
 
@@ -255,25 +294,152 @@ label{font-size:11px;color:var(--mu);letter-spacing:.07em;text-transform:upperca
     <div class="sec">
       <div class="sec-hd"><span class="sec-title">Sessie registreren</span></div>
       <div class="card">
+        <!-- Wie + datum -->
         <div class="g2">
-          <div class="fi"><label>Datum</label><input type="date" id="inv-d"/></div>
-          <div class="g2" style="gap:8px;margin-bottom:0">
-            <div class="fi"><label>Start</label><input type="time" id="inv-s"/></div>
-            <div class="fi"><label>Stop</label><input type="time" id="inv-e"/></div>
+          <div class="fi">
+            <label>Wie werkt er?</label>
+            <select id="inv-wie" onchange="setInvoerNaam(this.value)">
+              <option value="">— Selecteer medewerker —</option>
+            </select>
+          </div>
+          <div class="fi">
+            <label>Datum</label>
+            <input type="date" id="inv-d" onchange="toonPlanInfo()"/>
           </div>
         </div>
-        <div class="g3">
-          <div class="fi"><label>Cold calls</label><input type="number" id="inv-c" min="0" placeholder="0" step="1"/></div>
-          <div class="fi"><label>Manuele mails</label><input type="number" id="inv-m" min="0" placeholder="0" step="1"/></div>
-          <div class="fi"><label>Auto mails</label><input type="number" id="inv-a" min="0" placeholder="0" step="1"/></div>
+        <!-- Planning van die persoon -->
+        <div id="inv-plan-info" style="display:none;background:var(--gbg);border:1.5px solid var(--gbr);border-radius:var(--r);padding:10px 14px;margin-bottom:14px">
+          <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:8px">📋 Ingepland deze week — klik om snel in te vullen</div>
+          <div id="inv-plan-chips" style="display:flex;gap:6px;flex-wrap:wrap"></div>
         </div>
-        <div class="fi"><label>Project</label>
-          <select id="inv-p"><option value="">— Selecteer project —</option></select>
+        <!-- Duur -->
+        <div class="fi">
+          <label>Duur sessie</label>
+          <select id="inv-duur">
+            <option value="30">30 min</option>
+            <option value="60" selected>1 uur</option>
+            <option value="90">1,5 uur</option>
+            <option value="120">2 uur</option>
+            <option value="150">2,5 uur</option>
+            <option value="180">3 uur</option>
+            <option value="240">4 uur</option>
+            <option value="300">5 uur</option>
+            <option value="360">6 uur</option>
+          </select>
         </div>
-        <div class="fi"><label>Aantal afspraken</label>
-          <input type="number" id="inv-afs-n" min="0" placeholder="0" step="1" oninput="bouwAfs(parseInt(this.value)||0)"/>
+
+        <!-- BLOK 1: BELLEN -->
+        <div class="type-block">
+          <div class="type-block-hd" onclick="toggleBlok('bellen')" id="blk-hd-bellen">
+            <span class="type-block-icon">📞</span>
+            <span class="type-block-name">Bellen &amp; mails</span>
+            <div class="toggle" id="blk-tog-bellen"></div>
+          </div>
+          <div class="type-block-body" id="blk-body-bellen">
+            <div class="g3" style="margin-bottom:12px">
+              <div class="fi"><label>Cold calls</label><input type="number" id="inv-c" min="0" placeholder="0" step="1"/></div>
+              <div class="fi"><label>Manuele mails</label><input type="number" id="inv-m" min="0" placeholder="0" step="1"/></div>
+              <div class="fi"><label>Auto mails</label><input type="number" id="inv-a" min="0" placeholder="0" step="1"/></div>
+            </div>
+            <div class="g2">
+              <div class="fi"><label>Categorie</label>
+                <select id="inv-cat" onchange="filterProjSel('inv-p','inv-cat')">
+                  <option value="">— Alle —</option>
+                  <option value="cps">CPS</option>
+                  <option value="sdd">SDD</option>
+                  <option value="overige">Overige</option>
+                </select>
+              </div>
+              <div class="fi"><label>Project</label>
+                <select id="inv-p"><option value="">— Project —</option></select>
+              </div>
+            </div>
+            <div class="fi"><label>Aantal afspraken</label>
+              <input type="number" id="inv-afs-n" min="0" placeholder="0" step="1" oninput="bouwAfs(parseInt(this.value)||0)"/>
+            </div>
+            <div id="inv-afs-v"></div>
+          </div>
         </div>
-        <div id="inv-afs-v"></div>
+
+        <!-- BLOK 2: DATA -->
+        <div class="type-block">
+          <div class="type-block-hd" onclick="toggleBlok('data')" id="blk-hd-data">
+            <span class="type-block-icon">💾</span>
+            <span class="type-block-name">Data / Scraping</span>
+            <div class="toggle" id="blk-tog-data"></div>
+          </div>
+          <div class="type-block-body" id="blk-body-data">
+            <div class="g2" style="margin-bottom:8px">
+              <div class="fi"><label>Categorie</label>
+                <select id="inv-data-cat" onchange="filterProjSel('inv-data-p','inv-data-cat')">
+                  <option value="">— Alle —</option>
+                  <option value="cps">CPS</option>
+                  <option value="sdd">SDD</option>
+                  <option value="overige">Overige</option>
+                </select>
+              </div>
+              <div class="fi"><label>Project</label>
+                <select id="inv-data-p" onchange="checkDataWarn()"><option value="">— Project —</option></select>
+              </div>
+            </div>
+            <div class="fi"><label>Uren data</label>
+              <select id="inv-data-u" onchange="checkDataWarn()">
+                <option value="0.5">0,5u</option><option value="1" selected>1u</option>
+                <option value="1.5">1,5u</option><option value="2">2u</option>
+                <option value="2.5">2,5u</option><option value="3">3u</option>
+                <option value="4">4u</option><option value="5">5u</option><option value="6">6u</option>
+              </select>
+            </div>
+            <div id="inv-data-warn" style="display:none;border-radius:var(--r);padding:10px 14px;font-size:12px;margin-bottom:10px;font-family:var(--fm)"></div>
+            <div class="fi"><label>Wat werd gescraped</label>
+              <input type="text" id="inv-data-omschr" placeholder="Omschrijving..."/>
+            </div>
+          </div>
+        </div>
+
+        <!-- BLOK 3: MEETING -->
+        <div class="type-block">
+          <div class="type-block-hd" onclick="toggleBlok('meeting')" id="blk-hd-meeting">
+            <span class="type-block-icon">🤝</span>
+            <span class="type-block-name">Meeting klant</span>
+            <div class="toggle" id="blk-tog-meeting"></div>
+          </div>
+          <div class="type-block-body" id="blk-body-meeting">
+            <div class="g3" style="margin-bottom:8px">
+              <div class="fi"><label>Categorie</label>
+                <select id="inv-meet-cat" onchange="filterProjSel('inv-meet-p','inv-meet-cat')">
+                  <option value="">— Alle —</option>
+                  <option value="cps">CPS</option>
+                  <option value="sdd">SDD</option>
+                  <option value="overige">Overige</option>
+                </select>
+              </div>
+              <div class="fi"><label>Project</label>
+                <select id="inv-meet-p"><option value="">— Project —</option></select>
+              </div>
+              <div class="fi"><label>Type</label>
+                <select id="inv-meet-type">
+                  <option value="weekly">📅 Weekly</option>
+                  <option value="adhoc">⚡ Ad hoc</option>
+                </select>
+              </div>
+            </div>
+            <div class="fi"><label>Duur</label>
+              <select id="inv-meet-min">
+                <option value="15">15 min</option><option value="30" selected>30 min</option>
+                <option value="45">45 min</option><option value="60">60 min</option>
+                <option value="90">90 min</option><option value="120">120 min</option>
+              </select>
+            </div>
+            <div style="background:var(--bbg);border:1.5px solid var(--bbr);border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--blue);font-family:var(--fm);margin-bottom:10px">
+              💡 30 min = €42,50 · 60 min = €85 · 90 min = €127,50
+            </div>
+            <div class="fi"><label>Aanwezigen / onderwerp</label>
+              <input type="text" id="inv-meet-omschr" placeholder="Naam klant, onderwerp..."/>
+            </div>
+          </div>
+        </div>
+
         <button class="savebtn" onclick="slaKPIOp()">Registreren</button>
         <div class="smsg" id="inv-smsg"></div>
       </div>
@@ -286,71 +452,89 @@ label{font-size:11px;color:var(--mu);letter-spacing:.07em;text-transform:upperca
 
   <!-- ═══ PLANNING ═══ -->
   <div class="pnl" id="pnl-planning">
-
-    <!-- MIJN PLANNING -->
     <div class="sec">
       <div class="sec-hd">
         <span class="sec-title">Mijn planning</span>
         <button class="sec-act" onclick="slaOp()">Opslaan ↗</button>
       </div>
-
       <div class="cap-card">
-        <div class="cap-top">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
           <div>
-            <div class="cap-title">Capaciteit</div>
-            <div class="cap-sub">38u totaal · 3u maandagplanning · 35u beschikbaar</div>
+            <div style="font-size:15px;font-weight:800">Capaciteit</div>
+            <div style="font-size:11px;color:var(--mu);font-family:var(--fm);margin-top:3px">38u totaal · 3u maandagplanning · 35u beschikbaar</div>
           </div>
           <div style="text-align:right">
-            <div class="cap-big" id="cap-big">0u</div>
-            <div class="cap-lbl">ingepland</div>
+            <div style="font-size:32px;font-weight:800;font-family:var(--fm);line-height:1" id="cap-big">0u</div>
+            <div style="font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.06em;margin-top:2px">ingepland</div>
           </div>
         </div>
         <div class="sbar" id="sbar"></div>
-        <div class="cap-ft">
-          <div class="cap-leg" id="cap-leg"></div>
-          <div class="cap-st" id="cap-st"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;gap:10px;flex-wrap:wrap" id="cap-leg"></div>
+          <div style="font-size:12px;font-family:var(--fm);font-weight:700" id="cap-st"></div>
         </div>
       </div>
-
       <div class="blok-grid" id="blok-grid"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
-        <button class="add-blok" onclick="openBM('kpi')">+ KPI project</button>
-        <button class="add-blok" onclick="openBM('vast')">+ Vast project</button>
+        <button class="add-blok" onclick="openBM('cps')">+ CPS project</button>
         <button class="add-blok" onclick="openBM('sdd')">+ Sales DD</button>
+        <button class="add-blok" onclick="openBM('overige')">+ Overige</button>
         <button class="add-blok" onclick="openBM('custom')">+ Eigen blok</button>
       </div>
       <div class="smsg" id="plan-smsg"></div>
     </div>
-
     <div class="sep"></div>
-
-    <!-- TEAM PLANNING -->
     <div class="sec">
       <div class="sec-hd"><span class="sec-title">Team planning deze week</span></div>
-      <div class="team-plan-grid" id="team-plan-grid"></div>
+      <div class="team-grid" id="team-plan-grid"></div>
     </div>
-
   </div>
 
   <!-- ═══ PDF RAPPORTEN ═══ -->
   <div class="pnl" id="pnl-pdf">
     <div class="sec">
       <div class="sec-hd">
-        <span class="sec-title">PDF rapporten per project</span>
-        <span class="sec-sub" id="pdf-week-lbl">—</span>
+        <span class="sec-title">PDF rapporten</span>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="filter-tabs">
+            <button class="ftab active" id="pf-week-btn" onclick="setPDFMode('week')">Week</button>
+            <button class="ftab" id="pf-month-btn" onclick="setPDFMode('month')">Maand</button>
+          </div>
+          <span class="sec-sub" id="pdf-period-lbl">—</span>
+        </div>
       </div>
-      <div class="pdf-grid" id="pdf-grid"></div>
+      <div id="pdf-week-content"><div class="pdf-grid" id="pdf-grid"></div></div>
+      <div id="pdf-month-content" style="display:none"><div id="pdf-month-grid"></div></div>
+    </div>
+    <div class="sep"></div>
+    <div class="sec">
+      <div class="sec-hd">
+        <span class="sec-title">Archief</span>
+        <button class="sec-act" onclick="archiveerWeek()">📥 Week archiveren</button>
+      </div>
+      <div id="archief-content"></div>
     </div>
   </div>
 
-  <!-- ═══ PROJECTEN BEHEER ═══ -->
-  <div class="pnl" id="pnl-beheer">
+  <!-- ═══ PROJECTEN ═══ -->
+  <div class="pnl" id="pnl-projecten">
     <div class="sec">
       <div class="sec-hd">
-        <span class="sec-title">Projecten beheren</span>
-        <button class="sec-act" onclick="openNieuwProject()">+ Nieuw project</button>
+        <span class="sec-title">Projectfiches</span>
+        <button class="sec-act" onclick="openProjModal()">+ Nieuw project</button>
       </div>
-      <div id="beheer-lijst"></div>
+      <div id="proj-content"></div>
+    </div>
+  </div>
+
+  <!-- ═══ MEDEWERKERS ═══ -->
+  <div class="pnl" id="pnl-medewerkers">
+    <div class="sec">
+      <div class="sec-hd">
+        <span class="sec-title">Medewerkers</span>
+        <button class="sec-act" onclick="openMWModal()">+ Nieuwe medewerker</button>
+      </div>
+      <div class="mw-grid" id="mw-grid"></div>
     </div>
   </div>
 
@@ -359,17 +543,16 @@ label{font-size:11px;color:var(--mu);letter-spacing:.07em;text-transform:upperca
     <div id="adm-gate">
       <p style="font-size:11px;color:var(--mu);margin-bottom:8px;font-family:var(--fm)">Admin</p>
       <div style="display:flex;gap:8px;max-width:300px">
-        <input type="password" id="adm-pw" placeholder="Code..." style="font-family:var(--fm);letter-spacing:.1em" onkeydown="if(event.key==='Enter')checkAdm()"/>
+        <input type="password" id="adm-pw" placeholder="Code..." style="font-family:var(--fm)" onkeydown="if(event.key==='Enter')checkAdm()"/>
         <button class="btn" onclick="checkAdm()">Toegang</button>
       </div>
-      <p style="font-size:11px;color:var(--red);margin-top:6px;font-family:var(--fm);min-height:14px" id="adm-err"></p>
+      <p style="font-size:11px;color:var(--red);margin-top:6px;min-height:14px;font-family:var(--fm)" id="adm-err"></p>
     </div>
     <div id="adm-panel" style="display:none">
-      <div class="sec-hd" style="margin-top:0"><span class="sec-title">Admin — omzet & uren per persoon</span></div>
+      <div class="sec-hd" style="margin-top:0"><span class="sec-title">Admin — omzet & uren</span></div>
       <div id="adm-content"></div>
     </div>
   </div>
-
 </div>
 
 <!-- BLOK MODAL -->
@@ -377,7 +560,7 @@ label{font-size:11px;color:var(--mu);letter-spacing:.07em;text-transform:upperca
   <div class="md">
     <div class="md-title" id="bm-title">Blok toevoegen</div>
     <input type="hidden" id="bm-type"/>
-    <div class="fi"><label>Naam</label>
+    <div class="fi"><label>Project</label>
       <select id="bm-sel" style="display:none"></select>
       <input type="text" id="bm-inp" style="display:none" placeholder="Naam blok..."/>
     </div>
@@ -390,16 +573,89 @@ label{font-size:11px;color:var(--mu);letter-spacing:.07em;text-transform:upperca
     </div>
     <div class="md-btns">
       <button class="btn-ok" onclick="bevestigBM()">Toevoegen</button>
-      <button class="btn-cancel" onclick="sluitBM()">Annuleren</button>
+      <button class="btn-cancel" onclick="document.getElementById('bm-modal').classList.remove('open')">Annuleren</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROJECT FICHE MODAL -->
+<div class="mo" id="proj-modal">
+  <div class="md md-wide">
+    <div class="md-title" id="proj-modal-title">Projectfiche</div>
+    <input type="hidden" id="pf-idx" value=""/>
+    <div class="g2">
+      <div class="fi"><label>Projectnaam</label><input type="text" id="pf-naam" placeholder="Naam..."/></div>
+      <div class="fi"><label>Categorie</label>
+        <select id="pf-cat" onchange="document.getElementById('pf-sdd-wrap').style.display=this.value==='sdd'?'block':'none'">
+          <option value="cps">CPS — Commercial Pipeline System</option>
+          <option value="sdd">SDD — Sales Due Diligence</option>
+          <option value="overige">Overige</option>
+        </select>
+      </div>
+    </div>
+    <div class="fi" id="pf-sdd-wrap" style="display:none">
+      <label>📅 Datum SDD (automatisch in planning)</label>
+      <input type="date" id="pf-sdd-datum"/>
+    </div>
+    <div class="g2">
+      <div class="fi"><label>Contactpersoon</label><input type="text" id="pf-contact" placeholder="Naam..."/></div>
+      <div class="fi"><label>E-mail / telefoon</label><input type="text" id="pf-email" placeholder="contact@..."/></div>
+    </div>
+    <div class="g3">
+      <div class="fi"><label>KPI doel (afsp./week)</label><input type="number" id="pf-kpi" min="0" step="1" placeholder="bv. 3"/></div>
+      <div class="fi"><label>Uren budget/maand</label><input type="number" id="pf-uren" min="0" step="0.5" placeholder="bv. 16"/></div>
+      <div class="fi"><label>Status</label>
+        <select id="pf-status">
+          <option value="actief">✅ Actief</option>
+          <option value="ingepland">📅 Ingepland</option>
+          <option value="verkocht">🏆 Verkocht</option>
+          <option value="on-hold">⏸ On hold</option>
+        </select>
+      </div>
+    </div>
+    <div class="fi"><label>Klant info</label><textarea id="pf-info" rows="2" placeholder="Sector, context..."></textarea></div>
+    <div class="fi"><label>Opmerkingen</label><textarea id="pf-opm" rows="2" placeholder="Interne notities..."></textarea></div>
+    <div class="md-btns">
+      <button class="btn-ok" onclick="slaFicheOp()">Opslaan</button>
+      <button class="btn-del" id="pf-del-btn" onclick="verwijderFiche()" style="display:none">Verwijderen</button>
+      <button class="btn-cancel" onclick="document.getElementById('proj-modal').classList.remove('open')">Annuleren</button>
+    </div>
+  </div>
+</div>
+
+<!-- MEDEWERKER MODAL -->
+<div class="mo" id="mw-modal">
+  <div class="md">
+    <div class="md-title" id="mw-modal-title">Medewerker</div>
+    <input type="hidden" id="mw-idx" value="-1"/>
+    <div class="g2">
+      <div class="fi"><label>Naam</label><input type="text" id="mw-naam" placeholder="Naam..."/></div>
+      <div class="fi"><label>Rol</label>
+        <select id="mw-rol">
+          <option value="sales">Sales</option>
+          <option value="lead">Team Lead</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="fi"><label>E-mail</label><input type="text" id="mw-email" placeholder="naam@leadscore.be"/></div>
+      <div class="fi"><label>Telefoon</label><input type="text" id="mw-tel" placeholder="+32..."/></div>
+    </div>
+    <div class="fi"><label>Startdatum</label><input type="date" id="mw-start"/></div>
+    <div class="fi"><label>Opmerkingen</label><textarea id="mw-opm" rows="2" placeholder="Interne notities..."></textarea></div>
+    <div class="md-btns">
+      <button class="btn-ok" onclick="slaMWOp()">Opslaan</button>
+      <button class="btn-del" id="mw-del-btn" onclick="verwijderMW()" style="display:none">Verwijderen</button>
+      <button class="btn-cancel" onclick="document.getElementById('mw-modal').classList.remove('open')">Annuleren</button>
     </div>
   </div>
 </div>
 
 <!-- PDF MODAL -->
 <div class="mo" id="pdf-modal">
-  <div class="md" style="max-width:660px">
-    <div class="md-title" id="pdf-modal-title">Rapport</div>
-    <div style="font-size:12px;color:var(--mu);font-family:var(--fm);margin-bottom:18px" id="pdf-modal-sub">—</div>
+  <div class="md md-wide">
+    <div class="md-title" id="pdf-modal-title" style="display:none">—</div>
     <div id="pdf-body"></div>
     <div class="md-btns">
       <button class="btn-print" onclick="window.print()">🖨 Afdrukken / PDF</button>
@@ -413,76 +669,77 @@ label{font-size:11px;color:var(--mu);letter-spacing:.07em;text-transform:upperca
 const ADM_PW='LeadScore1891!';
 const SB_URL='https://oxbzyanrrplhyyotdkbt.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im94Ynp5YW5ycnBsaHl5b3Rka2J0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxNjEzNDgsImV4cCI6MjA5MTczNzM0OH0.q1q-cYuiSB8gTCqgX8X95kRJktNYf3BS3NuJB2AcsrQ';
-const SB_HDR={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
-const NAMEN=['Brieuc','Jacques','Arthur','Amaury'];
-const TOTAAL_U=38,PLAN_U=3;
-const TC={kpi:'#16713f',vast:'#8a5200',sdd:'#1a48c4',custom:'#6d28d9'};
-const TL={kpi:'KPI',vast:'Vast',sdd:'Sales DD',custom:'Eigen'};
-const TB={kpi:{bg:'#edfaf4',c:'#16713f'},vast:{bg:'#fff8e6',c:'#8a5200'},sdd:{bg:'#eef3ff',c:'#1a48c4'},custom:{bg:'#f5f3ff',c:'#6d28d9'}};
-const SEG_K=['#16713f','#1a48c4','#8a5200','#8f1c1c','#6d28d9','#0c7a82','#b84e00'];
-const TARIEVEN={restomanager:65,sparkspot:60,powerpartners:60,'4rent':65,otamiser:60,nextsds:60,codifly:60,aspida:60,made_mfg:60,made_mar:60,toecan_s:60,toecan_l:60,sdd:85,wet_global:60};
+const SBH={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
+const TARIEVEN={restomanager:65,sparkspot:60,powerpartners:60,'4rent':65,otamiser:60,nextsds:60,codifly:60,aspida:60,made_mfg:60,made_mar:60,toecan_s:60,toecan_l:60,wet_global:60,sdd:85};
+const CAT={
+  cps:{label:'CPS',full:'Commercial Pipeline System',k:'#0c7a82',bg:'#ecfdf5',br:'#6ee7b7'},
+  sdd:{label:'SDD',full:'Sales Due Diligence',k:'#1a48c4',bg:'#eef3ff',br:'#8faaee'},
+  overige:{label:'Overige',full:'Overige projecten',k:'#8a5200',bg:'#fff8e6',br:'#f0c040'}
+};
+const BLOK_CLR={cps:'#0c7a82',sdd:'#1a48c4',overige:'#8a5200',custom:'#6d28d9'};
+const SEG_K=['#0c7a82','#1a48c4','#8a5200','#16713f','#6d28d9','#c2410c'];
 
-let PROJECTEN=[
-  {id:'restomanager',naam:'Restomanager',doelAfs:12,tag:'Vast',tagBg:'#fff8e6',tagC:'#8a5200'},
-  {id:'otamiser',naam:'Otamiser',doelAfs:3,tag:'KPI',tagBg:'#edfaf4',tagC:'#16713f'},
-  {id:'nextsds',naam:'Next SDS',doelAfs:5,tag:'KPI',tagBg:'#edfaf4',tagC:'#16713f'},
-  {id:'codifly',naam:'Codifly',doelAfs:3,tag:'KPI',tagBg:'#edfaf4',tagC:'#16713f'},
-  {id:'powerpartners',naam:'Power Partners',doelAfs:3,tag:'KPI',tagBg:'#edfaf4',tagC:'#16713f'},
-  {id:'aspida',naam:'Aspida',doelAfs:3,tag:'KPI',tagBg:'#edfaf4',tagC:'#16713f'},
-  {id:'made_mfg',naam:'Made Manufacturing',doelAfs:2,tag:'KPI',tagBg:'#edfaf4',tagC:'#16713f'},
-  {id:'made_mar',naam:'Made Maritiem',doelAfs:2,tag:'KPI',tagBg:'#edfaf4',tagC:'#16713f'},
-  {id:'toecan_s',naam:'Toecan Small',doelAfs:3,tag:'KPI',tagBg:'#edfaf4',tagC:'#16713f'},
-  {id:'toecan_l',naam:'Toecan Large',doelAfs:2,tag:'KPI',tagBg:'#edfaf4',tagC:'#16713f'},
-  {id:'4rent',naam:'4rent',doelAfs:3,tag:'KPI',tagBg:'#edfaf4',tagC:'#16713f'},
-  {id:'sparkspot',naam:'SparkSpot',doelAfs:0,tag:'Vast',tagBg:'#fff8e6',tagC:'#8a5200'},
-  {id:'sdd',naam:'Sales Due Diligence',doelAfs:0,tag:'DD',tagBg:'#eef3ff',tagC:'#1a48c4'},
-  {id:'wet_global',naam:'Wet Global',doelAfs:25,tag:'KPI',tagBg:'#edfaf4',tagC:'#16713f'},
-];
-const KPI_PRESET=[
-  {id:'otamiser',naam:'Otamiser',u:6,a:3},{id:'nextsds',naam:'Next SDS',u:6,a:5},
-  {id:'codifly',naam:'Codifly',u:6,a:3},{id:'powerpartners',naam:'Power Partners',u:6,a:3},
-  {id:'aspida',naam:'Aspida',u:6,a:3},{id:'made_mfg',naam:'Made Manufacturing',u:6,a:2},
-  {id:'made_mar',naam:'Made Maritiem',u:6,a:2},{id:'toecan_s',naam:'Toecan Small',u:6,a:3},
-  {id:'toecan_l',naam:'Toecan Large',u:6,a:2},{id:'4rent',naam:'4rent',u:6,a:3},
-];
-const VAST_PRESET=[
-  {id:'restomanager',naam:'Restomanager',u:16,a:12},
-  {id:'sparkspot',naam:'SparkSpot',u:6,a:0},
-];
-
-let naam='Brieuc',weekOff=0;
+// ── STATE ─────────────────────────────────────────
+let naam='',weekOff=0,dashFilter='week',pdfMode='week';
 let activiteit=[],planData={};
-try{const p=localStorage.getItem('ls7_plan');if(p)planData=JSON.parse(p);}catch(e){}
+let PROJECTEN=[],ficheData=[],MEDEWERKERS=[];
 let curBk=[];
-let sbLaden=false;
+let actieveBlokken={bellen:false,data:false,meeting:false};
 
+// ── PERSIST ───────────────────────────────────────
+function laadLokaal(){
+  try{const p=localStorage.getItem('ls9_plan');if(p)planData=JSON.parse(p);}catch(e){}
+  // Projecten
+  const opP=localStorage.getItem('ls9_proj');
+  if(opP){PROJECTEN=JSON.parse(opP);}
+  else{PROJECTEN=[
+    {id:'otamiser',naam:'Otamiser',cat:'cps',doelAfs:3},{id:'nextsds',naam:'Next SDS',cat:'cps',doelAfs:5},
+    {id:'codifly',naam:'Codifly',cat:'cps',doelAfs:3},{id:'aspida',naam:'Aspida',cat:'cps',doelAfs:3},
+    {id:'made_mfg',naam:'Made Manufacturing',cat:'cps',doelAfs:2},{id:'made_mar',naam:'Made Maritiem',cat:'cps',doelAfs:2},
+    {id:'toecan_s',naam:'Toecan Small',cat:'cps',doelAfs:3},{id:'toecan_l',naam:'Toecan Large',cat:'cps',doelAfs:2},
+    {id:'wet_global',naam:'Wet Global',cat:'cps',doelAfs:25},{id:'restomanager',naam:'Restomanager',cat:'cps',doelAfs:12},
+    {id:'powerpartners',naam:'Power Partners',cat:'overige',doelAfs:3},{id:'4rent',naam:'4rent',cat:'overige',doelAfs:3},
+    {id:'sparkspot',naam:'SparkSpot',cat:'overige',doelAfs:0},{id:'sdd_main',naam:'Sales Due Diligence',cat:'sdd',doelAfs:0},
+  ];}
+  // Fiches
+  try{const f=localStorage.getItem('ls9_fiches');if(f)ficheData=JSON.parse(f);}catch(e){}
+  // Medewerkers
+  const opM=localStorage.getItem('ls9_mw');
+  if(opM){MEDEWERKERS=JSON.parse(opM);}
+  else{MEDEWERKERS=[
+    {id:'brieuc',naam:'Brieuc',rol:'sales',email:'',tel:'',start:'',opm:''},
+    {id:'jacques',naam:'Jacques',rol:'sales',email:'',tel:'',start:'',opm:''},
+    {id:'arthur',naam:'Arthur',rol:'lead',email:'',tel:'',start:'',opm:''},
+    {id:'amaury',naam:'Amaury',rol:'sales',email:'',tel:'',start:'',opm:''},
+  ];}
+}
+function slaOp_proj(){localStorage.setItem('ls9_proj',JSON.stringify(PROJECTEN));}
+function slaOp_mw(){localStorage.setItem('ls9_mw',JSON.stringify(MEDEWERKERS));}
+function slaOp_fiches(){localStorage.setItem('ls9_fiches',JSON.stringify(ficheData));}
+
+// ── SUPABASE ──────────────────────────────────────
 async function laadActiviteit(){
   try{
-    const res=await fetch(SB_URL+'/rest/v1/ls_activiteit?select=*&order=id.asc',{headers:SB_HDR});
+    const res=await fetch(SB_URL+'/rest/v1/ls_activiteit?select=*&order=id.asc',{headers:SBH});
     const data=await res.json();
-    if(Array.isArray(data)){
-      activiteit=data.map(r=>({
-        id:r.id,naam:r.naam,datum:r.datum,start:r.start,stop:r.stop,
-        calls:r.calls||0,manueel:r.manueel||0,auto:r.auto||0,
-        project:r.project||'',afs:r.afs||0,
-        afspraken:r.afspraken||[],min:r.min||0
-      }));
-    }
-  }catch(e){console.error('Supabase laad error:',e);}
+    if(Array.isArray(data)){activiteit=data.map(r=>({
+      id:r.id,naam:r.naam,datum:r.datum,duur:r.duur||60,
+      calls:r.calls||0,manueel:r.manueel||0,auto:r.auto||0,
+      project:r.project||'',afs:r.afs||0,afspraken:r.afspraken||[],min:r.min||0,
+      dataUren:r.data_uren||0,dataOmschr:r.data_omschr||'',
+      meetMin:r.meet_min||0,meetType:r.meet_type||'weekly',meetOmschr:r.meet_omschr||''
+    }));}
+  }catch(e){console.error('SB load error',e);}
 }
-
-async function slaActiviteitOp(entry){
-  await fetch(SB_URL+'/rest/v1/ls_activiteit',{
-    method:'POST',
-    headers:{...SB_HDR,'Prefer':'return=minimal'},
-    body:JSON.stringify({
-      id:entry.id,naam:entry.naam,datum:entry.datum,
-      start:entry.start,stop:entry.stop,
-      calls:entry.calls,manueel:entry.manueel,auto:entry.auto,
-      project:entry.project,afs:entry.afs,
-      afspraken:entry.afspraken,min:entry.min
-    })
-  });
+async function slaActOp(e){
+  try{await fetch(SB_URL+'/rest/v1/ls_activiteit',{
+    method:'POST',headers:{...SBH,'Prefer':'return=minimal'},
+    body:JSON.stringify({id:e.id,naam:e.naam,datum:e.datum,duur:e.duur,
+      calls:e.calls,manueel:e.manueel,auto:e.auto,project:e.project,
+      afs:e.afs,afspraken:e.afspraken,min:e.duur,
+      data_uren:e.dataUren,data_omschr:e.dataOmschr,
+      meet_min:e.meetMin,meet_type:e.meetType,meet_omschr:e.meetOmschr})
+  });}catch(e){console.error('SB save error',e);}
 }
 
 // ── HELPERS ───────────────────────────────────────
@@ -491,560 +748,751 @@ function dStr(d){return d.toISOString().split('T')[0];}
 function wKey(o){return dStr(getMa(o));}
 function wDagen(o){const ma=getMa(o);return Array.from({length:7},(_,i)=>{const d=new Date(ma);d.setDate(ma.getDate()+i);return dStr(d);});}
 function fmtW(o){const ma=getMa(o),vr=new Date(ma);vr.setDate(ma.getDate()+4);const f=d=>d.toLocaleDateString('nl-BE',{day:'numeric',month:'short'});return f(ma)+' – '+f(vr);}
-function mins(s,e){if(!s||!e)return 0;const[sh,sm]=s.split(':').map(Number),[eh,em]=e.split(':').map(Number);const d=(eh*60+em)-(sh*60+sm);return d>0?d:0;}
 function getPlan(n,o){return planData[n+'_'+wKey(o)]||{blokken:[]};}
-function kleur(p){if(p>=100)return'#16713f';if(p>=60)return'#8a5200';return'#8f1c1c';}
+function kleur(p){return p>=100?'#16713f':p>=60?'#8a5200':'#8f1c1c';}
 function fmtDate(s){return s?s.split('-').reverse().join('/'):'—';}
 function fmtEur(n){return'€\u00a0'+n.toLocaleString('nl-BE',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function pNaam(id){return PROJECTEN.find(p=>p.id===id)?.naam||id||'Overig';}
+function pCat(id){return PROJECTEN.find(p=>p.id===id)?.cat||'overige';}
+function ci(c){return CAT[c]||CAT.overige;}
+function maandVanWeek(o){const ma=getMa(o);return{mnd:ma.getMonth(),yr:ma.getFullYear()};}
+function wekenInMaand(mnd,yr){
+  const weken=[];const d=new Date(yr,mnd,1);
+  while(d.getMonth()===mnd){
+    const dg=d.getDay();const ma=new Date(d);ma.setDate(d.getDate()-(dg===0?6:dg-1));ma.setHours(0,0,0,0);
+    const wk=dStr(ma);
+    if(!weken.includes(wk)){const vr=new Date(ma);vr.setDate(ma.getDate()+6);if(ma.getMonth()===mnd||vr.getMonth()===mnd)weken.push(wk);}
+    d.setDate(d.getDate()+1);
+  }
+  return[...new Set(weken)].sort();
+}
 
-// ── NAV ──────────────────────────────────────────
+// ── NAV ───────────────────────────────────────────
 function setP(p){
-  ['kpi','invoer','planning','pdf','beheer'].forEach(x=>{
+  ['dash','invoer','planning','pdf','projecten','medewerkers'].forEach(x=>{
     document.getElementById('nav-'+x).classList.toggle('active',x===p);
     document.getElementById('pnl-'+x).classList.toggle('active',x===p);
   });
-  if(p==='kpi')renderKPI();
-  if(p==='invoer')renderLog();
+  if(p==='dash')renderDash();
+  if(p==='invoer'){renderLog();populeerWieDropdown();}
   if(p==='planning'){renderPlanning();renderTeamPlan();}
-  if(p==='pdf')renderPDFGrid();
-  if(p==='beheer')renderBeheer();
+  if(p==='pdf'){renderPDFGrid();renderArchief();}
+  if(p==='projecten')renderProjecten();
+  if(p==='medewerkers')renderMedewerkers();
 }
-
-function verschuif(d){
-  weekOff+=d;updW();
-  renderKPI();renderLog();renderPDFGrid();
-  if(document.getElementById('pnl-planning').classList.contains('active')){renderPlanning();renderTeamPlan();}
-}
-function updW(){
-  const w=fmtW(weekOff);
-  ['wchip','kpi-week-lbl','pdf-week-lbl'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=w;});
-}
-
+function verschuif(d){weekOff+=d;updW();renderDash();renderPDFGrid();renderLog();if(document.getElementById('pnl-planning').classList.contains('active')){renderPlanning();renderTeamPlan();}}
+function updW(){const w=fmtW(weekOff);['wchip'].forEach(id=>document.getElementById(id).textContent=w);}
 function setNaam(n){
   naam=n;
-  NAMEN.forEach(x=>document.getElementById('nt-'+x).classList.toggle('active',x===n));
+  document.querySelectorAll('.np .nt').forEach(el=>el.classList.toggle('active',el.textContent===n));
   document.getElementById('who-pill').textContent=n;
-  renderKPI();renderLog();
+  renderDash();renderLog();
   if(document.getElementById('pnl-planning').classList.contains('active'))renderPlanning();
 }
+function renderNaamTabs(){
+  if(!MEDEWERKERS.find(m=>m.naam===naam)&&MEDEWERKERS.length)naam=MEDEWERKERS[0].naam;
+  document.getElementById('who-pill').textContent=naam||'—';
+  populeerWieDropdown();
+}
 
-// ── KPI ──────────────────────────────────────────
-function renderKPI(){
-  const dagen=wDagen(weekOff);
-  const wAct=activiteit.filter(a=>dagen.includes(a.datum));
-  const myAct=wAct.filter(a=>a.naam===naam);
-  let html='';
-  PROJECTEN.forEach(proj=>{
-    const tAct=wAct.filter(a=>a.project===proj.id);
-    const tAfs=tAct.flatMap(a=>a.afspraken||[]);
-    const totAfs=tAct.reduce((s,a)=>s+(a.afs||0),0);
-    const myC=myAct.filter(a=>a.project===proj.id).reduce((s,a)=>s+(a.calls||0),0);
-    const myM=myAct.filter(a=>a.project===proj.id).reduce((s,a)=>s+(a.manueel||0)+(a.auto||0),0);
-    const myA=myAct.filter(a=>a.project===proj.id).reduce((s,a)=>s+(a.afs||0),0);
-    const pct=proj.doelAfs>0?Math.min(100,(totAfs/proj.doelAfs)*100):0;
-    const bereikt=proj.doelAfs>0&&totAfs>=proj.doelAfs;
-    const achter=proj.doelAfs>0&&pct<30&&tAct.length>0;
-    html+=`<div class="kc${bereikt?' bereikt':achter?' achter':''}">
-      <div class="kc-top">
-        <div class="kc-name">${proj.naam}</div>
-        <span class="kc-tag" style="background:${proj.tagBg};color:${proj.tagC}">${proj.tag}</span>
-      </div>
-      ${proj.doelAfs>0?`
-        <div class="kc-pct" style="color:${kleur(pct)}">${Math.round(pct)}%</div>
-        <div class="kc-doel">${totAfs} / ${proj.doelAfs} afspraken — team</div>
-        <div class="pgbg"><div class="pgf" style="width:${pct}%;background:${kleur(pct)}"></div></div>
-      `:`<div style="font-size:12px;color:var(--mu);font-family:var(--fm);margin-bottom:10px">Geen afsprakendoel</div>`}
-      <div class="kc-stats">
-        <div class="ks"><div class="n">${myC}</div><div class="l">Mijn calls</div></div>
-        <div class="ks"><div class="n">${myM}</div><div class="l">Mijn mails</div></div>
-        <div class="ks"><div class="n" style="color:${myA>0?'var(--green)':'var(--tx)'}">${myA}</div><div class="l">Mijn afsp.</div></div>
-      </div>
-      ${tAfs.length?`<div class="kc-afs">${tAfs.map(af=>`
-        <div class="afs-row">
-          <div>
-            <div class="afs-name">${af.naam||'?'}</div>
-            <div class="afs-meta">${fmtDate(af.datum)} · ${af.door||'—'}</div>
-          </div>
-          <div class="afs-badges">
-            <span style="font-size:11px">${af.type==='online'?'🌐':'🤝'}</span>
-            <span class="stbadge st-${af.status||'gepland'}">${af.status||'gepland'}</span>
-          </div>
-        </div>`).join('')}</div>`:''}
+// ── DASHBOARD ─────────────────────────────────────
+function gaNaarDezeWeek(){weekOff=0;updW();renderDash();}
+
+function populeerDashFilters(){
+  const mwSel=document.getElementById('dash-filter-mw');
+  const projSel=document.getElementById('dash-filter-proj');
+  if(!mwSel||!projSel)return;
+  const curMW=mwSel.value,curProj=projSel.value;
+  mwSel.innerHTML='<option value="">👤 Alle medewerkers</option>'+MEDEWERKERS.map(m=>`<option value="${m.naam}"${m.naam===curMW?' selected':''}>${m.naam}</option>`).join('');
+  projSel.innerHTML='<option value="">📁 Alle projecten</option>'+PROJECTEN.map(p=>`<option value="${p.id}"${p.id===curProj?' selected':''}>${p.naam}</option>`).join('');
+}
+
+function setDashFilter(f){
+  dashFilter=f;
+  ['week','month'].forEach(x=>document.getElementById('df-'+x).classList.toggle('active',x===f));
+  renderDash();
+}
+function getDashPeriod(){
+  const filterMW=document.getElementById('dash-filter-mw')?.value||'';
+  const filterProj=document.getElementById('dash-filter-proj')?.value||'';
+  let entries;
+  if(dashFilter==='week'){
+    entries=activiteit.filter(a=>wDagen(weekOff).includes(a.datum));
+  } else {
+    const {mnd,yr}=maandVanWeek(weekOff);
+    entries=activiteit.filter(a=>{const d=new Date(a.datum);return d.getMonth()===mnd&&d.getFullYear()===yr;});
+  }
+  if(filterMW)entries=entries.filter(a=>a.naam===filterMW);
+  if(filterProj)entries=entries.filter(a=>a.project===filterProj);
+  const {mnd,yr}=maandVanWeek(weekOff);
+  const label=dashFilter==='week'?fmtW(weekOff):new Date(yr,mnd,1).toLocaleDateString('nl-BE',{month:'long',year:'numeric'});
+  return{label,entries,mnd,yr};
+}
+function renderDash(){
+  const {label,entries,mnd,yr}=getDashPeriod();
+  document.getElementById('dash-period-lbl').textContent=label;
+
+  // Team totalen
+  const tC=entries.reduce((s,a)=>s+(a.calls||0),0);
+  const tM=entries.reduce((s,a)=>s+(a.manueel||0)+(a.auto||0),0);
+  const tA=entries.reduce((s,a)=>s+(a.afs||0),0);
+  const ratio=tC>0&&tA>0?Math.round(tC/tA)+':1':'—';
+  document.getElementById('dash-totals').innerHTML=[
+    {n:tC,l:'Cold calls',c:'var(--tx)',bg:'var(--w)'},{n:tM,l:'Mails',c:'var(--tx)',bg:'var(--w)'},
+    {n:tA,l:'Afspraken',c:'var(--green)',bg:'var(--gbg)'},{n:ratio,l:'Ratio calls/afsp.',c:'var(--tx)',bg:'var(--w)'}
+  ].map(x=>`<div style="background:${x.bg};border:1.5px solid var(--b1);border-radius:var(--rl);padding:14px;text-align:center;box-shadow:var(--sh)">
+    <div style="font-size:28px;font-weight:800;font-family:var(--fm);color:${x.c}">${x.n}</div>
+    <div style="font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.07em;margin-top:4px">${x.l}</div>
+  </div>`).join('');
+
+  // Maand: weken overzicht
+  const weeksEl=document.getElementById('dash-weeks');
+  if(dashFilter==='month'&&mnd!==undefined){
+    const weken=wekenInMaand(mnd,yr);
+    weeksEl.style.display='block';
+    weeksEl.innerHTML=`<div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);margin-bottom:10px">Weken in ${label}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">${weken.map(wk=>{
+      const wkDg=Array.from({length:7},(_,i)=>{const d=new Date(wk);d.setDate(d.getDate()+i);return dStr(d);});
+      const wkAct=activiteit.filter(a=>wkDg.includes(a.datum));
+      const wkC=wkAct.reduce((s,a)=>s+(a.calls||0),0);
+      const wkA=wkAct.reduce((s,a)=>s+(a.afs||0),0);
+      const ma3=new Date(wk),vr3=new Date(wk);vr3.setDate(vr3.getDate()+4);
+      const f=d=>d.toLocaleDateString('nl-BE',{day:'numeric',month:'short'});
+      return`<div class="wk-mini"><div style="color:var(--mu);margin-bottom:3px">${f(ma3)} – ${f(vr3)}</div>
+        <div style="font-weight:700">${wkC} calls · <span style="color:var(--green)">${wkA} afsp.</span></div>
+      </div>`;
+    }).join('')}</div>`;
+  } else {weeksEl.style.display='none';}
+
+  // Per project — alleen ingeplande
+  const inPlan=new Set();
+  if(dashFilter==='week'){
+    (getPlan(naam,weekOff).blokken||[]).forEach(b=>inPlan.add(b.id));
+  } else if(mnd!==undefined){
+    const weken=wekenInMaand(mnd,yr);
+    weken.forEach(wk=>{
+      MEDEWERKERS.forEach(m=>{
+        const key=m.naam+'_'+wk;
+        (planData[key]?.blokken||[]).forEach(b=>inPlan.add(b.id));
+      });
+    });
+  }
+
+  if(!inPlan.size){
+    document.getElementById('dash-kpi').innerHTML=`<div style="background:var(--abg);border:1.5px solid var(--abr);border-radius:var(--rl);padding:16px 20px;font-size:13px;color:var(--amber)">
+      ⚠ Geen projecten ingepland voor ${dashFilter==='week'?'deze week':'deze maand'}. Ga naar <strong>Planning</strong> om projecten toe te voegen.
     </div>`;
+    return;
+  }
+
+  const filterCat=document.getElementById('dash-filter-cat')?.value||'';
+  const filterProjId=document.getElementById('dash-filter-proj')?.value||'';
+  const catGroups={cps:[],sdd:[],overige:[]};
+  PROJECTEN.filter(p=>inPlan.has(p.id)&&(!filterCat||p.cat===filterCat)&&(!filterProjId||p.id===filterProjId)).forEach(p=>{const c=p.cat||'overige';if(!catGroups[c])catGroups[c]=[];catGroups[c].push(p);});
+
+  let html='';
+  ['cps','sdd','overige'].forEach(cat=>{
+    const projs=catGroups[cat]||[];if(!projs.length)return;
+    const c=ci(cat);
+    html+=`<div class="cat-hd"><div class="cat-dot" style="background:${c.k}"></div><span class="cat-label" style="color:${c.k}">${c.full}</span></div>
+    <div class="kpi-grid" style="margin-bottom:20px">`;
+    projs.forEach(proj=>{
+      const pAct=entries.filter(a=>a.project===proj.id);
+      const myAct=pAct.filter(a=>a.naam===naam);
+      const tAfs=pAct.flatMap(a=>a.afspraken||[]);
+      const totA=pAct.reduce((s,a)=>s+(a.afs||0),0);
+      const myC=myAct.reduce((s,a)=>s+(a.calls||0),0);
+      const myM=myAct.reduce((s,a)=>s+(a.manueel||0)+(a.auto||0),0);
+      const myA=myAct.reduce((s,a)=>s+(a.afs||0),0);
+      // Doel: week = weekdoel, maand = weekdoel * aantal weken
+      const weken=dashFilter==='month'&&mnd!==undefined?wekenInMaand(mnd,yr):null;
+      const doel=proj.doelAfs*(weken?weken.length:1);
+      const pct=doel>0?Math.min(100,(totA/doel)*100):0;
+      const bereikt=doel>0&&totA>=doel;
+      const achter=doel>0&&pct<30&&pAct.length>0;
+      const c2=ci(proj.cat||'overige');
+
+      // Maand: per week breakdown
+      let wkBreak='';
+      if(dashFilter==='month'&&weken&&weken.length>1){
+        wkBreak='<div style="margin-top:10px;border-top:1px solid var(--b1);padding-top:8px">';
+        weken.forEach(wk=>{
+          const wkDg=Array.from({length:7},(_,i)=>{const d=new Date(wk);d.setDate(d.getDate()+i);return dStr(d);});
+          const wkA=pAct.filter(a=>wkDg.includes(a.datum)).reduce((s,a)=>s+(a.afs||0),0);
+          const wkPct=proj.doelAfs>0?Math.min(100,(wkA/proj.doelAfs)*100):0;
+          const ma3=new Date(wk),vr3=new Date(wk);vr3.setDate(vr3.getDate()+4);
+          const f=d=>d.toLocaleDateString('nl-BE',{day:'numeric',month:'short'});
+          wkBreak+=`<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;font-family:var(--fm);padding:3px 0;border-bottom:1px solid var(--b1)">
+            <span style="color:var(--mu)">${f(ma3)}–${f(vr3)}</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:55px;height:4px;background:var(--s2);border-radius:2px;overflow:hidden"><div style="height:100%;width:${wkPct}%;background:${kleur(wkPct)};border-radius:2px"></div></div>
+              <span style="font-weight:700;color:${kleur(wkPct)}">${wkA}${proj.doelAfs>0?' / '+proj.doelAfs:''}</span>
+            </div>
+          </div>`;
+        });
+        wkBreak+='</div>';
+      }
+
+      html+=`<div class="kc${bereikt?' bereikt':achter?' achter':''}">
+        <div class="kc-top"><div class="kc-name">${proj.naam}</div><span class="kc-tag" style="background:${c2.bg};color:${c2.k}">${c2.label}</span></div>
+        ${doel>0?`<div class="kc-pct" style="color:${kleur(pct)}">${Math.round(pct)}%</div>
+          <div class="kc-doel">${totA} / ${doel} afsp. — team${dashFilter==='month'&&weken?' ('+weken.length+' weken)':''}</div>
+          <div class="pgbg"><div class="pgf" style="width:${pct}%;background:${kleur(pct)}"></div></div>`
+        :`<div style="font-size:12px;color:var(--mu);font-family:var(--fm);margin-bottom:10px">Geen doel</div>`}
+        <div class="kc-stats">
+          <div class="ks"><div class="n">${myC}</div><div class="l">Mijn calls</div></div>
+          <div class="ks"><div class="n">${myM}</div><div class="l">Mijn mails</div></div>
+          <div class="ks"><div class="n" style="color:${myA>0?'var(--green)':'var(--tx)'}">${myA}</div><div class="l">Mijn afsp.</div></div>
+        </div>
+        ${wkBreak}
+        ${dashFilter==='week'&&tAfs.length?`<div class="kc-afs">${tAfs.map(af=>`
+          <div class="afs-row">
+            <div><div class="afs-name">${af.naam||'?'}</div><div class="afs-meta">${fmtDate(af.datum)} · ${af.door||'—'}</div></div>
+            <div style="display:flex;gap:4px;align-items:center">
+              <span style="font-size:11px">${af.type==='online'?'🌐':'🤝'}</span>
+              <span class="stbadge st-${af.status||'gepland'}">${af.status||'gepland'}</span>
+            </div>
+          </div>`).join('')}</div>`:''}
+      </div>`;
+    });
+    html+='</div>';
   });
-  document.getElementById('kpi-grid').innerHTML=html;
+  document.getElementById('dash-kpi').innerHTML=html;
 }
 
 // ── SESSIE INVOER ─────────────────────────────────
-function populeerProjSel(){
-  const sel=document.getElementById('inv-p');
-  sel.innerHTML='<option value="">— Project —</option>'+PROJECTEN.map(p=>`<option value="${p.id}">${p.naam}</option>`).join('');
+function populeerWieDropdown(){
+  const sel=document.getElementById('inv-wie');if(!sel)return;
+  sel.innerHTML='<option value="">— Selecteer medewerker —</option>'+MEDEWERKERS.map(m=>`<option value="${m.naam}"${m.naam===naam?' selected':''}>${m.naam}</option>`).join('');
 }
-
+function setInvoerNaam(n){if(!n)return;naam=n;document.querySelectorAll('.np .nt').forEach(el=>el.classList.toggle('active',el.textContent===n));document.getElementById('who-pill').textContent=n;toonPlanInfo();}
+function toonPlanInfo(){
+  const datum=document.getElementById('inv-d')?.value;
+  const el=document.getElementById('inv-plan-info');
+  if(!datum||!naam){el.style.display='none';return;}
+  const d=new Date(datum),dg=d.getDay(),ma=new Date(datum);
+  ma.setDate(d.getDate()-(dg===0?6:dg-1));ma.setHours(0,0,0,0);
+  const wk=dStr(ma);
+  const blokken=(planData[naam+'_'+wk]||{blokken:[]}).blokken;
+  el.style.display='block';
+  if(!blokken.length){document.getElementById('inv-plan-chips').innerHTML='<span style="font-size:12px;color:var(--mu);font-style:italic">Geen planning ingegeven voor deze week</span>';return;}
+  document.getElementById('inv-plan-chips').innerHTML=blokken.map(b=>{
+    const proj=PROJECTEN.find(p=>p.id===b.id);const c=ci(proj?.cat||'overige');
+    return`<span class="plan-chip" style="background:${c.bg};color:${c.k};border-color:${c.br}" onclick="quickFillBlok('${b.id}')">${b.naam} ${b.u}u</span>`;
+  }).join('');
+}
+function quickFillBlok(projId){
+  const proj=PROJECTEN.find(p=>p.id===projId);if(!proj)return;
+  // open bellen blok, set cat+project
+  if(!actieveBlokken.bellen)toggleBlok('bellen');
+  document.getElementById('inv-cat').value=proj.cat||'';
+  filterProjSel('inv-p','inv-cat');
+  document.getElementById('inv-p').value=projId;
+}
+function toggleBlok(type){
+  actieveBlokken[type]=!actieveBlokken[type];
+  document.getElementById('blk-tog-'+type).classList.toggle('on',actieveBlokken[type]);
+  document.getElementById('blk-hd-'+type).classList.toggle('on',actieveBlokken[type]);
+  document.getElementById('blk-body-'+type).classList.toggle('show',actieveBlokken[type]);
+}
+function populeerProjSels(){
+  const opts='<option value="">— Project —</option>'+PROJECTEN.map(p=>`<option value="${p.id}">${p.naam}</option>`).join('');
+  ['inv-p','inv-data-p','inv-meet-p'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts;});
+}
+function filterProjSel(selId,catSelId){
+  const cat=document.getElementById(catSelId)?.value||'';
+  const filtered=cat?PROJECTEN.filter(p=>p.cat===cat):PROJECTEN;
+  const el=document.getElementById(selId);if(!el)return;
+  el.innerHTML='<option value="">— Project —</option>'+filtered.map(p=>`<option value="${p.id}">${p.naam}</option>`).join('');
+}
+function checkDataWarn(){
+  const projId=document.getElementById('inv-data-p').value;
+  const u=parseFloat(document.getElementById('inv-data-u').value)||0;
+  const warn=document.getElementById('inv-data-warn');
+  if(!projId||!u){warn.style.display='none';return;}
+  const nu=new Date();
+  const mAct=activiteit.filter(a=>a.naam===naam&&a.project===projId&&new Date(a.datum).getMonth()===nu.getMonth()&&new Date(a.datum).getFullYear()===nu.getFullYear());
+  const totM=mAct.reduce((s,a)=>s+(a.dataUren||0),0)+u;
+  warn.style.display='block';
+  if(totM>=6){warn.style.cssText='display:block;background:var(--abg);border:1.5px solid var(--abr);border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--amber);margin-bottom:10px;font-family:var(--fm)';warn.textContent=`⚠ ${totM.toFixed(1)}u / 6u maandlimiet!`;}
+  else{warn.style.cssText='display:block;background:var(--gbg);border:1.5px solid var(--gbr);border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--green);margin-bottom:10px;font-family:var(--fm)';warn.textContent=`✓ ${totM.toFixed(1)}u / 6u deze maand`;}
+}
 function bouwAfs(n){
-  const cont=document.getElementById('inv-afs-v');
-  cont.innerHTML='';
-  if(n===0)return;
+  const cont=document.getElementById('inv-afs-v');cont.innerHTML='';
+  if(!n)return;
   const hdr=document.createElement('div');hdr.className='arow-hdr';
   hdr.innerHTML='<span>Naam klant</span><span>Datum afspraak</span><span>Type</span><span></span>';
   cont.appendChild(hdr);
   for(let i=0;i<n;i++){
     const div=document.createElement('div');div.className='arow';
-    div.innerHTML=`<input type="text" class="af-naam" placeholder="Naam klant ${i+1}"/>
-      <input type="date" class="af-datum"/>
-      <select class="af-type"><option value="online">🌐 Online</option><option value="fysiek">🤝 Fysiek</option></select>
-      <button class="rm-btn" onclick="this.closest('.arow').remove()">×</button>`;
+    div.innerHTML=`<input type="text" class="af-naam" placeholder="Naam klant ${i+1}"/><input type="date" class="af-datum"/>
+    <select class="af-type"><option value="online">🌐 Online</option><option value="fysiek">🤝 Fysiek</option></select>
+    <button class="rm-btn" onclick="this.closest('.arow').remove()">×</button>`;
     cont.appendChild(div);
   }
 }
-
 async function slaKPIOp(){
-  const datum=document.getElementById('inv-d').value;
   const msg=document.getElementById('inv-smsg');
+  const wieDropdown=document.getElementById('inv-wie')?.value;
+  if(wieDropdown)naam=wieDropdown;
+  const datum=document.getElementById('inv-d').value;
   if(!datum){msg.textContent='⚠ Vul datum in.';msg.style.color='var(--red)';return;}
+  if(!actieveBlokken.bellen&&!actieveBlokken.data&&!actieveBlokken.meeting){msg.textContent='⚠ Selecteer minstens één activiteit.';msg.style.color='var(--red)';return;}
+  const duur=parseInt(document.getElementById('inv-duur').value)||60;
   const afs=Array.from(document.querySelectorAll('#inv-afs-v .arow')).map(r=>({
-    naam:r.querySelector('.af-naam').value.trim(),
-    datum:r.querySelector('.af-datum').value,
-    type:r.querySelector('.af-type').value,
-    status:'gepland',door:naam
+    naam:r.querySelector('.af-naam').value.trim(),datum:r.querySelector('.af-datum').value,
+    type:r.querySelector('.af-type').value,status:'gepland',door:naam
   }));
-  if(afs.some(a=>!a.naam)){msg.textContent='⚠ Vul alle namen in.';msg.style.color='var(--red)';return;}
+  if(actieveBlokken.bellen&&afs.some(a=>!a.naam)){msg.textContent='⚠ Vul alle namen in.';msg.style.color='var(--red)';return;}
   const entry={
-    id:Date.now(),naam,datum,
-    start:document.getElementById('inv-s').value,
-    stop:document.getElementById('inv-e').value,
-    calls:parseInt(document.getElementById('inv-c').value)||0,
-    manueel:parseInt(document.getElementById('inv-m').value)||0,
-    auto:parseInt(document.getElementById('inv-a').value)||0,
-    project:document.getElementById('inv-p').value,
-    afs:afs.length,afspraken:afs,
-    min:mins(document.getElementById('inv-s').value,document.getElementById('inv-e').value)
+    id:Date.now(),naam,datum,duur,
+    calls:actieveBlokken.bellen?(parseInt(document.getElementById('inv-c').value)||0):0,
+    manueel:actieveBlokken.bellen?(parseInt(document.getElementById('inv-m').value)||0):0,
+    auto:actieveBlokken.bellen?(parseInt(document.getElementById('inv-a').value)||0):0,
+    project:actieveBlokken.bellen?document.getElementById('inv-p').value:actieveBlokken.data?document.getElementById('inv-data-p').value:document.getElementById('inv-meet-p').value,
+    afs:actieveBlokken.bellen?afs.length:0,afspraken:actieveBlokken.bellen?afs:[],
+    dataUren:actieveBlokken.data?(parseFloat(document.getElementById('inv-data-u').value)||0):0,
+    dataOmschr:actieveBlokken.data?document.getElementById('inv-data-omschr').value.trim():'',
+    meetMin:actieveBlokken.meeting?(parseInt(document.getElementById('inv-meet-min').value)||30):0,
+    meetType:actieveBlokken.meeting?document.getElementById('inv-meet-type').value:'weekly',
+    meetOmschr:actieveBlokken.meeting?document.getElementById('inv-meet-omschr').value.trim():''
   };
   msg.textContent='Opslaan...';msg.style.color='var(--mu)';
-  await slaActiviteitOp(entry);
-  await laadActiviteit();
+  await slaActOp(entry);await laadActiviteit();
   msg.textContent='✓ Geregistreerd!';msg.style.color='var(--green)';
   setTimeout(()=>msg.textContent='',2500);
-  ['inv-s','inv-e','inv-c','inv-m','inv-a','inv-afs-n'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('inv-p').value='';
+  ['inv-c','inv-m','inv-a','inv-afs-n','inv-data-omschr','inv-meet-omschr'].forEach(id=>document.getElementById(id).value='');
+  ['inv-p','inv-data-p','inv-meet-p'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('inv-data-warn').style.display='none';
   document.getElementById('inv-afs-v').innerHTML='';
-  renderLog();renderKPI();renderPDFGrid();
+  ['bellen','data','meeting'].forEach(t=>{actieveBlokken[t]=false;document.getElementById('blk-tog-'+t).classList.remove('on');document.getElementById('blk-hd-'+t).classList.remove('on');document.getElementById('blk-body-'+t).classList.remove('show');});
+  renderLog();renderDash();
 }
-
 function renderLog(){
   const dagen=wDagen(weekOff);
   const wAct=activiteit.filter(a=>a.naam===naam&&dagen.includes(a.datum)).sort((a,b)=>b.id-a.id);
   const el=document.getElementById('inv-log');
-  if(!wAct.length){el.innerHTML='<p style="font-size:13px;color:var(--mu)">Geen sessies deze week.</p>';return;}
+  if(!wAct.length){el.innerHTML='<p style="font-size:13px;color:var(--mu)">Geen sessies.</p>';return;}
+  const nu=new Date(getMa(weekOff));
+  const mData=activiteit.filter(a=>a.naam===naam&&new Date(a.datum).getMonth()===nu.getMonth()&&new Date(a.datum).getFullYear()===nu.getFullYear());
+  const totDM=mData.reduce((s,a)=>s+(a.dataUren||0),0);
   let html='';
+  if(totDM>0){const pct=Math.min(100,(totDM/6)*100);html+=`<div style="background:${totDM>=6?'var(--abg)':'var(--gbg)'};border:1.5px solid ${totDM>=6?'var(--abr)':'var(--gbr)'};border-radius:var(--rl);padding:12px 16px;margin-bottom:12px;font-size:12px;font-family:var(--fm)"><div style="font-weight:700;color:${totDM>=6?'var(--amber)':'var(--green)'};margin-bottom:5px">💾 Data deze maand: ${totDM.toFixed(1)}u / 6u</div><div style="height:5px;background:rgba(0,0,0,.08);border-radius:3px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${totDM>=6?'var(--amber)':'var(--green)'};border-radius:3px"></div></div></div>`;}
   wAct.forEach(a=>{
-    const h=Math.floor(a.min/60),m2=a.min%60;
-    const dur=a.min>0?(h>0?`${h}u ${m2}m`:`${m2}m`):'—';
-    html+=`<div class="log-item">
+    const h=Math.floor((a.duur||60)/60),m2=(a.duur||60)%60;
+    const dur=h>0?`${h}u${m2>0?' '+m2+'m':''}`:`${m2}m`;
+    html+=`<div class="log-item" style="border-left:3px solid ${a.dataUren?'var(--blue)':a.meetMin?'var(--green)':'var(--b1)'}">
       <div class="log-top">
-        <div class="log-title">${pNaam(a.project)} · ${fmtDate(a.datum)}</div>
-        <div class="log-time">${a.start||''}–${a.stop||''} · ${dur}</div>
+        <div class="log-title">${pNaam(a.project)||'Sessie'} · ${fmtDate(a.datum)}</div>
+        <div class="log-time">${dur}</div>
       </div>
-      <div class="log-stats">
-        ${a.calls?`<span>${a.calls} calls</span>`:''}
-        ${(a.manueel||a.auto)?`<span>${(a.manueel||0)+(a.auto||0)} mails</span>`:''}
-        ${a.afs?`<span style="color:var(--green);font-weight:700">${a.afs} afspraken</span>`:''}
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px">
+        ${a.calls?`<span class="log-chip">${a.calls} calls</span>`:''}
+        ${(a.manueel||a.auto)?`<span class="log-chip">${(a.manueel||0)+(a.auto||0)} mails</span>`:''}
+        ${a.afs?`<span class="log-chip" style="background:var(--gbg);border-color:var(--gbr);color:var(--green);font-weight:700">${a.afs} afsp.</span>`:''}
+        ${a.dataUren?`<span class="log-chip" style="background:var(--bbg);border-color:var(--bbr);color:var(--blue)">${a.dataUren}u data${a.dataOmschr?' · '+a.dataOmschr:''}</span>`:''}
+        ${a.meetMin?`<span class="log-chip" style="background:var(--gbg);border-color:var(--gbr);color:var(--green)">${a.meetMin}min ${a.meetType||'weekly'}${a.meetOmschr?' · '+a.meetOmschr:''}</span>`:''}
       </div>
-      ${(a.afspraken||[]).length?`<div style="margin-top:8px;border-top:1px solid var(--b1);padding-top:8px;display:flex;flex-wrap:wrap;gap:5px">
-        ${(a.afspraken||[]).map(af=>`<span style="font-size:11px;font-family:var(--fm);background:var(--s1);padding:3px 9px;border-radius:4px;border:1px solid var(--b1)">${af.naam} · ${fmtDate(af.datum)} · ${af.type==='online'?'🌐':'🤝'}</span>`).join('')}
-      </div>`:''}
+      ${(a.afspraken||[]).length?`<div style="margin-top:8px;border-top:1px solid var(--b1);padding-top:8px;display:flex;flex-wrap:wrap;gap:5px">${(a.afspraken||[]).map(af=>`<span class="log-chip">${af.naam} · ${fmtDate(af.datum)} · ${af.type==='online'?'🌐':'🤝'}</span>`).join('')}</div>`:''}
     </div>`;
   });
   el.innerHTML=html;
 }
 
 // ── PLANNING ──────────────────────────────────────
-function renderPlanning(){
-  const plan=getPlan(naam,weekOff);
-  curBk=JSON.parse(JSON.stringify(plan.blokken||[]));
-  renderBlokken();
-}
-
+function renderPlanning(){const plan=getPlan(naam,weekOff);curBk=JSON.parse(JSON.stringify(plan.blokken||[]));renderBlokken();}
 function renderBlokken(){
   const el=document.getElementById('blok-grid');
   if(!curBk.length){el.innerHTML='';renderCap();return;}
-  let html='';
-  curBk.forEach((b,i)=>{
-    const tc=TC[b.type]||'#868e96';
-    html+=`<div class="blok ${b.type}">
+  el.innerHTML=curBk.map((b,i)=>{const k=BLOK_CLR[b.cat||b.type]||'#868e96';
+    return`<div class="blok ${b.cat||b.type||'custom'}">
       <button class="blok-rm" onclick="delBk(${i})">×</button>
-      <div class="blok-name">${b.naam}${b.klant?` <span style="font-size:10px;color:var(--mu);font-weight:400">· ${b.klant}</span>`:''}</div>
-      <div class="blok-meta">${b.a>0?b.a+' afsp. · ':''}<span style="color:${tc};font-weight:700">${TL[b.type]||b.type}</span></div>
-      <div class="blok-uren-row">
-        <input type="number" value="${b.u}" min="0.5" max="35" step="0.5" onchange="updBkU(${i},this.value)"/>
-        <span style="font-size:12px;color:var(--mu);font-family:var(--fm)">u</span>
-      </div>
-    </div>`;
-  });
-  el.innerHTML=html;
+      <div class="blok-name">${b.naam}${b.klant?` <span style="font-size:10px;color:var(--mu)">· ${b.klant}</span>`:''}</div>
+      <div class="blok-meta" style="color:${k};font-weight:700">${(b.cat||b.type||'').toUpperCase()}</div>
+      <div class="blok-uren-row"><input type="number" value="${b.u}" min="0.5" max="35" step="0.5" onchange="updBkU(${i},this.value)"/><span style="font-size:12px;color:var(--mu);font-family:var(--fm)">u</span></div>
+    </div>`;}).join('');
   renderCap();
 }
-
 function updBkU(i,v){curBk[i].u=parseFloat(v)||0;renderCap();}
 function delBk(i){curBk.splice(i,1);renderBlokken();}
-
 function renderCap(){
-  let tot=PLAN_U;
-  const segs=[{naam:'Maandagplanning',u:PLAN_U,k:'#adb5bd'}];
-  let ki=0;
-  curBk.forEach(b=>{const k=TC[b.type]||SEG_K[ki%SEG_K.length];ki++;segs.push({naam:b.naam+(b.klant?' · '+b.klant:''),u:b.u,k});tot+=b.u;});
-  const vrij=Math.max(0,TOTAAL_U-tot),over=Math.max(0,tot-TOTAAL_U);
-  let barHtml='';
-  segs.forEach(s=>{barHtml+=`<div class="ss" style="width:${Math.min(100,(s.u/TOTAAL_U)*100)}%;background:${s.k};opacity:.82"></div>`;});
-  if(vrij>0)barHtml+=`<div class="ss" style="flex:1;background:var(--s2)"></div>`;
-  document.getElementById('sbar').innerHTML=barHtml;
-  const bigEl=document.getElementById('cap-big');
-  bigEl.textContent=tot.toFixed(1)+'u';
-  bigEl.style.color=over>0?'var(--red)':tot>=35?'var(--amber)':'var(--tx)';
-  const stEl=document.getElementById('cap-st');
-  stEl.textContent=over>0?`⚠ ${over.toFixed(1)}u te veel`:vrij>0?`${vrij.toFixed(1)}u vrij`:'Volledig';
-  stEl.style.color=over>0?'var(--red)':vrij<3?'var(--amber)':'var(--green)';
-  let legHtml='';
-  segs.forEach(s=>{legHtml+=`<div class="cl"><div class="cld" style="background:${s.k}"></div>${s.naam} (${s.u}u)</div>`;});
-  if(vrij>0)legHtml+=`<div class="cl"><div class="cld" style="background:var(--s2);border:1px solid var(--b1)"></div>Vrij (${vrij.toFixed(1)}u)</div>`;
-  document.getElementById('cap-leg').innerHTML=legHtml;
+  let tot=3;const segs=[{naam:'Maandagplanning',u:3,k:'#adb5bd'}];let ki=0;
+  curBk.forEach(b=>{const k=BLOK_CLR[b.cat||b.type]||SEG_K[ki%SEG_K.length];ki++;segs.push({naam:b.naam,u:b.u,k});tot+=b.u;});
+  const vrij=Math.max(0,38-tot),over=Math.max(0,tot-38);
+  document.getElementById('sbar').innerHTML=segs.map(s=>`<div class="ss" style="width:${Math.min(100,(s.u/38)*100)}%;background:${s.k};opacity:.85"></div>`).join('')+(vrij>0?'<div class="ss" style="flex:1;background:var(--s2)"></div>':'');
+  const bigEl=document.getElementById('cap-big');bigEl.textContent=tot.toFixed(1)+'u';bigEl.style.color=over>0?'var(--red)':tot>=35?'var(--amber)':'var(--tx)';
+  const stEl=document.getElementById('cap-st');stEl.textContent=over>0?`⚠ ${over.toFixed(1)}u te veel`:vrij>0?`${vrij.toFixed(1)}u vrij`:'Volledig';stEl.style.color=over>0?'var(--red)':vrij<3?'var(--amber)':'var(--green)';
+  document.getElementById('cap-leg').innerHTML=segs.map(s=>`<div class="cl"><div class="cld" style="background:${s.k}"></div>${s.naam} (${s.u}u)</div>`).join('')+(vrij>0?`<div class="cl"><div class="cld" style="background:var(--s2);border:1px solid var(--b1)"></div>Vrij (${vrij.toFixed(1)}u)</div>`:'');
 }
-
 function slaOp(){
-  const key=naam+'_'+wKey(weekOff);
-  planData[key]={blokken:curBk,week:wKey(weekOff),naam};
-  localStorage.setItem('ls7_plan',JSON.stringify(planData));
-  const msg=document.getElementById('plan-smsg');
-  msg.textContent='✓ Planning opgeslagen!';msg.style.color='var(--green)';
-  setTimeout(()=>msg.textContent='',2500);
-  renderTeamPlan();
+  planData[naam+'_'+wKey(weekOff)]={blokken:curBk,week:wKey(weekOff),naam};
+  localStorage.setItem('ls9_plan',JSON.stringify(planData));
+  const msg=document.getElementById('plan-smsg');msg.textContent='✓ Opgeslagen!';msg.style.color='var(--green)';setTimeout(()=>msg.textContent='',2500);
+  renderTeamPlan();renderDash();
 }
-
 function renderTeamPlan(){
-  const el=document.getElementById('team-plan-grid');
-  let html='';
-  NAMEN.forEach(n=>{
-    const plan=getPlan(n,weekOff);
-    const blokken=plan.blokken||[];
-    let totU=PLAN_U;
-    blokken.forEach(b=>totU+=b.u);
-    const vrij=Math.max(0,TOTAAL_U-totU),over=Math.max(0,totU-TOTAAL_U);
+  document.getElementById('team-plan-grid').innerHTML=MEDEWERKERS.map(m=>{
+    const plan=getPlan(m.naam,weekOff);const blokken=plan.blokken||[];
+    let totU=3;blokken.forEach(b=>totU+=b.u);
+    const vrij=Math.max(0,38-totU),over=Math.max(0,totU-38);
     const dagen=wDagen(weekOff);
-    const wAct=activiteit.filter(a=>a.naam===n&&dagen.includes(a.datum));
-    const effU=wAct.reduce((s,a)=>s+(a.min||0),0)/60;
+    const wAct=activiteit.filter(a=>a.naam===m.naam&&dagen.includes(a.datum));
+    const effU=wAct.reduce((s,a)=>s+(a.duur||60),0)/60;
     const totA=wAct.reduce((s,a)=>s+(a.afs||0),0);
     const gepA=blokken.reduce((s,b)=>s+(b.a||0),0);
     const aPct=gepA>0?Math.min(100,(totA/gepA)*100):0;
-    const isIk=n===naam;
-    html+=`<div class="tpc${isIk?' me':''}">
-      <div class="tpc-hd">
-        <div class="tpc-name">${n}${isIk?` <span style="font-size:10px;color:var(--green)">← jij</span>`:''}</div>
-        <div class="tpc-cap" style="color:${over>0?'var(--red)':vrij<3?'var(--amber)':'var(--green)'}">${totU.toFixed(1)}u / ${TOTAAL_U}u</div>
+    const isIk=m.naam===naam;
+    return`<div class="tpc${isIk?' me':''}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:14px;font-weight:800">${m.naam}${isIk?` <span style="font-size:10px;color:var(--green)">← jij</span>`:''}</div>
+        <div style="font-size:12px;font-family:var(--fm);font-weight:700;color:${over>0?'var(--red)':vrij<3?'var(--amber)':'var(--green)'}">${totU.toFixed(1)}u/38u</div>
       </div>
-      ${blokken.length?`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">
-        ${blokken.map(b=>{const tc=TC[b.type]||'#868e96';const tb=TB[b.type]||{bg:'#f2f4f7',c:'#6e7888'};return`<span style="font-size:10px;padding:2px 8px;border-radius:4px;font-family:var(--fm);font-weight:700;background:${tb.bg};color:${tb.c}">${b.naam} ${b.u}u${b.klant?' · '+b.klant:''}</span>`;}).join('')}
-      </div>`:`<p style="font-size:12px;color:var(--mu);margin-bottom:10px">Geen planning</p>`}
-      ${gepA>0?`<div class="pgrow">
-        <div class="pgrow-lbl"><span>${totA} / ${gepA} afspraken</span><span style="font-weight:700;color:${kleur(aPct)}">${Math.round(aPct)}%</span></div>
-        <div class="pgbg"><div class="pgf" style="width:${aPct}%;background:${kleur(aPct)}"></div></div>
-      </div>`:''}
-      <div style="font-size:11px;font-family:var(--fm);color:var(--mu);margin-top:6px">${effU.toFixed(1)}u effectief · ${totA} afspraken</div>
+      ${blokken.length?`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">${blokken.map(b=>{const k=BLOK_CLR[b.cat||b.type]||'#868e96';return`<span style="font-size:10px;padding:2px 8px;border-radius:4px;font-family:var(--fm);font-weight:700;background:${k}22;color:${k};border:1px solid ${k}44">${b.naam} ${b.u}u</span>`;}).join('')}</div>`:`<p style="font-size:12px;color:var(--mu);margin-bottom:8px">Geen planning</p>`}
+      ${gepA>0?`<div class="pgrow"><div class="pgrow-lbl"><span>${totA}/${gepA} afspraken</span><span style="font-weight:700;color:${kleur(aPct)}">${Math.round(aPct)}%</span></div><div class="pgbg"><div class="pgf" style="width:${aPct}%;background:${kleur(aPct)}"></div></div></div>`:''}
+      <div style="font-size:11px;font-family:var(--fm);color:var(--mu);margin-top:4px">${effU.toFixed(1)}u effectief</div>
     </div>`;
-  });
-  el.innerHTML=html||'<p style="color:var(--mu);font-size:13px">Geen planningen.</p>';
+  }).join('');
 }
-
-// ── BLOK MODAL ────────────────────────────────────
 function openBM(type){
   document.getElementById('bm-type').value=type;
-  document.getElementById('bm-title').textContent=TL[type]+' toevoegen';
+  const labels={cps:'CPS project',sdd:'Sales DD',overige:'Overig project',custom:'Eigen blok'};
+  document.getElementById('bm-title').textContent=(labels[type]||type)+' toevoegen';
   document.getElementById('bm-klant-fi').style.display=type==='sdd'?'block':'none';
   document.getElementById('bm-klant').value='';
   const sel=document.getElementById('bm-sel'),inp=document.getElementById('bm-inp');
-  if(type==='kpi'){
+  if(type==='custom'){sel.style.display='none';inp.style.display='block';inp.value='';document.getElementById('bm-u').value='';document.getElementById('bm-a').value=0;}
+  else{
     sel.style.display='block';inp.style.display='none';
-    sel.innerHTML='<option value="">— Kies KPI project —</option>'+KPI_PRESET.map(p=>`<option value="${p.id}" data-u="${p.u}" data-a="${p.a}">${p.naam}</option>`).join('');
-    sel.onchange=function(){const o=this.options[this.selectedIndex];if(o.value){document.getElementById('bm-u').value=o.dataset.u;document.getElementById('bm-a').value=o.dataset.a;}};
-  } else if(type==='vast'){
-    sel.style.display='block';inp.style.display='none';
-    sel.innerHTML='<option value="">— Kies project —</option>'+VAST_PRESET.map(p=>`<option value="${p.id}" data-u="${p.u}" data-a="${p.a}">${p.naam}</option>`).join('');
-    sel.onchange=function(){const o=this.options[this.selectedIndex];if(o.value){document.getElementById('bm-u').value=o.dataset.u;document.getElementById('bm-a').value=o.dataset.a;}};
-  } else {
-    sel.style.display='none';inp.style.display='block';
-    inp.value=type==='sdd'?'Sales Due Diligence':'';
-    document.getElementById('bm-u').value=type==='sdd'?16:'';
-    document.getElementById('bm-a').value=0;
+    const projs=PROJECTEN.filter(p=>(p.cat||'overige')===type);
+    sel.innerHTML=`<option value="">— Kies project —</option>`+projs.map(p=>`<option value="${p.id}" data-a="${p.doelAfs||0}">${p.naam}</option>`).join('');
+    sel.onchange=function(){const o=this.options[this.selectedIndex];if(o.value){document.getElementById('bm-u').value=type==='sdd'?16:6;document.getElementById('bm-a').value=o.dataset.a||0;}};
   }
   document.getElementById('bm-modal').classList.add('open');
 }
-function sluitBM(){document.getElementById('bm-modal').classList.remove('open');}
 function bevestigBM(){
   const type=document.getElementById('bm-type').value;
   const sel=document.getElementById('bm-sel'),inp=document.getElementById('bm-inp');
   let bNaam='',bId='',preA=0;
-  if(type==='kpi'||type==='vast'){
-    const o=sel.options[sel.selectedIndex];
-    if(!o.value){alert('Kies een project');return;}
-    bId=o.value;bNaam=o.text;preA=parseInt(o.dataset.a)||0;
-  } else {
-    bNaam=inp.value.trim();
-    if(!bNaam){alert('Geef een naam');return;}
-    bId=bNaam.toLowerCase().replace(/\s+/g,'_');
-  }
-  const u=parseFloat(document.getElementById('bm-u').value)||0;
-  const a=parseInt(document.getElementById('bm-a').value)||preA;
-  const klant=document.getElementById('bm-klant').value.trim();
-  curBk.push({id:bId,naam:bNaam,type,u,a,klant});
-  sluitBM();renderBlokken();
+  if(type==='custom'){bNaam=inp.value.trim();if(!bNaam){alert('Naam?');return;}bId=bNaam.toLowerCase().replace(/\s+/g,'_');}
+  else{const o=sel.options[sel.selectedIndex];if(!o.value){alert('Kies een project');return;}bId=o.value;bNaam=o.text;preA=parseInt(o.dataset.a)||0;}
+  curBk.push({id:bId,naam:bNaam,cat:type,type:type,u:parseFloat(document.getElementById('bm-u').value)||6,a:parseInt(document.getElementById('bm-a').value)||preA,klant:document.getElementById('bm-klant').value.trim()});
+  document.getElementById('bm-modal').classList.remove('open');renderBlokken();
 }
 
-// ── PDF RAPPORTEN ─────────────────────────────────
+// ── PDF ───────────────────────────────────────────
+function setPDFMode(m){
+  pdfMode=m;
+  ['week','month'].forEach(x=>document.getElementById('pf-'+x+'-btn').classList.toggle('active',x===m));
+  document.getElementById('pdf-week-content').style.display=m==='week'?'block':'none';
+  document.getElementById('pdf-month-content').style.display=m==='month'?'block':'none';
+  if(m==='month')renderPDFMaand();else renderPDFGrid();
+}
 function renderPDFGrid(){
-  const dagen=wDagen(weekOff);
-  const wAct=activiteit.filter(a=>dagen.includes(a.datum));
+  const dagen=wDagen(weekOff);const wAct=activiteit.filter(a=>dagen.includes(a.datum));
+  document.getElementById('pdf-period-lbl').textContent=fmtW(weekOff);
   let html='';
   PROJECTEN.forEach(proj=>{
-    const pAct=wAct.filter(a=>a.project===proj.id);
+    const pAct=wAct.filter(a=>a.project===proj.id);if(!pAct.length)return;
+    const totC=pAct.reduce((s,a)=>s+(a.calls||0),0);
+    const totA=pAct.reduce((s,a)=>s+(a.afs||0),0);
+    html+=`<div class="pdf-card"><div><div class="pdf-name">${proj.naam}</div><div class="pdf-meta">${totC} calls · ${totA} afsp.</div></div><button class="pdf-btn" onclick="openPDF('${proj.id}','week')">📄 PDF</button></div>`;
+  });
+  document.getElementById('pdf-grid').innerHTML=html||'<p style="font-size:13px;color:var(--mu)">Geen activiteit.</p>';
+}
+function renderPDFMaand(){
+  const {mnd,yr,label}=getDashPeriod();if(mnd===undefined)return;
+  document.getElementById('pdf-period-lbl').textContent=label||'';
+  let html='';
+  PROJECTEN.forEach(proj=>{
+    const pAct=activiteit.filter(a=>{const d=new Date(a.datum);return a.project===proj.id&&d.getMonth()===mnd&&d.getFullYear()===yr;});
     if(!pAct.length)return;
     const totC=pAct.reduce((s,a)=>s+(a.calls||0),0);
     const totA=pAct.reduce((s,a)=>s+(a.afs||0),0);
-    const totU=pAct.reduce((s,a)=>s+(a.min||0),0)/60;
-    html+=`<div class="pdf-card">
-      <div>
-        <div class="pdf-name">${proj.naam}</div>
-        <div class="pdf-meta">${totC} calls · ${totA} afsp. · ${totU.toFixed(1)}u</div>
-      </div>
-      <button class="pdf-btn" onclick="openPDF('${proj.id}')">📄 PDF</button>
-    </div>`;
+    html+=`<div class="pdf-card"><div><div class="pdf-name">${proj.naam}</div><div class="pdf-meta">${totC} calls · ${totA} afsp. · ${label}</div></div><button class="pdf-btn" onclick="openPDF('${proj.id}','month',${mnd},${yr})">📄 PDF</button></div>`;
   });
-  document.getElementById('pdf-grid').innerHTML=html||'<p style="font-size:13px;color:var(--mu)">Geen activiteit gevonden voor deze week.</p>';
+  document.getElementById('pdf-month-grid').innerHTML=html||'<p style="font-size:13px;color:var(--mu)">Geen activiteit.</p>';
 }
-
-function openPDF(projId){
+function openPDF(projId,type,mnd,yr){
   const proj=PROJECTEN.find(p=>p.id===projId);if(!proj)return;
-  const dagen=wDagen(weekOff);
-  const pAct=activiteit.filter(a=>dagen.includes(a.datum)&&a.project===projId);
+  const fiche=ficheData.find(f=>f.id===projId)||{};
+  let pAct,periodeLabel,ref;
+  if(type==='month'){
+    pAct=activiteit.filter(a=>{const d=new Date(a.datum);return a.project===projId&&d.getMonth()===mnd&&d.getFullYear()===yr;});
+    periodeLabel=new Date(yr,mnd,1).toLocaleDateString('nl-BE',{month:'long',year:'numeric'});
+    ref=projId+'_'+yr+'_'+(mnd+1).toString().padStart(2,'0');
+  } else {
+    const dagen=wDagen(weekOff);pAct=activiteit.filter(a=>dagen.includes(a.datum)&&a.project===projId);
+    periodeLabel=fmtW(weekOff);ref=projId+'_'+wKey(weekOff).replace(/-/g,'');
+  }
   const alleAfs=pAct.flatMap(a=>(a.afspraken||[]).map(af=>({...af,door:a.naam})));
+  const meetings=pAct.filter(a=>a.meetMin>0);
   const totC=pAct.reduce((s,a)=>s+(a.calls||0),0);
   const totMa=pAct.reduce((s,a)=>s+(a.manueel||0),0);
   const totAu=pAct.reduce((s,a)=>s+(a.auto||0),0);
-  const totU=pAct.reduce((s,a)=>s+(a.min||0),0)/60;
   const totA=pAct.reduce((s,a)=>s+(a.afs||0),0);
-  const ma=getMa(weekOff),vr=new Date(ma);vr.setDate(ma.getDate()+4);
-  const f=d=>d.toLocaleDateString('nl-BE',{day:'numeric',month:'long',year:'numeric'});
-
+  const totDU=pAct.reduce((s,a)=>s+(a.dataUren||0),0);
+  // Archiveer
+  const arch=JSON.parse(localStorage.getItem('ls9_arch')||'[]');
+  if(!arch.find(a=>a.key===ref))arch.push({key:ref,type,project:proj.naam,projId,periode:periodeLabel,mnd,yr,wk:type==='week'?wKey(weekOff):undefined,totC,totMa,totAu,totA,totDU,alleAfs,ts:new Date().toISOString()});
+  localStorage.setItem('ls9_arch',JSON.stringify(arch));
   const perPersoon={};
-  pAct.forEach(a=>{
-    if(!perPersoon[a.naam])perPersoon[a.naam]={calls:0,manueel:0,auto:0,afs:0,uren:0};
-    perPersoon[a.naam].calls+=a.calls||0;perPersoon[a.naam].manueel+=a.manueel||0;
-    perPersoon[a.naam].auto+=a.auto||0;perPersoon[a.naam].afs+=a.afs||0;
-    perPersoon[a.naam].uren+=(a.min||0)/60;
-  });
-
-  document.getElementById('pdf-modal-title').textContent=proj.naam;
-  document.getElementById('pdf-modal-sub').textContent=`Week: ${f(ma)} – ${f(vr)}`;
-
-  let body=`
-    <div class="rp-stitle">Activiteit samenvatting</div>
-    <table class="rp-tbl"><tbody>
-      <tr><td style="font-weight:700;width:55%">Cold calls</td><td>${totC}</td></tr>
-      <tr><td style="font-weight:700">Manuele mails</td><td>${totMa}</td></tr>
-      <tr><td style="font-weight:700">Automatische mails</td><td>${totAu}</td></tr>
-      <tr><td style="font-weight:700">Uren besteed</td><td>${totU.toFixed(1)}u</td></tr>
-      <tr><td style="font-weight:700">Afspraken geboekt</td><td style="font-weight:800;color:${totA>0?'#16713f':'#181c24'}">${totA}${proj.doelAfs>0?' / '+proj.doelAfs+' doel':''}</td></tr>
-    </tbody></table>`;
-
-  if(Object.keys(perPersoon).length>1){
-    body+=`<div class="rp-stitle">Per medewerker</div>
-    <table class="rp-tbl">
-      <thead><tr><th>Naam</th><th>Calls</th><th>Mails</th><th>Uren</th><th>Afsp.</th></tr></thead>
-      <tbody>${Object.entries(perPersoon).map(([n,s])=>`<tr><td style="font-weight:700">${n}</td><td>${s.calls}</td><td>${s.manueel+s.auto}</td><td>${s.uren.toFixed(1)}u</td><td style="color:#16713f;font-weight:700">${s.afs}</td></tr>`).join('')}</tbody>
-    </table>`;
+  pAct.forEach(a=>{if(!perPersoon[a.naam])perPersoon[a.naam]={calls:0,manueel:0,auto:0,afs:0};perPersoon[a.naam].calls+=a.calls||0;perPersoon[a.naam].manueel+=a.manueel||0;perPersoon[a.naam].auto+=a.auto||0;perPersoon[a.naam].afs+=a.afs||0;});
+  // Maand: per week
+  let wkRows='';
+  if(type==='month'&&mnd!==undefined){
+    const weken=wekenInMaand(mnd,yr);
+    wkRows=weken.map((wk,i)=>{
+      const wkDg=Array.from({length:7},(_,j)=>{const d=new Date(wk);d.setDate(d.getDate()+j);return dStr(d);});
+      const wkA=pAct.filter(a=>wkDg.includes(a.datum));
+      const wkC=wkA.reduce((s,a)=>s+(a.calls||0),0),wkM=wkA.reduce((s,a)=>s+(a.manueel||0)+(a.auto||0),0),wkAf=wkA.reduce((s,a)=>s+(a.afs||0),0);
+      const ma3=new Date(wk),vr3=new Date(wk);vr3.setDate(vr3.getDate()+4);
+      const f=d=>d.toLocaleDateString('nl-BE',{day:'numeric',month:'short'});
+      return`<tr ${i%2?'':'style="background:#f7f8fa"'}><td style="padding:8px 11px;border:1px solid #dde2ea;font-family:monospace">${f(ma3)} – ${f(vr3)}</td><td style="padding:8px 11px;border:1px solid #dde2ea;font-family:monospace">${wkC}</td><td style="padding:8px 11px;border:1px solid #dde2ea;font-family:monospace">${wkM}</td><td style="padding:8px 11px;border:1px solid #dde2ea;font-family:monospace;font-weight:800;color:#16713f">${wkAf}</td></tr>`;
+    }).join('');
   }
-
-  if(alleAfs.length){
-    body+=`<div class="rp-stitle">Afspraken detail</div>
-    <table class="rp-tbl">
-      <thead><tr><th>Naam klant</th><th>Datum</th><th>Type</th><th>Status</th><th>Door</th></tr></thead>
-      <tbody>${alleAfs.map(af=>`<tr>
-        <td style="font-weight:700">${af.naam||'?'}</td>
-        <td style="font-family:var(--fm)">${fmtDate(af.datum)}</td>
-        <td>${af.type==='online'?'🌐 Online':'🤝 Fysiek'}</td>
-        <td><span class="stbadge st-${af.status||'gepland'}">${af.status||'gepland'}</span></td>
-        <td>${af.door||'—'}</td>
-      </tr>`).join('')}</tbody>
-    </table>`;
-  }
-
-  body+=`<div style="margin-top:20px;padding-top:10px;border-top:1px solid #dde2ea;font-size:11px;color:#6e7888;font-family:var(--fm)">
-    Leadscore · ${new Date().toLocaleDateString('nl-BE',{day:'numeric',month:'long',year:'numeric'})}
+  document.getElementById('pdf-body').innerHTML=`<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:3px solid #16713f;margin-bottom:24px">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><div style="width:36px;height:36px;background:#16713f;border-radius:8px;display:flex;align-items:center;justify-content:center"><div style="width:8px;height:8px;background:#fff;border-radius:50%"></div></div><span style="font-size:22px;font-weight:800;color:#181c24">Leadscore</span></div>
+        <div style="font-size:12px;color:#6e7888">${type==='month'?'Maandrapport — Facturatiebijlage':'Weekrapport'}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:18px;font-weight:800;color:#181c24">${proj.naam}</div>
+        ${fiche.contact?`<div style="font-size:12px;color:#6e7888;margin-top:2px">t.a.v. ${fiche.contact}</div>`:''}
+        <div style="font-size:13px;font-weight:700;color:#16713f;margin-top:3px">${periodeLabel}</div>
+        <div style="font-size:11px;color:#adb5bd;margin-top:2px">Ref: ${ref}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">
+      <div style="background:#f7f8fa;border:1.5px solid #dde2ea;border-radius:10px;padding:14px;text-align:center"><div style="font-size:28px;font-weight:800;font-family:monospace">${totC}</div><div style="font-size:11px;color:#6e7888;text-transform:uppercase;letter-spacing:.07em;margin-top:3px">Cold calls</div></div>
+      <div style="background:#f7f8fa;border:1.5px solid #dde2ea;border-radius:10px;padding:14px;text-align:center"><div style="font-size:28px;font-weight:800;font-family:monospace">${totMa+totAu}</div><div style="font-size:11px;color:#6e7888;text-transform:uppercase;letter-spacing:.07em;margin-top:3px">Mails</div></div>
+      <div style="background:#edfaf4;border:1.5px solid #7dd3a8;border-radius:10px;padding:14px;text-align:center"><div style="font-size:28px;font-weight:800;color:#16713f;font-family:monospace">${totA}${proj.doelAfs>0?' / '+proj.doelAfs:''}</div><div style="font-size:11px;color:#16713f;text-transform:uppercase;letter-spacing:.07em;margin-top:3px">Afspraken</div></div>
+    </div>
+    ${totDU>0||meetings.length?`<div style="margin-bottom:16px"><div class="rp-sec" style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6e7888;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #dde2ea">Extra diensten</div><table style="width:100%;border-collapse:collapse;font-size:13px">${totDU>0?`<tr style="background:#f7f8fa"><td style="padding:8px 11px;border:1px solid #dde2ea;font-weight:700">Data / Scraping</td><td style="padding:8px 11px;border:1px solid #dde2ea;font-family:monospace">${totDU.toFixed(1)}u</td></tr>`:''} ${meetings.length?`<tr><td style="padding:8px 11px;border:1px solid #dde2ea;font-weight:700">Meetings klant</td><td style="padding:8px 11px;border:1px solid #dde2ea;font-family:monospace">${meetings.length}x (${meetings.map(m=>(m.meetMin||30)+'min '+m.meetType).join(', ')})</td></tr>`:''}</table></div>`:''}
+    ${type==='month'&&wkRows?`<div style="margin-bottom:16px"><div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6e7888;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #dde2ea">Per week</div><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#f7f8fa"><th style="padding:8px 11px;border:1px solid #dde2ea;text-align:left;font-weight:700">Week</th><th style="padding:8px 11px;border:1px solid #dde2ea;text-align:left;font-weight:700">Calls</th><th style="padding:8px 11px;border:1px solid #dde2ea;text-align:left;font-weight:700">Mails</th><th style="padding:8px 11px;border:1px solid #dde2ea;text-align:left;font-weight:700;color:#16713f">Afsp.</th></tr></thead><tbody>${wkRows}</tbody></table></div>`:''}
+    ${Object.keys(perPersoon).length>1?`<div style="margin-bottom:16px"><div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6e7888;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #dde2ea">Per medewerker</div><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#f7f8fa"><th style="padding:8px 11px;border:1px solid #dde2ea;text-align:left;font-weight:700">Naam</th><th style="padding:8px 11px;border:1px solid #dde2ea;text-align:left;font-weight:700">Calls</th><th style="padding:8px 11px;border:1px solid #dde2ea;text-align:left;font-weight:700">Mails</th><th style="padding:8px 11px;border:1px solid #dde2ea;text-align:left;font-weight:700;color:#16713f">Afsp.</th></tr></thead><tbody>${Object.entries(perPersoon).map(([n,s],i)=>`<tr ${i%2?'':'style="background:#f7f8fa"'}><td style="padding:8px 11px;border:1px solid #dde2ea;font-weight:700">${n}</td><td style="padding:8px 11px;border:1px solid #dde2ea;font-family:monospace">${s.calls}</td><td style="padding:8px 11px;border:1px solid #dde2ea;font-family:monospace">${s.manueel+s.auto}</td><td style="padding:8px 11px;border:1px solid #dde2ea;font-family:monospace;font-weight:800;color:#16713f">${s.afs}</td></tr>`).join('')}</tbody></table></div>`:''}
+    ${alleAfs.length?`<div style="margin-bottom:16px"><div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#6e7888;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #dde2ea">Afspraken (${alleAfs.length})</div><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="background:#16713f"><th style="padding:9px 11px;border:1px solid #0f5630;text-align:left;color:#fff;font-weight:700">#</th><th style="padding:9px 11px;border:1px solid #0f5630;text-align:left;color:#fff;font-weight:700">Naam klant</th><th style="padding:9px 11px;border:1px solid #0f5630;text-align:left;color:#fff;font-weight:700">Datum</th><th style="padding:9px 11px;border:1px solid #0f5630;text-align:left;color:#fff;font-weight:700">Type</th><th style="padding:9px 11px;border:1px solid #0f5630;text-align:left;color:#fff;font-weight:700">Status</th><th style="padding:9px 11px;border:1px solid #0f5630;text-align:left;color:#fff;font-weight:700">Door</th></tr></thead><tbody>${alleAfs.map((af,i)=>`<tr style="background:${i%2?'#fff':'#f7f8fa'}"><td style="padding:8px 11px;border:1px solid #dde2ea;color:#6e7888">${i+1}</td><td style="padding:8px 11px;border:1px solid #dde2ea;font-weight:700">${af.naam||'?'}</td><td style="padding:8px 11px;border:1px solid #dde2ea;font-family:monospace">${fmtDate(af.datum)}</td><td style="padding:8px 11px;border:1px solid #dde2ea">${af.type==='online'?'🌐 Online':'🤝 Fysiek'}</td><td style="padding:8px 11px;border:1px solid #dde2ea"><span style="font-size:10px;padding:2px 7px;border-radius:4px;font-weight:700;background:${af.status==='gewonnen'?'#edfaf4':'#f2f4f7'};color:${af.status==='gewonnen'?'#16713f':'#404858'}">${af.status||'gepland'}</span></td><td style="padding:8px 11px;border:1px solid #dde2ea">${af.door||'—'}</td></tr>`).join('')}</tbody></table></div>`:''}
+    <div style="margin-top:24px;padding-top:14px;border-top:2px solid #16713f;display:flex;justify-content:space-between;align-items:center">
+      <div style="display:flex;align-items:center;gap:8px"><div style="width:24px;height:24px;background:#16713f;border-radius:5px;display:flex;align-items:center;justify-content:center"><div style="width:5px;height:5px;background:#fff;border-radius:50%"></div></div><span style="font-size:13px;font-weight:800;color:#16713f">Leadscore</span></div>
+      <div style="font-size:11px;color:#adb5bd;font-family:monospace">${proj.naam} · ${periodeLabel} · ${ref}</div>
+    </div>
   </div>`;
-
-  document.getElementById('pdf-body').innerHTML=body;
   document.getElementById('pdf-modal').classList.add('open');
+}
+function archiveerWeek(){
+  const arch=JSON.parse(localStorage.getItem('ls9_arch')||'[]');
+  const dagen=wDagen(weekOff);const wAct=activiteit.filter(a=>dagen.includes(a.datum));
+  let count=0;
+  PROJECTEN.forEach(proj=>{
+    const pAct=wAct.filter(a=>a.project===proj.id);if(!pAct.length)return;
+    const key=proj.id+'_'+wKey(weekOff).replace(/-/g,'');
+    if(!arch.find(a=>a.key===key)){
+      arch.push({key,type:'week',project:proj.naam,projId:proj.id,periode:fmtW(weekOff),wk:wKey(weekOff),totC:pAct.reduce((s,a)=>s+(a.calls||0),0),totMa:pAct.reduce((s,a)=>s+(a.manueel||0),0),totAu:pAct.reduce((s,a)=>s+(a.auto||0),0),totA:pAct.reduce((s,a)=>s+(a.afs||0),0),totDU:pAct.reduce((s,a)=>s+(a.dataUren||0),0),alleAfs:pAct.flatMap(a=>(a.afspraken||[]).map(af=>({...af,door:a.naam}))),ts:new Date().toISOString()});
+      count++;
+    }
+  });
+  localStorage.setItem('ls9_arch',JSON.stringify(arch));
+  renderArchief();
+  alert(count>0?`✓ ${count} rapport(en) gearchiveerd!`:'Week was al gearchiveerd.');
+}
+function checkAutoArchiveer(){
+  if(new Date().getDay()!==5)return;
+  const today=dStr(new Date()),last=localStorage.getItem('ls9_last_auto');
+  if(last!==today){archiveerWeek();localStorage.setItem('ls9_last_auto',today);}
+}
+function renderArchief(){
+  const arch=JSON.parse(localStorage.getItem('ls9_arch')||'[]');
+  const el=document.getElementById('archief-content');
+  if(!arch.length){el.innerHTML='<p style="font-size:13px;color:var(--mu)">Nog geen gearchiveerde rapporten.</p>';return;}
+  const sorted=[...arch].sort((a,b)=>b.ts?.localeCompare(a.ts||'')||0);
+  el.innerHTML=sorted.map(a=>`<div class="arch-card">
+    <div>
+      <div class="arch-title">${a.project} <span style="font-size:10px;font-weight:400;color:var(--mu);font-family:var(--fm)">${a.type==='month'?'📅 Maand':'📋 Week'} · ${a.periode||''}</span></div>
+      <div class="arch-meta">${a.totC||0} calls · ${(a.totMa||0)+(a.totAu||0)} mails · ${a.totA||0} afsp. · Ref: ${a.key}</div>
+    </div>
+    <button class="arch-btn" onclick="herOpenPDF('${a.key}')">📄 PDF</button>
+  </div>`).join('');
+}
+function herOpenPDF(key){
+  const arch=JSON.parse(localStorage.getItem('ls9_arch')||'[]');
+  const a=arch.find(x=>x.key===key);if(!a)return;
+  if(a.type==='month')openPDF(a.projId,'month',a.mnd,a.yr);
+  else{const d=new Date(a.wk);const today=getMa(0);weekOff=Math.round((d-today)/(7*24*60*60*1000));openPDF(a.projId,'week');}
+}
+
+// ── PROJECTEN ─────────────────────────────────────
+function renderProjecten(){
+  let html='';
+  ['cps','sdd','overige'].forEach(cat=>{
+    const projs=PROJECTEN.filter(p=>p.cat===cat);if(!projs.length)return;
+    const c=ci(cat);
+    html+=`<div style="background:${c.bg};border:1.5px solid ${c.br};border-radius:var(--rl);padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="width:10px;height:10px;border-radius:3px;background:${c.k}"></div>
+      <span style="font-size:13px;font-weight:800;color:${c.k}">${c.full}</span>
+      <span style="font-size:11px;color:${c.k};opacity:.7;font-family:var(--fm)">${projs.length} projecten</span>
+    </div>
+    <div class="proj-grid">`;
+    projs.forEach(p=>{
+      const fiche=ficheData.find(f=>f.id===p.id)||{};
+      html+=`<div class="proj-fiche" onclick="openProjModal('${p.id}')">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+          <div class="pf-name">${p.naam}</div>
+          <span class="pf-cat" style="background:${c.bg};color:${c.k}">${c.label}</span>
+        </div>
+        ${fiche.contact?`<div style="font-size:12px;color:var(--mu);margin-bottom:4px">👤 ${fiche.contact}${fiche.email?' · '+fiche.email:''}</div>`:''}
+        ${fiche.info?`<div class="pf-info">${fiche.info.substring(0,80)}${fiche.info.length>80?'...':''}</div>`:'<div class="pf-info" style="font-style:italic">Geen info</div>'}
+        <div class="pf-badges">
+          ${p.doelAfs>0?`<span class="pf-badge">🎯 ${p.doelAfs} afsp./week</span>`:''}
+          ${fiche.uren?`<span class="pf-badge">⏱ ${fiche.uren}u/maand</span>`:''}
+          ${fiche.status?`<span class="pf-badge">${fiche.status==='actief'?'✅':fiche.status==='ingepland'?'📅':fiche.status==='verkocht'?'🏆':'⏸'} ${fiche.status}</span>`:''}
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  document.getElementById('proj-content').innerHTML=html;
+}
+function openProjModal(projId){
+  const isNew=!projId;const proj=projId?PROJECTEN.find(p=>p.id===projId):null;
+  const fiche=projId?ficheData.find(f=>f.id===projId)||{}:{};
+  document.getElementById('proj-modal-title').textContent=isNew?'Nieuw project':proj?.naam||'Project';
+  document.getElementById('pf-idx').value=projId||'';
+  document.getElementById('pf-naam').value=proj?.naam||'';
+  document.getElementById('pf-cat').value=proj?.cat||'cps';
+  document.getElementById('pf-sdd-wrap').style.display=(proj?.cat||'cps')==='sdd'?'block':'none';
+  document.getElementById('pf-sdd-datum').value=fiche.sddDatum||'';
+  document.getElementById('pf-contact').value=fiche.contact||'';
+  document.getElementById('pf-email').value=fiche.email||'';
+  document.getElementById('pf-kpi').value=proj?.doelAfs||0;
+  document.getElementById('pf-uren').value=fiche.uren||'';
+  document.getElementById('pf-status').value=fiche.status||'actief';
+  document.getElementById('pf-info').value=fiche.info||'';
+  document.getElementById('pf-opm').value=fiche.opm||'';
+  document.getElementById('pf-del-btn').style.display=projId?'block':'none';
+  document.getElementById('proj-modal').classList.add('open');
+}
+function slaFicheOp(){
+  const projId=document.getElementById('pf-idx').value;
+  const naam2=document.getElementById('pf-naam').value.trim();if(!naam2){alert('Naam verplicht');return;}
+  const cat=document.getElementById('pf-cat').value;
+  const doelAfs=parseInt(document.getElementById('pf-kpi').value)||0;
+  const sddDatum=document.getElementById('pf-sdd-datum').value;
+  const fiche={contact:document.getElementById('pf-contact').value.trim(),email:document.getElementById('pf-email').value.trim(),uren:parseFloat(document.getElementById('pf-uren').value)||0,status:document.getElementById('pf-status').value,info:document.getElementById('pf-info').value.trim(),opm:document.getElementById('pf-opm').value.trim(),sddDatum};
+  if(projId){
+    const idx=PROJECTEN.findIndex(p=>p.id===projId);if(idx>-1)PROJECTEN[idx]={...PROJECTEN[idx],naam:naam2,cat,doelAfs};
+    const fi=ficheData.findIndex(f=>f.id===projId);
+    if(fi>-1)ficheData[fi]={...fiche,id:projId};else ficheData.push({...fiche,id:projId});
+  } else {
+    const newId=naam2.toLowerCase().replace(/[^a-z0-9]/g,'_')+'_'+Date.now();
+    PROJECTEN.push({id:newId,naam:naam2,cat,doelAfs});
+    ficheData.push({...fiche,id:newId});
+    if(cat==='sdd'&&sddDatum){
+      const d=new Date(sddDatum),dg=d.getDay(),ma=new Date(sddDatum);ma.setDate(d.getDate()-(dg===0?6:dg-1));ma.setHours(0,0,0,0);
+      const wk=dStr(ma);
+      MEDEWERKERS.forEach(m=>{const key=m.naam+'_'+wk;if(!planData[key])planData[key]={blokken:[],week:wk,naam:m.naam};if(!planData[key].blokken.find(b=>b.id===newId))planData[key].blokken.push({id:newId,naam:naam2+' (SDD)',cat:'sdd',type:'sdd',u:16,a:0,klant:fiche.contact});});
+      localStorage.setItem('ls9_plan',JSON.stringify(planData));
+    }
+  }
+  slaOp_proj();slaOp_fiches();
+  document.getElementById('proj-modal').classList.remove('open');
+  renderProjecten();populeerProjSels();populeerDashFilters();
+}
+function verwijderFiche(){
+  const projId=document.getElementById('pf-idx').value;
+  if(!projId||!confirm('Project verwijderen?'))return;
+  PROJECTEN=PROJECTEN.filter(p=>p.id!==projId);ficheData=ficheData.filter(f=>f.id!==projId);
+  slaOp_proj();slaOp_fiches();
+  document.getElementById('proj-modal').classList.remove('open');renderProjecten();populeerProjSels();
+}
+
+// ── MEDEWERKERS ───────────────────────────────────
+function renderMedewerkers(){
+  const rolLabel={sales:'Sales',lead:'Team Lead',admin:'Admin'};
+  document.getElementById('mw-grid').innerHTML=MEDEWERKERS.map((m,i)=>`
+    <div class="mw-card" onclick="openMWModal(${i})">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <div class="mw-avatar">${m.naam.charAt(0).toUpperCase()}</div>
+        <div><div class="mw-name">${m.naam}</div><div class="mw-rol">${rolLabel[m.rol]||m.rol}</div></div>
+      </div>
+      <div class="mw-info">
+        ${m.email?`📧 ${m.email}<br>`:''}${m.tel?`📱 ${m.tel}<br>`:''}
+        ${m.start?`📅 Sinds ${m.start.split('-').reverse().join('/')}<br>`:''}
+        ${m.opm?`💬 ${m.opm}`:''}
+      </div>
+    </div>`).join('');
+}
+function openMWModal(idx){
+  const isNew=idx===undefined;const m=isNew?{}:MEDEWERKERS[idx];
+  document.getElementById('mw-modal-title').textContent=isNew?'Nieuwe medewerker':m.naam;
+  document.getElementById('mw-idx').value=isNew?-1:idx;
+  document.getElementById('mw-naam').value=m.naam||'';document.getElementById('mw-rol').value=m.rol||'sales';
+  document.getElementById('mw-email').value=m.email||'';document.getElementById('mw-tel').value=m.tel||'';
+  document.getElementById('mw-start').value=m.start||'';document.getElementById('mw-opm').value=m.opm||'';
+  document.getElementById('mw-del-btn').style.display=isNew?'none':'block';
+  document.getElementById('mw-modal').classList.add('open');
+}
+function slaMWOp(){
+  const naam2=document.getElementById('mw-naam').value.trim();if(!naam2){alert('Naam verplicht');return;}
+  const idx=parseInt(document.getElementById('mw-idx').value);
+  const mw={id:naam2.toLowerCase().replace(/[^a-z0-9]/g,'_'),naam:naam2,rol:document.getElementById('mw-rol').value,email:document.getElementById('mw-email').value.trim(),tel:document.getElementById('mw-tel').value.trim(),start:document.getElementById('mw-start').value,opm:document.getElementById('mw-opm').value.trim()};
+  if(idx===-1)MEDEWERKERS.push(mw);else MEDEWERKERS[idx]={...MEDEWERKERS[idx],...mw};
+  slaOp_mw();document.getElementById('mw-modal').classList.remove('open');
+  renderMedewerkers();renderNaamTabs();populeerDashFilters();
+}
+function verwijderMW(){
+  const idx=parseInt(document.getElementById('mw-idx').value);
+  if(idx<0||!confirm('Verwijderen?'))return;
+  MEDEWERKERS.splice(idx,1);slaOp_mw();
+  document.getElementById('mw-modal').classList.remove('open');renderMedewerkers();renderNaamTabs();
 }
 
 // ── ADMIN ─────────────────────────────────────────
 function checkAdm(){
   if(document.getElementById('adm-pw').value===ADM_PW){
     document.getElementById('adm-gate').style.display='none';
-    document.getElementById('adm-panel').style.display='block';
-    renderAdm();
-  } else {
-    const e=document.getElementById('adm-err');
-    e.textContent='Verkeerde code.';setTimeout(()=>e.textContent='',2000);
-  }
+    document.getElementById('adm-panel').style.display='block';renderAdm();
+  } else {const e=document.getElementById('adm-err');e.textContent='Verkeerde code.';setTimeout(()=>e.textContent='',2000);}
 }
 function renderAdm(){
   const allWeeks=new Set();
-  activiteit.forEach(a=>{const d=new Date(a.datum);const dg=d.getDay();d.setDate(d.getDate()+(dg===0?-6:1-dg));d.setHours(0,0,0,0);allWeeks.add(dStr(d));});
+  activiteit.forEach(a=>{const d=new Date(a.datum),dg=d.getDay();d.setDate(d.getDate()-(dg===0?6:dg-1));d.setHours(0,0,0,0);allWeeks.add(dStr(d));});
   if(!allWeeks.size){document.getElementById('adm-content').innerHTML='<p style="font-size:13px;color:var(--mu)">Geen data.</p>';return;}
   const rows=[];
   allWeeks.forEach(wk=>{
     const dagen=Array.from({length:7},(_,i)=>{const d=new Date(wk);d.setDate(d.getDate()+i);return dStr(d);});
-    NAMEN.forEach(n=>{
-      const wA=activiteit.filter(a=>a.naam===n&&dagen.includes(a.datum));
-      if(!wA.length)return;
-      const effU=wA.reduce((s,a)=>s+(a.min||0),0)/60;
+    MEDEWERKERS.forEach(m=>{
+      const wA=activiteit.filter(a=>a.naam===m.naam&&dagen.includes(a.datum));if(!wA.length)return;
+      const effU=wA.reduce((s,a)=>s+(a.duur||60),0)/60;
       const totA=wA.reduce((s,a)=>s+(a.afs||0),0);
-      let omzet=0;
-      wA.forEach(a=>{omzet+=(a.calls||0)*7.20+(a.manueel||0)*5+(a.auto||0)*2;omzet+=(a.min/60)*(TARIEVEN[a.project]||60);});
-      rows.push({wk,naam:n,effU,omzet,totA});
+      let omzet=0;wA.forEach(a=>{omzet+=(a.calls||0)*7.20+(a.manueel||0)*5+(a.auto||0)*2+(a.dataUren||0)*85+((a.meetMin||0)/60)*85;});
+      rows.push({wk,naam:m.naam,effU,omzet,totA});
     });
   });
   rows.sort((a,b)=>b.wk.localeCompare(a.wk)||a.naam.localeCompare(b.naam));
   const fWk=wk=>{const d=new Date(wk),vr=new Date(wk);vr.setDate(vr.getDate()+4);return d.toLocaleDateString('nl-BE',{day:'numeric',month:'short'})+' – '+vr.toLocaleDateString('nl-BE',{day:'numeric',month:'short'});};
-  document.getElementById('adm-content').innerHTML=`<table class="adm-tbl">
-    <thead><tr><th>Week</th><th>Naam</th><th>Uren</th><th>Omzet est.</th><th>Afspraken</th></tr></thead>
-    <tbody>${rows.map(r=>`<tr>
-      <td style="color:var(--mu)">${fWk(r.wk)}</td>
-      <td style="font-weight:700">${r.naam}</td>
-      <td style="font-family:var(--fm)">${r.effU.toFixed(1)}u</td>
-      <td style="font-family:var(--fm);font-weight:700">${fmtEur(r.omzet)}</td>
-      <td style="font-family:var(--fm)">${r.totA}</td>
-    </tr>`).join('')}</tbody>
-  </table>`;
+  document.getElementById('adm-content').innerHTML=`<table class="adm-tbl"><thead><tr><th>Week</th><th>Naam</th><th>Uren</th><th>Omzet est.</th><th>Afspraken</th></tr></thead><tbody>${rows.map(r=>`<tr><td style="color:var(--mu)">${fWk(r.wk)}</td><td style="font-weight:700">${r.naam}</td><td style="font-family:var(--fm)">${r.effU.toFixed(1)}u</td><td style="font-family:var(--fm);font-weight:700">${fmtEur(r.omzet)}</td><td style="font-family:var(--fm)">${r.totA}</td></tr>`).join('')}</tbody></table>`;
 }
 
-// ── PROJECTEN BEHEER ─────────────────────────────
-let bewerkIdx=-1;
-
-function renderBeheer(){
-  const el=document.getElementById('beheer-lijst');
-  let html='';
-  PROJECTEN.forEach((p,i)=>{
-    const isEdit=bewerkIdx===i;
-    const tagBg=p.tag==='KPI'?'#edfaf4':p.tag==='DD'?'#eef3ff':'#fff8e6';
-    const tagC=p.tag==='KPI'?'#16713f':p.tag==='DD'?'#1a48c4':'#8a5200';
-    html+=`<div class="beheer-card${isEdit?' editing':''}">
-      <div>
-        <div class="beheer-naam">${p.naam}</div>
-        <div class="beheer-meta">
-          <span style="background:${tagBg};color:${tagC};padding:1px 7px;border-radius:4px;font-weight:700;font-size:10px;font-family:var(--fm)">${p.tag}</span>
-          &nbsp;${p.doelAfs>0?p.doelAfs+' afspraken doel':'Geen doel'}
-        </div>
-      </div>
-      <div class="beheer-acties">
-        <button class="bact-btn" onclick="toggleEdit(${i})">${isEdit?'Annuleren':'Aanpassen'}</button>
-        <button class="bact-btn del" onclick="verwijderProject(${i})">Verwijderen</button>
-      </div>
-      ${isEdit?`<div class="beheer-edit-row">
-        <div class="fi"><label>Naam</label><input type="text" id="edit-naam-${i}" value="${p.naam}"/></div>
-        <div class="fi"><label>Afspraken doel</label><input type="number" id="edit-afs-${i}" value="${p.doelAfs}" min="0" step="1"/></div>
-        <div class="fi"><label>Type</label>
-          <select id="edit-tag-${i}">
-            <option value="KPI" ${p.tag==='KPI'?'selected':''}>KPI</option>
-            <option value="Vast" ${p.tag==='Vast'?'selected':''}>Vast</option>
-            <option value="DD" ${p.tag==='DD'?'selected':''}>Sales DD</option>
-          </select>
-        </div>
-        <div class="fi"><label>&nbsp;</label><button class="savebtn" style="padding:9px;font-size:13px" onclick="slaProjectOp(${i})">Opslaan</button></div>
-      </div>`:''}
-    </div>`;
-  });
-  el.innerHTML=html;
-}
-
-function toggleEdit(i){
-  bewerkIdx=bewerkIdx===i?-1:i;
-  renderBeheer();
-}
-
-function slaProjectOp(i){
-  const naam=document.getElementById('edit-naam-'+i).value.trim();
-  if(!naam){alert('Naam is verplicht');return;}
-  const doelAfs=parseInt(document.getElementById('edit-afs-'+i).value)||0;
-  const tag=document.getElementById('edit-tag-'+i).value;
-  const tagBg=tag==='KPI'?'#edfaf4':tag==='DD'?'#eef3ff':'#fff8e6';
-  const tagC=tag==='KPI'?'#16713f':tag==='DD'?'#1a48c4':'#8a5200';
-  PROJECTEN[i]={...PROJECTEN[i],naam,doelAfs,tag,tagBg,tagC};
-  // Also update KPI_PRESET if exists
-  const kIdx=KPI_PRESET.findIndex(p=>p.id===PROJECTEN[i].id);
-  if(kIdx>-1){KPI_PRESET[kIdx].naam=naam;KPI_PRESET[kIdx].a=doelAfs;}
-  const vIdx=VAST_PRESET.findIndex(p=>p.id===PROJECTEN[i].id);
-  if(vIdx>-1){VAST_PRESET[vIdx].naam=naam;VAST_PRESET[vIdx].a=doelAfs;}
-  slaProjectenOp();
-  bewerkIdx=-1;
-  renderBeheer();
-}
-
-function verwijderProject(i){
-  if(!confirm('Project "'+PROJECTEN[i].naam+'" verwijderen?'))return;
-  PROJECTEN.splice(i,1);
-  slaProjectenOp();
-  bewerkIdx=-1;
-  renderBeheer();
-}
-
-function openNieuwProject(){
-  const naam=prompt('Naam van het nieuwe project:');
-  if(!naam||!naam.trim())return;
-  const doelAfs=parseInt(prompt('Afspraken doel per week (0 = geen doel):')||'0');
-  const tagKeuze=prompt('Type? Typ: KPI, Vast, of DD','KPI');
-  const tag=['KPI','Vast','DD'].includes(tagKeuze)?tagKeuze:'KPI';
-  const tagBg=tag==='KPI'?'#edfaf4':tag==='DD'?'#eef3ff':'#fff8e6';
-  const tagC=tag==='KPI'?'#16713f':tag==='DD'?'#1a48c4':'#8a5200';
-  const id=naam.toLowerCase().replace(/[^a-z0-9]/g,'_');
-  PROJECTEN.push({id,naam:naam.trim(),doelAfs,tag,tagBg,tagC});
-  if(tag==='KPI')KPI_PRESET.push({id,naam:naam.trim(),u:6,a:doelAfs});
-  else VAST_PRESET.push({id,naam:naam.trim(),u:6,a:doelAfs});
-  TARIEVEN[id]=60;
-  slaProjectenOp();
-  populeerProjSel();
-  renderBeheer();
-}
-
-function slaProjectenOp(){
-  try{localStorage.setItem('ls7_projecten',JSON.stringify(PROJECTEN));}catch(e){}
-  populeerProjSel();
-}
-
-function laadProjecten(){
-  try{
-    const opg=localStorage.getItem('ls7_projecten');
-    if(opg){
-      const p=JSON.parse(opg);
-      PROJECTEN.length=0;
-      p.forEach(x=>PROJECTEN.push(x));
-    }
-  }catch(e){}
+function renderNaamTabs(){
+  if(!MEDEWERKERS.find(m=>m.naam===naam)&&MEDEWERKERS.length)naam=MEDEWERKERS[0].naam;
+  document.getElementById('who-pill').textContent=naam||'—';
+  populeerWieDropdown();
 }
 
 // ── INIT ──────────────────────────────────────────
 async function init(){
-  laadProjecten();
-  updW();populeerProjSel();
+  laadLokaal();
+  naam=MEDEWERKERS.length?MEDEWERKERS[0].naam:'';
+  renderNaamTabs();
+  populeerDashFilters();
+  updW();
+  populeerProjSels();
   document.getElementById('inv-d').value=new Date().toISOString().split('T')[0];
+  toonPlanInfo();
+  checkAutoArchiveer();
   await laadActiviteit();
-  renderKPI();
-  // auto-refresh elke 30s
-  setInterval(async()=>{
-    await laadActiviteit();
-    if(document.getElementById('pnl-kpi').classList.contains('active'))renderKPI();
-    if(document.getElementById('pnl-invoer').classList.contains('active'))renderLog();
-    if(document.getElementById('pnl-pdf').classList.contains('active'))renderPDFGrid();
-  },30000);
+  renderDash();
+  setInterval(async()=>{await laadActiviteit();if(document.getElementById('pnl-dash').classList.contains('active'))renderDash();if(document.getElementById('pnl-invoer').classList.contains('active'))renderLog();},30000);
 }
 init();
 </script>

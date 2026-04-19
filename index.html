@@ -325,7 +325,12 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
       </div>
       <div class="mw-grid" id="mw-grid"></div>
     </div>
-    <div id="adm-omzet" style="display:none"><div id="adm-content"></div></div>
+    <div id="adm-omzet" style="display:none">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+        <button class="btn-primary" onclick="downloadOmzetPDF()" style="font-size:12px;padding:7px 14px">⬇ Download PDF</button>
+      </div>
+      <div id="adm-content"></div>
+    </div>
     <div id="adm-toegang" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
         <span style="font-size:13px;font-weight:600;color:var(--mu)">Toegestane emails</span>
@@ -1137,7 +1142,7 @@ async function slaKPIOp(){
 }
 function renderLog(){
   const dagen=wDagen(weekOff);
-  const acts=activiteit.filter(a=>dagen.includes(a.datum)&&(!naam||a.naam===naam)).sort((a,b)=>b.id-a.id);
+  const acts=activiteit.filter(a=>dagen.includes(a.datum)).sort((a,b)=>b.id-a.id);
   const el=document.getElementById('inv-log');if(!el)return;
   if(!acts.length){el.innerHTML='<div style="font-size:13px;color:var(--mu)">Geen sessies deze week.</div>';return;}
   el.innerHTML=acts.map(a=>{
@@ -1151,7 +1156,7 @@ function renderLog(){
       '<span style="font-size:11px;color:var(--mu);margin-left:5px">'+a.naam+' · '+fmtDate(a.datum)+'</span></div></div>'+
       '<div style="display:flex;align-items:center;gap:6px">'+
       '<span style="font-size:11px;color:var(--mu);font-family:var(--fm)">'+dur+'</span>'+
-      (a.naam===naam||adminOk?'<button onclick="openSessieEdit('+a.id+')" style="font-size:11px;padding:3px 8px;border:1px solid var(--b1);border-radius:var(--r);background:var(--s1);cursor:pointer">✏</button>':'')+
+      '<button onclick="openSessieEdit('+a.id+')" style="font-size:11px;padding:3px 8px;border:1px solid var(--b1);border-radius:var(--r);background:var(--s1);cursor:pointer">⚙</button>'+
       '</div></div>'+
       '<div style="margin-top:5px">'+parts.map(p=>'<span class="chip">'+p+'</span>').join('')+(a.afs?'<span class="chip green">'+a.afs+' afspraken</span>':'')+
       (a.omschr?'<div style="font-size:11px;color:var(--mu);margin-top:5px;font-style:italic">'+a.omschr+'</div>':'')+
@@ -1162,7 +1167,6 @@ function renderLog(){
 }
 function openSessieEdit(id){
   const a=activiteit.find(x=>x.id===id);if(!a)return;
-  if(a.naam!==naam&&!adminOk){alert('Je kan enkel je eigen sessies aanpassen.');return;}
   document.getElementById('se-id').value=id;
   document.getElementById('se-datum').value=a.datum;
   document.getElementById('se-duur').value=a.duur||60;
@@ -1192,8 +1196,6 @@ function slaSeAan(){
 }
 function verwijderSessie(){
   const id=parseInt(document.getElementById('se-id').value);
-  const a=activiteit.find(x=>x.id===id);
-  if(a&&a.naam!==naam&&!adminOk){alert('Je kan enkel je eigen sessies verwijderen.');return;}
   if(!confirm('Sessie verwijderen?'))return;
   deleteAct(id);sluit('mo-sessie');renderLog();renderDash();
 }
@@ -1729,27 +1731,188 @@ function renderMedewerkers(){
 
 // ── ADMIN ───────────────────────────────────────────────────────────
 function renderAdm(){
-  const allWeeks=new Set();
-  activiteit.forEach(a=>{const d=new Date(a.datum);const dg=d.getDay();d.setDate(d.getDate()-(dg===0?6:dg-1));d.setHours(0,0,0,0);allWeeks.add(dStr(d));});
   const el=document.getElementById('adm-content');if(!el)return;
-  if(!allWeeks.size){el.innerHTML='<p style="font-size:13px;color:var(--mu)">Geen data.</p>';return;}
-  const rows=[];
-  allWeeks.forEach(wk=>{
-    const dagen=Array.from({length:7},(_,i)=>{const d=new Date(wk);d.setDate(d.getDate()+i);return dStr(d);});
-    MEDEWERKERS.forEach(m=>{
-      const wA=activiteit.filter(a=>a.naam===m.naam&&dagen.includes(a.datum));if(!wA.length)return;
-      const effU=wA.reduce((s,a)=>s+(a.duur||60),0)/60;
-      const totA=wA.reduce((s,a)=>s+(a.afs||0),0);
-      const totC=wA.reduce((s,a)=>s+(a.calls||0),0);
-      const omzet=berekenOmzet(wA,wA[0]?.project||'');
-      rows.push({wk,naam:m.naam,effU,omzet,totA,totC});
+  if(!activiteit.length){el.innerHTML='<p style="font-size:13px;color:var(--mu)">Geen data.</p>';return;}
+
+  // Build per-day rows
+  const dagMap={};
+  activiteit.forEach(a=>{
+    if(!dagMap[a.datum])dagMap[a.datum]={};
+    if(!dagMap[a.datum][a.naam])dagMap[a.datum][a.naam]={calls:0,mails:0,afs:0,uren:0,omzet:0,projecten:new Set()};
+    const d=dagMap[a.datum][a.naam];
+    d.calls+=a.calls||0;
+    d.mails+=(a.manueel||0)+(a.auto||0);
+    d.afs+=a.afs||0;
+    d.uren+=((a.duur||60)/60);
+    d.omzet+=berekenOmzet([a],a.project||'');
+    if(a.project)d.projecten.add(pNaam(a.project));
+  });
+
+  const dagen=Object.keys(dagMap).sort().reverse();
+  
+  // Totalen
+  const totC=activiteit.reduce((s,a)=>s+(a.calls||0),0);
+  const totM=activiteit.reduce((s,a)=>s+(a.manueel||0)+(a.auto||0),0);
+  const totA=activiteit.reduce((s,a)=>s+(a.afs||0),0);
+  const totO=activiteit.reduce((s,a)=>s+berekenOmzet([a],a.project||''),0);
+  const totU=activiteit.reduce((s,a)=>s+((a.duur||60)/60),0);
+
+  let html='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">';
+  [{v:totC,l:'Calls totaal',c:'var(--tx)'},{v:totM,l:'Mails totaal',c:'var(--tx)'},{v:totA,l:'Afspraken',c:'var(--green)'},{v:fmtEur(totO),l:'Omzet totaal',c:'var(--blue)'}].forEach(b=>{
+    html+='<div style="background:var(--w);border:1px solid var(--b1);border-radius:var(--rl);padding:14px;box-shadow:var(--sh);text-align:center">'+
+      '<div style="font-size:22px;font-weight:800;font-family:var(--fm);color:'+b.c+'">'+b.v+'</div>'+
+      '<div style="font-size:10px;color:var(--mu);text-transform:uppercase;margin-top:4px">'+b.l+'</div></div>';
+  });
+  html+='</div>';
+
+  // Per dag tabel
+  html+='<table class="adm-tbl"><thead><tr>'+
+    '<th>Datum</th><th>Naam</th><th>Calls</th><th>Mails</th><th>Afsp.</th><th>Uren</th><th style="color:var(--blue)">Omzet</th><th>Projecten</th>'+
+    '</tr></thead><tbody>';
+
+  let prevDag='';
+  dagen.forEach(dag=>{
+    const namen=Object.keys(dagMap[dag]).sort();
+    // Dag subtotaal
+    const dagC=namen.reduce((s,n)=>s+dagMap[dag][n].calls,0);
+    const dagM=namen.reduce((s,n)=>s+dagMap[dag][n].mails,0);
+    const dagA=namen.reduce((s,n)=>s+dagMap[dag][n].afs,0);
+    const dagU=namen.reduce((s,n)=>s+dagMap[dag][n].uren,0);
+    const dagO=namen.reduce((s,n)=>s+dagMap[dag][n].omzet,0);
+    const d=new Date(dag);
+    const dagNamen=['zo','ma','di','wo','do','vr','za'];
+    const dagLbl=dagNamen[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
+    
+    // Dag header row
+    html+='<tr style="background:var(--s2)">'+
+      '<td style="font-weight:700;font-size:12px">'+dagLbl+'</td>'+
+      '<td style="font-size:11px;color:var(--mu)">'+namen.length+' persoon/personen</td>'+
+      '<td style="font-family:var(--fm);font-weight:700">'+dagC+'</td>'+
+      '<td style="font-family:var(--fm);font-weight:700">'+dagM+'</td>'+
+      '<td style="font-family:var(--fm);font-weight:700;color:var(--green)">'+dagA+'</td>'+
+      '<td style="font-family:var(--fm);font-weight:700">'+dagU.toFixed(1)+'u</td>'+
+      '<td style="font-family:var(--fm);font-weight:700;color:var(--blue)">'+fmtEur(dagO)+'</td>'+
+      '<td></td></tr>';
+
+    // Per persoon
+    namen.forEach(n=>{
+      const d2=dagMap[dag][n];
+      html+='<tr>'+
+        '<td style="color:var(--mu);font-size:11px;padding-left:20px">└</td>'+
+        '<td style="font-weight:600">'+n+'</td>'+
+        '<td style="font-family:var(--fm)">'+d2.calls+'</td>'+
+        '<td style="font-family:var(--fm)">'+d2.mails+'</td>'+
+        '<td style="font-family:var(--fm);color:var(--green)">'+d2.afs+'</td>'+
+        '<td style="font-family:var(--fm)">'+d2.uren.toFixed(1)+'u</td>'+
+        '<td style="font-family:var(--fm);font-weight:600;color:var(--blue)">'+fmtEur(d2.omzet)+'</td>'+
+        '<td style="font-size:11px;color:var(--mu)">'+Array.from(d2.projecten).join(', ')+'</td>'+
+        '</tr>';
     });
   });
-  rows.sort((a,b)=>b.wk.localeCompare(a.wk)||a.naam.localeCompare(b.naam));
-  const fWk=wk=>{const d=new Date(wk),vr=new Date(wk);vr.setDate(vr.getDate()+4);return d.toLocaleDateString('nl-BE',{day:'numeric',month:'short'})+' – '+vr.toLocaleDateString('nl-BE',{day:'numeric',month:'short'});};
-  el.innerHTML='<table class="adm-tbl"><thead><tr><th>Week</th><th>Naam</th><th>Uren</th><th>Calls</th><th>Afsp.</th><th>Omzet est.</th></tr></thead>'+
-    '<tbody>'+rows.map(r=>'<tr><td style="color:var(--mu)">'+fWk(r.wk)+'</td><td style="font-weight:600">'+r.naam+'</td><td style="font-family:var(--fm)">'+r.effU.toFixed(1)+'u</td><td style="font-family:var(--fm)">'+r.totC+'</td><td style="font-family:var(--fm)">'+r.totA+'</td><td style="font-family:var(--fm);font-weight:600">'+fmtEur(r.omzet)+'</td></tr>').join('')+'</tbody></table>';
+  html+='</tbody></table>';
+  el.innerHTML=html;
 }
+
+function downloadOmzetPDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,ml=14,cw=W-ml-14;
+  let y=14;
+
+  // Header
+  doc.setFillColor(21,128,61);doc.roundedRect(ml,y,cw,20,3,3,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(14);
+  doc.text('Leadscore',ml+7,y+8);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text('Omzet & activiteitsoverzicht',ml+7,y+14);
+  const nu=new Date();
+  const datumStr=nu.toLocaleDateString('nl-BE',{day:'numeric',month:'long',year:'numeric'});
+  doc.text('Gegenereerd: '+datumStr,W-14,y+14,{align:'right'});
+  y+=26;
+
+  // Totalen blokken
+  const totC=activiteit.reduce((s,a)=>s+(a.calls||0),0);
+  const totM=activiteit.reduce((s,a)=>s+(a.manueel||0)+(a.auto||0),0);
+  const totA=activiteit.reduce((s,a)=>s+(a.afs||0),0);
+  const totO=activiteit.reduce((s,a)=>s+berekenOmzet([a],a.project||''),0);
+  const bw=(cw-9)/4;
+  [{v:String(totC),l:'CALLS',c:[29,78,216]},{v:String(totM),l:'MAILS',c:[29,78,216]},
+   {v:String(totA),l:'AFSPRAKEN',c:[21,128,61]},{v:fmtEur(totO),l:'OMZET TOTAAL',c:[21,128,61]}
+  ].forEach((b,i)=>{
+    const bx=ml+i*(bw+3);
+    doc.setFillColor(240,242,245);doc.setDrawColor(221,226,234);
+    doc.roundedRect(bx,y,bw,16,2,2,'FD');
+    doc.setTextColor(...b.c);doc.setFont('helvetica','bold');doc.setFontSize(11);
+    doc.text(String(b.v),bx+bw/2,y+9,{align:'center'});
+    doc.setFontSize(6);doc.setFont('helvetica','normal');doc.setTextColor(107,118,133);
+    doc.text(b.l,bx+bw/2,y+14,{align:'center'});
+  });
+  y+=22;
+
+  // Per dag tabel
+  const dagMap={};
+  activiteit.forEach(a=>{
+    if(!dagMap[a.datum])dagMap[a.datum]={};
+    if(!dagMap[a.datum][a.naam])dagMap[a.datum][a.naam]={calls:0,mails:0,afs:0,uren:0,omzet:0,projecten:[]};
+    const d=dagMap[a.datum][a.naam];
+    d.calls+=a.calls||0;d.mails+=(a.manueel||0)+(a.auto||0);
+    d.afs+=a.afs||0;d.uren+=((a.duur||60)/60);
+    d.omzet+=berekenOmzet([a],a.project||'');
+    if(a.project&&!d.projecten.includes(pNaam(a.project)))d.projecten.push(pNaam(a.project));
+  });
+  const dagen=Object.keys(dagMap).sort().reverse();
+  const dagNamen=['zo','ma','di','wo','do','vr','za'];
+
+  const rows=[];
+  dagen.forEach(dag=>{
+    const namen=Object.keys(dagMap[dag]).sort();
+    const dagC=namen.reduce((s,n)=>s+dagMap[dag][n].calls,0);
+    const dagM=namen.reduce((s,n)=>s+dagMap[dag][n].mails,0);
+    const dagA=namen.reduce((s,n)=>s+dagMap[dag][n].afs,0);
+    const dagU=namen.reduce((s,n)=>s+dagMap[dag][n].uren,0);
+    const dagO=namen.reduce((s,n)=>s+dagMap[dag][n].omzet,0);
+    const d=new Date(dag);
+    const lbl=dagNamen[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
+    // Dag totaal row
+    rows.push({dag:lbl,naam:'TOTAAL',calls:dagC,mails:dagM,afs:dagA,uren:dagU.toFixed(1)+'u',omzet:fmtEur(dagO),proj:'',isDag:true});
+    // Per persoon
+    namen.forEach(n=>{
+      const dd=dagMap[dag][n];
+      rows.push({dag:'',naam:n,calls:dd.calls,mails:dd.mails,afs:dd.afs,uren:dd.uren.toFixed(1)+'u',omzet:fmtEur(dd.omzet),proj:dd.projecten.join(', '),isDag:false});
+    });
+  });
+
+  doc.autoTable({
+    startY:y,
+    head:[['Datum','Naam','Calls','Mails','Afsp.','Uren','Omzet','Projecten']],
+    body:rows.map(r=>[r.dag,r.naam,r.isDag?String(r.calls):String(r.calls),r.isDag?String(r.mails):String(r.mails),r.isDag?String(r.afs):String(r.afs),r.uren,r.omzet,r.proj]),
+    theme:'grid',
+    headStyles:{fillColor:[21,128,61],textColor:255,fontSize:7,fontStyle:'bold'},
+    bodyStyles:{fontSize:7},
+    columnStyles:{0:{cellWidth:22},1:{cellWidth:22,fontStyle:'bold'},2:{cellWidth:12,halign:'right'},3:{cellWidth:12,halign:'right'},4:{cellWidth:12,halign:'right',textColor:[21,128,61]},5:{cellWidth:14,halign:'right'},6:{cellWidth:20,halign:'right',textColor:[29,78,216],fontStyle:'bold'},7:{overflow:'linebreak'}},
+    margin:{left:ml,right:14},
+    styles:{cellPadding:2,lineColor:[221,226,234],overflow:'linebreak'},
+    didParseCell:function(data){
+      if(data.row.raw&&data.row.raw[1]==='TOTAAL'){
+        data.cell.styles.fillColor=[240,242,245];
+        data.cell.styles.fontStyle='bold';
+      }
+    }
+  });
+
+  // Footer
+  const pH=doc.internal.pageSize.height;
+  doc.setDrawColor(21,128,61);doc.setLineWidth(0.4);doc.line(ml,pH-14,W-14,pH-14);
+  doc.setFillColor(21,128,61);doc.roundedRect(ml,pH-12,6,6,1,1,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(4);
+  doc.text('LS',ml+3,pH-8,{align:'center'});
+  doc.setTextColor(21,128,61);doc.setFontSize(8);doc.text('Leadscore',ml+8,pH-7);
+  doc.setTextColor(173,181,189);doc.setFont('helvetica','normal');doc.setFontSize(7);
+  doc.text('Omzet overzicht · '+datumStr,W-14,pH-7,{align:'right'});
+
+  doc.save('Leadscore_Omzet_'+nu.toISOString().split('T')[0]+'.pdf');
+}
+
 function renderToegang(){
   const lijst=getToegang();
   const el=document.getElementById('toegang-lijst');if(!el)return;

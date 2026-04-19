@@ -299,6 +299,9 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
   <div id="inv-meet-warn" style="display:none;font-size:11px;margin-top:4px;padding:5px 8px;border-radius:4px"></div>
 </div>
     </div>
+    <div class="fi"><label>Omschrijving werkzaamheden</label>
+      <textarea id="inv-omschr" rows="2" placeholder="Bv: Cold calling sector technologie, prospectielijst verwerkt..." style="resize:vertical"></textarea>
+    </div>
     <div class="fi"><label>Aantal afspraken</label>
       <input type="number" id="inv-afs-n" min="0" placeholder="0" oninput="bouwAfs(+this.value||0)"/>
     </div>
@@ -430,6 +433,12 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
     <div class="g2">
       <div class="fi"><label>Data (u)</label><input type="number" id="se-data" min="0" step="0.5"/></div>
       <div class="fi"><label>Meeting (u)</label><input type="number" id="se-meet" min="0" step="0.25"/></div>
+    </div>
+    <div class="fi"><label>Omschrijving</label>
+      <textarea id="se-omschr" rows="2"></textarea>
+    </div>
+    <div class="fi"><label>Omschrijving</label>
+      <textarea id="se-omschr" rows="2" style="resize:vertical"></textarea>
     </div>
     <div class="md-btns">
       <button class="btn-primary" onclick="slaSeAan()">Opslaan</button>
@@ -632,6 +641,7 @@ function laad(){
   const opP=localStorage.getItem('ls10_proj');
   if(opP){PROJECTEN=JSON.parse(opP);}
   else{PROJECTEN=[
+    // CPS projecten
     {id:'otamiser',naam:'Otamiser',cat:'cps',doelAfs:3,pricing:'cps'},
     {id:'nextsds',naam:'Next SDS',cat:'cps',doelAfs:5,pricing:'cps'},
     {id:'codifly',naam:'Codifly',cat:'cps',doelAfs:3,pricing:'cps'},
@@ -641,20 +651,35 @@ function laad(){
     {id:'toecan_s',naam:'Toecan Small',cat:'cps',doelAfs:3,pricing:'cps'},
     {id:'toecan_l',naam:'Toecan Large',cat:'cps',doelAfs:2,pricing:'cps'},
     {id:'wet_global',naam:'Wet Global',cat:'cps',doelAfs:25,pricing:'cps'},
-    {id:'restomanager',naam:'Restomanager',cat:'overige',doelAfs:12,pricing:'uur',tarief:65},
-    {id:'powerpartners',naam:'Power Partners',cat:'overige',doelAfs:3,pricing:'uur',tarief:60},
-    {id:'4rent',naam:'4rent',cat:'overige',doelAfs:3,pricing:'uur',tarief:60},
+    {id:'leadscore',naam:'Leadscore',cat:'cps',doelAfs:5,pricing:'cps'},
+    // Uurtarief
+    {id:'restomanager',naam:'Restomanager',cat:'overige',doelAfs:0,pricing:'uur',tarief:65},
+    {id:'powerpartners',naam:'Power Partners',cat:'overige',doelAfs:0,pricing:'uur',tarief:60},
+    {id:'4rent',naam:'4rent',cat:'overige',doelAfs:0,pricing:'uur',tarief:60},
     {id:'sparkspot',naam:'SparkSpot',cat:'overige',doelAfs:0,pricing:'uur',tarief:60},
+    // SDD
     {id:'sdd',naam:'Sales Due Diligence',cat:'sdd',doelAfs:0,pricing:'sdd'},
   ];}
   try{const f=localStorage.getItem('ls10_fiches');if(f)FICHES=JSON.parse(f);}catch(e){}
+  // Vul ontbrekende fiches aan met defaults
+  const defaultFiches={
+    restomanager:{pricing:'uur',tarief:65,maxData:6,maxMeet:2,status:'actief'},
+    powerpartners:{pricing:'uur',tarief:60,maxData:6,maxMeet:2,status:'actief'},
+    '4rent':{pricing:'uur',tarief:60,maxData:6,maxMeet:2,status:'actief'},
+    sparkspot:{pricing:'uur',tarief:60,maxData:6,maxMeet:2,status:'actief'},
+    sdd:{pricing:'sdd',maxData:6,maxMeet:2,status:'ingepland'},
+  };
+  Object.entries(defaultFiches).forEach(([id,def])=>{
+    if(!FICHES.find(f=>f.id===id))FICHES.push({id,...def});
+  });
   const opM=localStorage.getItem('ls10_mw');
   if(opM){MEDEWERKERS=JSON.parse(opM);}
   else{MEDEWERKERS=[
-    {id:'brieuc',naam:'Brieuc',rol:'sales',email:'',tel:'',start:''},
-    {id:'jacques',naam:'Jacques',rol:'sales',email:'',tel:'',start:''},
-    {id:'arthur',naam:'arthur',rol:'lead',email:'',tel:'',start:''},
-    {id:'amaury',naam:'Amaury',rol:'sales',email:'',tel:'',start:''},
+    {id:'brieuc',naam:'Brieuc',rol:'sales',email:'brieuc@leadscore.be',tel:'',start:'2024-01-01',dagenCfg:{1:{totaal:7.5,project:4.5,werkt:true},2:{totaal:8.5,project:8.5,werkt:true},3:{totaal:8.5,project:8.5,werkt:true},4:{totaal:8.5,project:8.5,werkt:true},5:{totaal:6,project:6,werkt:true}}},
+    {id:'jacques',naam:'Jacques',rol:'sales',email:'jacques@leadscore.be',tel:'',start:'2024-01-01',dagenCfg:{1:{totaal:7.5,project:4.5,werkt:true},2:{totaal:8.5,project:8.5,werkt:true},3:{totaal:8.5,project:8.5,werkt:true},4:{totaal:8.5,project:8.5,werkt:true},5:{totaal:6,project:6,werkt:true}}},
+    {id:'arthur',naam:'Arthur',rol:'lead',email:'arthur@leadscore.be',tel:'',start:'2024-01-01',dagenCfg:{1:{totaal:7.5,project:4.5,werkt:true},2:{totaal:8.5,project:8.5,werkt:true},3:{totaal:8.5,project:8.5,werkt:true},4:{totaal:8.5,project:8.5,werkt:true},5:{totaal:6,project:6,werkt:true}}},
+    {id:'amaury',naam:'Amaury',rol:'sales',email:'amaury@leadscore.be',tel:'',start:'2024-01-01',dagenCfg:{1:{totaal:7.5,project:4.5,werkt:true},2:{totaal:8.5,project:8.5,werkt:true},3:{totaal:8.5,project:8.5,werkt:true},4:{totaal:8.5,project:8.5,werkt:false},5:{totaal:6,project:6,werkt:false}}},
+    {id:'lion',naam:'Lion Leadscore',rol:'lead',email:'lion@leadscore.be',tel:'',start:'2024-01-01',dagenCfg:{1:{totaal:7.5,project:4.5,werkt:true},2:{totaal:8.5,project:8.5,werkt:true},3:{totaal:8.5,project:8.5,werkt:true},4:{totaal:8.5,project:8.5,werkt:true},5:{totaal:6,project:6,werkt:true}}},
   ];}
 }
 function slaProj(){localStorage.setItem('ls10_proj',JSON.stringify(PROJECTEN));}
@@ -663,46 +688,86 @@ function slaFiches(){localStorage.setItem('ls10_fiches',JSON.stringify(FICHES));
 function slaPlan(){localStorage.setItem('ls10_plan',JSON.stringify(planData));}
 
 // ── SUPABASE ───────────────────────────────────
-async function laadActiviteit(){
-  try{
-    const r=await fetch(SB_URL+'/rest/v1/ls_activiteit?select=*&order=id.asc',{headers:SBH});
-    const d=await r.json();
-    if(Array.isArray(d))activiteit=d.map(r=>({
-      id:r.id,naam:r.naam,datum:r.datum,duur:r.duur||60,
-      calls:r.calls||0,manueel:r.manueel||0,auto:r.auto||0,
-      project:r.project||'',afs:r.afs||0,afspraken:r.afspraken||[],
-      dataUren:r.data_uren||0,dataOmschr:r.data_omschr||'',
-      meetMin:r.meet_min||0,meetOmschr:r.meet_omschr||''
-    }));
-  }catch(e){console.error(e);}
+// ── LOKALE OPSLAG (primair) + Supabase sync (optioneel) ─────────────
+function slaActOp(){
+  localStorage.setItem('ls10_act',JSON.stringify(activiteit));
 }
+function laadActLokaal(){
+  try{const a=localStorage.getItem('ls10_act');if(a)activiteit=JSON.parse(a);}catch(e){}
+}
+
 async function postAct(e){
+  activiteit.push(e);
+  slaActOp();
   try{
     const r=await fetch(SB_URL+'/rest/v1/ls_activiteit',{
       method:'POST',headers:{...SBH,'Prefer':'return=minimal'},
-      body:JSON.stringify({id:e.id,naam:e.naam,datum:e.datum,duur:e.duur,
-        calls:e.calls,manueel:e.manueel,auto:e.auto,project:e.project,
-        afs:e.afs,afspraken:e.afspraken,min:e.duur,
-        data_uren:e.dataUren,data_omschr:e.dataOmschr,
-        meet_min:e.meetMin,meet_omschr:e.meetOmschr})
+      body:JSON.stringify({
+        id:e.id,naam:e.naam,datum:e.datum,
+        calls:e.calls,manueel:e.manueel,auto:e.auto,
+        project:e.project,afs:e.afs,afspraken:e.afspraken,
+        min:e.duur,duur:e.duur,
+        data_uren:e.dataUren,meet_min:e.meetMin
+      })
     });
-    if(!r.ok){const t=await r.text();throw new Error(r.status+': '+t);}
-  }catch(err){
-    console.error('postAct error:',err);
-    throw err;
-  }
+    if(!r.ok)console.warn('Supabase sync mislukt:',r.status);
+  }catch(err){console.warn('Supabase niet bereikbaar, lokaal opgeslagen.');}
 }
 async function patchAct(id,data){
-  await fetch(SB_URL+'/rest/v1/ls_activiteit?id=eq.'+id,{
-    method:'PATCH',headers:{...SBH,'Prefer':'return=minimal'},
-    body:JSON.stringify(data)
-  });
+  // Lokaal updaten
+  const idx=activiteit.findIndex(a=>a.id===id);
+  if(idx>=0){
+    activiteit[idx]={...activiteit[idx],
+      datum:data.datum,duur:data.duur,project:data.project,
+      calls:data.calls,manueel:data.manueel,auto:data.auto,
+      dataUren:data.data_uren||0,meetMin:data.meet_min||0,
+      afspraken:data.afspraken||activiteit[idx].afspraken||[]
+    };
+    slaActOp();
+  }
+  // Supabase op achtergrond
+  try{
+    await fetch(SB_URL+'/rest/v1/ls_activiteit?id=eq.'+id,{
+      method:'PATCH',headers:{...SBH,'Prefer':'return=minimal'},
+      body:JSON.stringify({datum:data.datum,duur:data.duur,min:data.duur,
+        calls:data.calls,manueel:data.manueel,auto:data.auto,project:data.project,
+        afs:data.afs||0,afspraken:data.afspraken||[],
+        data_uren:data.data_uren||0,meet_min:data.meet_min||0})
+    });
+  }catch(err){console.warn('Supabase patch mislukt, lokaal opgeslagen.');}
 }
 async function deleteAct(id){
-  await fetch(SB_URL+'/rest/v1/ls_activiteit?id=eq.'+id,{
-    method:'DELETE',headers:{...SBH,'Prefer':'return=minimal'}
-  });
+  activiteit=activiteit.filter(a=>a.id!==id);
+  slaActOp();
+  try{
+    await fetch(SB_URL+'/rest/v1/ls_activiteit?id=eq.'+id,{
+      method:'DELETE',headers:{...SBH,'Prefer':'return=minimal'}
+    });
+  }catch(err){console.warn('Supabase delete mislukt, lokaal verwijderd.');}
 }
+async function laadActiviteit(){
+  // Eerst lokaal laden (altijd snel)
+  laadActLokaal();
+  // Dan Supabase proberen voor sync
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/ls_activiteit?select=*&order=id.asc',{headers:SBH});
+    if(r.ok){
+      const d=await r.json();
+      if(Array.isArray(d)&&d.length>0){
+        activiteit=d.map(r=>({
+          id:r.id,naam:r.naam,datum:r.datum,
+          duur:r.duur||r.min||60,
+          calls:r.calls||0,manueel:r.manueel||0,auto:r.auto||0,
+          project:r.project||'',afs:r.afs||0,afspraken:r.afspraken||[],
+          dataUren:r.data_uren||0,meetMin:r.meet_min||0,omschr:''
+        }));
+        slaActOp();// Lokaal updaten met Supabase data
+      }
+    }
+  }catch(e){console.warn('Supabase niet bereikbaar, lokale data gebruikt.');}
+}
+
+
 
 // ── HELPERS ────────────────────────────────────
 function getMa(o){const d=new Date();const dg=d.getDay();d.setDate(d.getDate()+(dg===0?-6:1-dg)+o*7);d.setHours(0,0,0,0);return d;}
@@ -784,7 +849,7 @@ function nav(p){
   });
   if(p==='dash')renderDash();
   if(p==='invoer'){vulInvoerDropdowns();updWiePicker();renderLog();}
-  if(p==='planning')renderPlanning();
+  if(p==='planning'){renderPlanning();updPlanInline();}
   if(p==='pdf')renderPDF();
   if(p==='admin'){if(adminOk)renderAdminPanel();}
 }
@@ -911,7 +976,7 @@ function renderDash(){
     const borderClr=isOk?'var(--gbr)':isWarn?'var(--rbr)':'var(--b1)';
     const bgClr=isOk?'var(--gbg)':isWarn?'var(--rbg)':'var(--w)';
     html+=`<div style="background:${bgClr};border:1.5px solid ${borderClr};border-radius:var(--rx);padding:14px 12px;box-shadow:var(--sh);display:flex;flex-direction:column;align-items:center;text-align:center">
-      ${f.logo?`<div style="width:40px;height:40px;border-radius:8px;overflow:hidden;margin-bottom:8px;flex-shrink:0"><img src="${f.logo}" style="width:100%;height:100%;object-fit:cover"/></div>`:`<div style="width:36px;height:36px;border-radius:8px;background:${ci.bg};margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-size:16px">🏢</div>`}
+      ${f.logo?`<div style="width:40px;height:40px;border-radius:8px;overflow:hidden;margin-bottom:8px;flex-shrink:0"><img src="${f.logo}" style="width:100%;height:100%;object-fit:cover"/></div>`:`<div style="width:36px;height:36px;border-radius:8px;background:${proj.cat==='cps'?'#ecfdf5':proj.cat==='sdd'?'#eff6ff':'#fffbeb'};margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-size:16px">🏢</div>`}
       <div style="font-size:12px;font-weight:700;margin-bottom:10px;line-height:1.2;min-height:28px;display:flex;align-items:center">${proj.naam}</div>
       <div style="position:relative;width:70px;height:70px;margin-bottom:10px;flex-shrink:0">
         <svg width="70" height="70" viewBox="0 0 70 70">
@@ -1113,21 +1178,17 @@ async function slaKPIOp(){
     dataUren:parseFloat(document.getElementById('inv-data').value)||0,
     dataOmschr:'',
     meetMin:parseFloat(document.getElementById('inv-meet').value)||0,
-    meetOmschr:''
+    omschr:document.getElementById('inv-omschr').value.trim()
   };
+  if(!e.project){msg.textContent='⚠ Kies een project';msg.style.color='var(--red)';return;}
   msg.textContent='Opslaan...';msg.style.color='var(--mu)';
-  try{
-    await postAct(e);
-    await laadActiviteit();
-    msg.textContent='✓ Geregistreerd!';msg.style.color='var(--green)';
-  }catch(err){
-    msg.textContent='✗ Fout: '+err.message;msg.style.color='var(--red)';
-    return;
-  }
+  await postAct(e);
+  msg.textContent='✓ Geregistreerd!';msg.style.color='var(--green)';
   setTimeout(()=>msg.textContent='',2500);
-  ['inv-calls','inv-mailm','inv-maila','inv-data','inv-meet','inv-afs-n'].forEach(id=>document.getElementById(id).value='');
+  ['inv-calls','inv-mailm','inv-maila','inv-data','inv-meet','inv-afs-n'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const omEl=document.getElementById('inv-omschr');if(omEl)omEl.value='';
   document.getElementById('inv-afs-v').innerHTML='';
-  renderLog();renderDash();
+  renderLog();renderDash();updWiePicker();
 }
 function renderLog(){
   const dagen=wDagen(weekOff);
@@ -1175,6 +1236,7 @@ function openSessieEdit(id){
   document.getElementById('se-maila').value=a.auto||0;
   document.getElementById('se-data').value=a.dataUren||0;
   document.getElementById('se-meet').value=a.meetMin||0;
+  document.getElementById('se-omschr').value=a.omschr||'';
   const sp=document.getElementById('se-proj');
   if(sp){sp.innerHTML='<option value="">—</option>'+PROJECTEN.map(p=>`<option value="${p.id}">${p.naam}</option>`).join('');sp.value=a.project||'';}
   document.getElementById('mo-sessie').classList.add('on');
@@ -1182,20 +1244,23 @@ function openSessieEdit(id){
 async function slaSeAan(){
   const id=parseInt(document.getElementById('se-id').value);
   const duur=parseInt(document.getElementById('se-duur').value)||60;
-  await patchAct(id,{datum:document.getElementById('se-datum').value,duur,min:duur,
+  patchAct(id,{
+    datum:document.getElementById('se-datum').value,duur,min:duur,
     project:document.getElementById('se-proj').value,
     calls:parseInt(document.getElementById('se-calls').value)||0,
     manueel:parseInt(document.getElementById('se-mailm').value)||0,
     auto:parseInt(document.getElementById('se-maila').value)||0,
     data_uren:parseFloat(document.getElementById('se-data').value)||0,
-    meet_min:parseFloat(document.getElementById('se-meet').value)||0});
-  await laadActiviteit();
+    meet_min:parseFloat(document.getElementById('se-meet').value)||0,
+    data_omschr:document.getElementById('se-omschr').value.trim(),
+    afspraken:activiteit.find(a=>a.id===id)?.afspraken||[]
+  });
   sluit('mo-sessie');renderLog();renderDash();
 }
 async function verwijderSessie(){
   const id=parseInt(document.getElementById('se-id').value);
   if(!confirm('Sessie verwijderen?'))return;
-  await deleteAct(id);await laadActiviteit();sluit('mo-sessie');renderLog();renderDash();
+  await deleteAct(id);sluit('mo-sessie');renderLog();renderDash();
 }
 
 // ── PLANNING ───────────────────────────────────
@@ -1367,6 +1432,7 @@ function renderPDF(){
 function openPDF(projId){
   const proj=PROJECTEN.find(p=>p.id===projId);if(!proj)return;
   const f=getFiche(projId);
+  const isUur=(f.pricing||proj.pricing)==='uur';
   const dagen=wDagen(weekOff);
   const pAct=activiteit.filter(a=>dagen.includes(a.datum)&&a.project===projId);
   const alleAfs=pAct.flatMap(a=>(a.afspraken||[]).map(af=>({...af,door:a.naam})));
@@ -1375,6 +1441,7 @@ function openPDF(projId){
   const totAu=pAct.reduce((s,a)=>s+(a.auto||0),0);
   const totA=pAct.reduce((s,a)=>s+(a.afs||0),0);
   const totDU=pAct.reduce((s,a)=>s+(a.dataUren||0),0);
+  const totMU=pAct.reduce((s,a)=>s+(a.meetMin||0),0);
   const ma=getMa(weekOff),vr=new Date(ma);vr.setDate(ma.getDate()+4);
   const fs=d=>d.toLocaleDateString('nl-BE',{day:'numeric',month:'short'});
   const ref=projId+'_'+wKey(weekOff).replace(/-/g,'');
@@ -1385,72 +1452,100 @@ function openPDF(projId){
     const lbl=dagNamen[d.getDay()]+' '+d.getDate()+' '+maandNamen[d.getMonth()];
     const uren=((a.duur||60)/60);
     const parts=[a.calls?a.calls+' calls':'',((a.manueel||0)+(a.auto||0))?(a.manueel+a.auto)+' mails':'',
-      a.afs?a.afs+' afspraken':'',a.dataUren?'Data '+a.dataUren+'u':'',a.meetMin?'Meeting '+a.meetMin+'u':''].filter(Boolean);
-    return{datum:lbl,naam:a.naam,uren,notities:parts.join(' · ')||'—'};
+      a.afs?a.afs+' afsp.':'',a.dataUren?'Data '+a.dataUren+'u':'',a.meetMin?'Meeting '+a.meetMin+'u':''].filter(Boolean);
+    return{datum:lbl,naam:a.naam,uren,notities:parts.join(' · ')||'—',omschr:a.omschr||''};
   });
   const ppMap={};
-  pAct.forEach(a=>{if(!ppMap[a.naam])ppMap[a.naam]={calls:0,mails:0,afs:0};
-    ppMap[a.naam].calls+=a.calls||0;ppMap[a.naam].mails+=(a.manueel||0)+(a.auto||0);ppMap[a.naam].afs+=a.afs||0;});
+  pAct.forEach(a=>{if(!ppMap[a.naam])ppMap[a.naam]={calls:0,mails:0,afs:0,uren:0,data:0,meet:0};
+    ppMap[a.naam].calls+=a.calls||0;ppMap[a.naam].mails+=(a.manueel||0)+(a.auto||0);
+    ppMap[a.naam].afs+=a.afs||0;ppMap[a.naam].uren+=((a.duur||60)/60);
+    ppMap[a.naam].data+=a.dataUren||0;ppMap[a.naam].meet+=a.meetMin||0;});
   const pct=proj.doelAfs>0?Math.round((totA/proj.doelAfs)*100):0;
   const totU=dagLog.reduce((s,r)=>s+r.uren,0);
-  huidigPDF={proj,f,ref,periode:fs(ma)+' – '+fs(vr),totC,totMa,totAu,totA,totDU,doelA:proj.doelAfs||0,pct,dagLog,alleAfs,ppMap,totU};
+  const tarief=f.tarief||proj.tarief||60;
+  const omzet=berekenOmzet(pAct,projId);
+  huidigPDF={proj,f,ref,isUur,periode:fs(ma)+' – '+fs(vr),totC,totMa,totAu,totA,totDU,totMU,doelA:proj.doelAfs||0,pct,dagLog,alleAfs,ppMap,totU,tarief,omzet};
   document.getElementById('pdf-modal-title').textContent=proj.naam+' — '+fs(ma)+' – '+fs(vr);
-  document.getElementById('pdf-body').innerHTML=buildRapport(huidigPDF);
+  document.getElementById('pdf-body').innerHTML=huidigPDF.isUur?buildUurRapport(huidigPDF):buildRapport(huidigPDF);
   document.getElementById('mo-pdf').classList.add('on');
 }
-function buildRapport(d){
-  const totMails=d.totMa+d.totAu;
+
+function buildUurRapport(d){
+  const rows=d.dagLog.sort((a,b)=>a.datum.localeCompare(b.datum));
+  const totU=rows.reduce((s,r)=>s+r.uren,0);
+  const omzet=totU*d.tarief;
   return`<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:18px;border-bottom:3px solid #15803d;margin-bottom:22px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:16px;border-bottom:3px solid #1d4ed8;margin-bottom:20px">
       <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:36px;height:36px;background:#15803d;border-radius:8px;display:flex;align-items:center;justify-content:center"><div style="width:8px;height:8px;background:#fff;border-radius:50%"></div></div>
-        <div><div style="font-size:20px;font-weight:800;color:#0f1117">Leadscore</div><div style="font-size:11px;color:#6b7685">Wekelijks activiteitsrapport</div></div>
+        <div style="width:36px;height:36px;background:#1d4ed8;border-radius:8px;display:flex;align-items:center;justify-content:center"><div style="width:8px;height:8px;background:#fff;border-radius:50%"></div></div>
+        <div><div style="font-size:20px;font-weight:800;color:#0f1117">Leadscore</div><div style="font-size:11px;color:#6b7685">Tijdsregistratie & facturatie</div></div>
       </div>
       <div style="text-align:right">
         <div style="font-size:17px;font-weight:700">${d.proj.naam}</div>
         ${d.f.contact?`<div style="font-size:12px;color:#6b7685;margin-top:2px">t.a.v. ${d.f.contact}</div>`:''}
-        <div style="font-size:12px;font-weight:600;color:#15803d;margin-top:3px">${d.periode}</div>
+        <div style="font-size:12px;font-weight:600;color:#1d4ed8;margin-top:3px">${d.periode}</div>
         <div style="font-size:10px;color:#adb5bd;font-family:monospace;margin-top:2px">Ref: ${d.ref}</div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
-      ${[{v:d.totC,l:'Cold calls',bg:'#f0f2f5',c:'#0f1117'},{v:totMails,l:'Mails',bg:'#f0f2f5',c:'#0f1117'},{v:d.totA+(d.doelA>0?' / '+d.doelA:''),l:'Afspraken',bg:'#f0fdf4',c:'#15803d'},{v:d.doelA>0?d.pct+'%':'—',l:d.doelA>0?'Doel ('+d.doelA+')':'Geen doel',bg:d.pct>=100?'#f0fdf4':d.pct>=60?'#fffbeb':'#fff1f2',c:d.pct>=100?'#15803d':d.pct>=60?'#92400e':'#991b1b'}]
-        .map(b=>`<div style="background:${b.bg};border:1px solid #dde2ea;border-radius:10px;padding:14px;text-align:center"><div style="font-size:24px;font-weight:800;font-family:monospace;color:${b.c}">${b.v}</div><div style="font-size:10px;color:#6b7685;text-transform:uppercase;letter-spacing:.07em;margin-top:4px">${b.l}</div></div>`).join('')}
+    <!-- KPI blokken -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+      <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:28px;font-weight:800;font-family:monospace;color:#1d4ed8">${totU.toFixed(2)}</div>
+        <div style="font-size:10px;color:#6b7685;text-transform:uppercase;letter-spacing:.07em;margin-top:4px">Uren totaal</div>
+      </div>
+      <div style="background:#f0f2f5;border:1px solid #dde2ea;border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:28px;font-weight:800;font-family:monospace;color:#0f1117">€${d.tarief}</div>
+        <div style="font-size:10px;color:#6b7685;text-transform:uppercase;letter-spacing:.07em;margin-top:4px">Uurtarief</div>
+      </div>
+      <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:28px;font-weight:800;font-family:monospace;color:#15803d">${fmtEur(omzet)}</div>
+        <div style="font-size:10px;color:#6b7685;text-transform:uppercase;letter-spacing:.07em;margin-top:4px">Te factureren</div>
+      </div>
     </div>
-    ${d.doelA>0?`<div style="margin-bottom:18px;background:#f0f2f5;border:1px solid #dde2ea;border-radius:10px;padding:13px 16px"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span style="font-size:12px;font-weight:600">Voortgang afsprakendoel</span><span style="font-size:12px;font-family:monospace;font-weight:700;color:${d.pct>=100?'#15803d':d.pct>=60?'#92400e':'#991b1b'}">${d.totA} / ${d.doelA} (${d.pct}%)</span></div><div style="height:8px;background:#e4e8ef;border-radius:4px;overflow:hidden"><div style="height:100%;width:${Math.min(100,d.pct)}%;background:${d.pct>=100?'#15803d':d.pct>=60?'#f59e0b':'#f87171'};border-radius:4px"></div></div></div>`:''}
-    <div style="margin-bottom:18px"><div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7685;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #dde2ea">Volume</div>
-    <table style="width:100%;border-collapse:collapse;font-size:12px">
-      <tr style="background:#f0f2f5"><td style="padding:8px 10px;border:1px solid #dde2ea;font-weight:600;width:55%">Cold calls</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-family:monospace">${d.totC}</td></tr>
-      <tr><td style="padding:8px 10px;border:1px solid #dde2ea;font-weight:600">Manuele mails</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-family:monospace">${d.totMa}</td></tr>
-      <tr style="background:#f0f2f5"><td style="padding:8px 10px;border:1px solid #dde2ea;font-weight:600">Auto mails</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-family:monospace">${d.totAu}</td></tr>
-      ${d.totDU>0?`<tr><td style="padding:8px 10px;border:1px solid #dde2ea;font-weight:600">Data/Scraping</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-family:monospace">${d.totDU.toFixed(1)}u</td></tr>`:''}
-      ${d.doelA>0?`<tr><td style="padding:8px 10px;border:1px solid #dde2ea;font-weight:600;color:#15803d">Afspraken geboekt</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-family:monospace;font-weight:700;color:#15803d">${d.totA} / ${d.doelA}</td></tr>`:''}
-    </table></div>
-    ${Object.keys(d.ppMap).length>1?`<div style="margin-bottom:18px"><div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7685;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #dde2ea">Per medewerker</div>
-    <table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#f0f2f5"><th style="padding:8px 10px;border:1px solid #dde2ea;text-align:left">Naam</th><th style="padding:8px 10px;border:1px solid #dde2ea;text-align:left">Calls</th><th style="padding:8px 10px;border:1px solid #dde2ea;text-align:left">Mails</th><th style="padding:8px 10px;border:1px solid #dde2ea;text-align:left;color:#15803d">Afsp.</th></tr></thead>
-    <tbody>${Object.entries(d.ppMap).map(([n,s],i)=>`<tr ${i%2===0?'style="background:#f0f2f5"':''}><td style="padding:8px 10px;border:1px solid #dde2ea;font-weight:600">${n}</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-family:monospace">${s.calls}</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-family:monospace">${s.mails}</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-family:monospace;font-weight:700;color:#15803d">${s.afs}</td></tr>`).join('')}</tbody></table></div>`:''}
-    ${d.dagLog.length?`<div style="margin-bottom:18px"><div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7685;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #dde2ea">Activiteitslog — ${d.dagLog.length} sessies · ${d.totU.toFixed(1)}u</div>
-    <table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#f0f2f5"><th style="padding:7px 10px;border:1px solid #dde2ea;text-align:left;width:95px">Datum</th><th style="padding:7px 10px;border:1px solid #dde2ea;text-align:left;width:70px">Wie</th><th style="padding:7px 10px;border:1px solid #dde2ea;text-align:left;width:45px">Uren</th><th style="padding:7px 10px;border:1px solid #dde2ea;text-align:left">Activiteit</th></tr></thead>
-    <tbody>${d.dagLog.map((r,i)=>`<tr style="background:${i%2===0?'#fff':'#f0f2f5'}"><td style="padding:7px 10px;border:1px solid #dde2ea;font-family:monospace">${r.datum}</td><td style="padding:7px 10px;border:1px solid #dde2ea">
-                <div style="display:flex;align-items:center;gap:5px">
-                  ${(()=>{const mw=MEDEWERKERS.find(x=>x.naam===r.naam);const foto=mw?.foto||'';return foto?`<img src="${foto}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;flex-shrink:0"/>`:''})()}
-                  <span style="font-weight:600">${r.naam}</span>
-                </div>
-              </td><td style="padding:7px 10px;border:1px solid #dde2ea;font-family:monospace;font-weight:700;color:#15803d">${r.uren}u</td><td style="padding:7px 10px;border:1px solid #dde2ea">${r.notities}</td></tr>`).join('')}
-    <tr style="background:#f0fdf4"><td colspan="2" style="padding:7px 10px;border:1px solid #86efac;font-weight:700;color:#15803d">Totaal</td><td style="padding:7px 10px;border:1px solid #86efac;font-family:monospace;font-weight:800;color:#15803d">${d.totU.toFixed(1)}u</td><td style="padding:7px 10px;border:1px solid #86efac;color:#15803d">${d.dagLog.length} sessies</td></tr>
-    </tbody></table></div>`:''}
-    ${d.alleAfs.length?`<div style="margin-bottom:22px"><div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7685;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #dde2ea">Afspraken (${d.alleAfs.length})</div>
-    <table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#15803d"><th style="padding:8px 10px;border:1px solid #166534;text-align:left;color:#fff">#</th><th style="padding:8px 10px;border:1px solid #166534;text-align:left;color:#fff">Naam klant</th><th style="padding:8px 10px;border:1px solid #166534;text-align:left;color:#fff">Datum</th><th style="padding:8px 10px;border:1px solid #166534;text-align:left;color:#fff">Type</th><th style="padding:8px 10px;border:1px solid #166534;text-align:left;color:#fff">Status</th><th style="padding:8px 10px;border:1px solid #166534;text-align:left;color:#fff">Door</th></tr></thead>
-    <tbody>${d.alleAfs.map((af,i)=>`<tr style="background:${i%2===0?'#fff':'#f0f2f5'}"><td style="padding:8px 10px;border:1px solid #dde2ea;color:#adb5bd;font-family:monospace">${i+1}</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-weight:600">${af.naam||'?'}</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-family:monospace">${fmtDate(af.datum)}</td><td style="padding:8px 10px;border:1px solid #dde2ea">${af.type==='online'?'🌐 Online':'🤝 Fysiek'}</td><td style="padding:8px 10px;border:1px solid #dde2ea"><span style="font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;background:${af.status==='gewonnen'?'#f0fdf4':af.status==='gedaan'?'#f0f2f5':'#eff6ff'};color:${af.status==='gewonnen'?'#15803d':af.status==='gedaan'?'#3d4452':'#1d4ed8'}">${af.status||'gepland'}</span></td><td style="padding:8px 10px;border:1px solid #dde2ea">${af.door||'—'}</td></tr>`).join('')}</tbody></table></div>`:''}
-    <div style="padding-top:12px;border-top:2px solid #15803d;display:flex;justify-content:space-between;align-items:center">
-      <div style="display:flex;align-items:center;gap:8px"><div style="width:24px;height:24px;background:#15803d;border-radius:5px;display:flex;align-items:center;justify-content:center"><div style="width:5px;height:5px;background:#fff;border-radius:50%"></div></div><div style="font-size:13px;font-weight:700;color:#15803d">Leadscore</div></div>
+    <!-- Tijdsregistratie tabel -->
+    <div style="margin-bottom:18px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7685;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #dde2ea">Tijdsregistratie</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:#1d4ed8">
+          <th style="padding:8px 10px;border:1px solid #1e40af;color:#fff;text-align:left;width:80px">Datum</th>
+          <th style="padding:8px 10px;border:1px solid #1e40af;color:#fff;text-align:left;width:60px">Wie</th>
+          <th style="padding:8px 10px;border:1px solid #1e40af;color:#fff;text-align:right;width:50px">Uren</th>
+          <th style="padding:8px 10px;border:1px solid #1e40af;color:#fff;text-align:left">Omschrijving werkzaamheden</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map((r,i)=>`<tr style="background:${i%2===0?'#fff':'#f8fafc'}">
+            <td style="padding:8px 10px;border:1px solid #dde2ea;font-family:monospace;font-size:11px">${r.datum}</td>
+            <td style="padding:8px 10px;border:1px solid #dde2ea;font-weight:600">${r.naam}</td>
+            <td style="padding:8px 10px;border:1px solid #dde2ea;font-family:monospace;font-weight:700;color:#1d4ed8;text-align:right">${r.uren.toFixed(2)}</td>
+            <td style="padding:8px 10px;border:1px solid #dde2ea;color:#3d4452">${r.omschr||r.notities||'—'}</td>
+          </tr>`).join('')}
+          <tr style="background:#eff6ff;font-weight:700">
+            <td colspan="2" style="padding:8px 10px;border:1px solid #93c5fd;color:#1d4ed8">TOTAAL</td>
+            <td style="padding:8px 10px;border:1px solid #93c5fd;font-family:monospace;font-weight:800;color:#1d4ed8;text-align:right">${totU.toFixed(2)}</td>
+            <td style="padding:8px 10px;border:1px solid #93c5fd;color:#1d4ed8;font-weight:700">${fmtEur(omzet)} (${totU.toFixed(2)}u × €${d.tarief}/u)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    ${Object.keys(d.ppMap).length>1?`<div style="margin-bottom:18px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7685;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #dde2ea">Per medewerker</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:#f0f2f5"><th style="padding:7px 10px;border:1px solid #dde2ea;text-align:left">Naam</th><th style="padding:7px 10px;border:1px solid #dde2ea;text-align:right">Uren</th><th style="padding:7px 10px;border:1px solid #dde2ea;text-align:right;color:#1d4ed8">Bedrag</th></tr></thead>
+        <tbody>${Object.entries(d.ppMap).map(([n,s],i)=>`<tr style="background:${i%2===0?'#fff':'#f0f2f5'}"><td style="padding:7px 10px;border:1px solid #dde2ea;font-weight:600">${n}</td><td style="padding:7px 10px;border:1px solid #dde2ea;font-family:monospace;text-align:right">${s.uren.toFixed(2)}u</td><td style="padding:7px 10px;border:1px solid #dde2ea;font-family:monospace;font-weight:700;color:#1d4ed8;text-align:right">${fmtEur(s.uren*d.tarief)}</td></tr>`).join('')}</tbody>
+      </table></div>`:''}
+    <div style="padding-top:12px;border-top:2px solid #1d4ed8;display:flex;justify-content:space-between;align-items:center">
+      <div style="display:flex;align-items:center;gap:8px"><div style="width:24px;height:24px;background:#1d4ed8;border-radius:5px;display:flex;align-items:center;justify-content:center"><div style="width:5px;height:5px;background:#fff;border-radius:50%"></div></div><div style="font-size:13px;font-weight:700;color:#1d4ed8">Leadscore</div></div>
       <div style="font-size:10px;color:#adb5bd;font-family:monospace">${d.proj.naam} · ${d.periode} · Ref: ${d.ref}</div>
     </div>
   </div>`;
 }
+
+
 function downloadPDF(){
   if(!huidigPDF)return;
   const d=huidigPDF;
+  if(d.isUur){downloadUurPDF(d);return;}
+  // CPS rapport (existing jsPDF logic)
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   const W=210,ml=14,cw=W-ml-14;
@@ -1470,17 +1565,71 @@ function downloadPDF(){
   });y+=22;
   if(d.doelA>0){doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(15,17,23);doc.text('Voortgang',ml,y+4);doc.setFont('helvetica','normal');doc.setTextColor(107,118,133);doc.text(d.totA+' / '+d.doelA+' ('+d.pct+'%)',W-14,y+4,{align:'right'});y+=7;doc.setFillColor(228,232,239);doc.roundedRect(ml,y,cw,3,1,1,'F');const pw=Math.min(cw,cw*(d.pct/100));doc.setFillColor(...(d.pct>=100?[21,128,61]:d.pct>=60?[245,158,11]:[248,113,113]));doc.roundedRect(ml,y,pw,3,1,1,'F');y+=8;}
   const vols=[['Cold calls',String(d.totC)],['Manuele mails',String(d.totMa)],['Auto mails',String(d.totAu)]];
-  if(d.totDU>0)vols.push(['Data/Scraping',d.totDU.toFixed(1)+'u']);
+  if(d.totDU>0)vols.push(['Data/Scraping',d.totDU.toFixed(2)+'u']);
+  if(d.totMU>0)vols.push(['Meeting',d.totMU.toFixed(2)+'u']);
   if(d.doelA>0)vols.push(['Afspraken geboekt',d.totA+' / '+d.doelA]);
   doc.autoTable({startY:y,head:[['Volume','']],body:vols,theme:'grid',headStyles:{fillColor:[21,128,61],textColor:255,fontSize:8,fontStyle:'bold'},bodyStyles:{fontSize:9},columnStyles:{0:{cellWidth:100,fontStyle:'bold'}},margin:{left:ml,right:14},styles:{cellPadding:2.5,lineColor:[221,226,234]}});y=doc.lastAutoTable.finalY+5;
   if(Object.keys(d.ppMap).length>1){doc.autoTable({startY:y,head:[['Naam','Calls','Mails','Afsp.']],body:Object.entries(d.ppMap).map(([n,s])=>[n,String(s.calls),String(s.mails),String(s.afs)]),theme:'grid',headStyles:{fillColor:[21,128,61],textColor:255,fontSize:8,fontStyle:'bold'},bodyStyles:{fontSize:9},columnStyles:{0:{fontStyle:'bold'},3:{textColor:[21,128,61],fontStyle:'bold'}},margin:{left:ml,right:14},styles:{cellPadding:2.5,lineColor:[221,226,234]}});y=doc.lastAutoTable.finalY+5;}
-  if(d.dagLog.length){const totU=d.dagLog.reduce((s,r)=>s+r.uren,0);doc.autoTable({startY:y,head:[['Datum','Wie','Uren','Activiteit']],body:[...d.dagLog.map(r=>[r.datum,r.naam,r.uren+'u',r.notities]),['Totaal','',totU.toFixed(1)+'u',d.dagLog.length+' sessies']],theme:'grid',headStyles:{fillColor:[21,128,61],textColor:255,fontSize:8,fontStyle:'bold'},bodyStyles:{fontSize:8},columnStyles:{0:{cellWidth:24},1:{cellWidth:18},2:{cellWidth:12,textColor:[21,128,61],fontStyle:'bold'},3:{cellWidth:cw-54}},margin:{left:ml,right:14},styles:{cellPadding:2,lineColor:[221,226,234],overflow:'linebreak'},didParseCell:d2=>{if(d2.row.index===d.dagLog.length){d2.cell.styles.fillColor=[240,253,244];d2.cell.styles.textColor=[21,128,61];d2.cell.styles.fontStyle='bold';}}});y=doc.lastAutoTable.finalY+5;}
+  if(d.dagLog.length){const totU=d.dagLog.reduce((s,r)=>s+r.uren,0);doc.autoTable({startY:y,head:[['Datum','Wie','Uren','Activiteit']],body:[...d.dagLog.map(r=>[r.datum,r.naam,r.uren+'u',r.notities]),['Totaal','',totU.toFixed(2)+'u',d.dagLog.length+' sessies']],theme:'grid',headStyles:{fillColor:[21,128,61],textColor:255,fontSize:8,fontStyle:'bold'},bodyStyles:{fontSize:8},columnStyles:{0:{cellWidth:24},1:{cellWidth:18},2:{cellWidth:12,textColor:[21,128,61],fontStyle:'bold'}},margin:{left:ml,right:14},styles:{cellPadding:2,lineColor:[221,226,234],overflow:'linebreak'},didParseCell:function(d2){if(d2.row.index===d.dagLog.length){d2.cell.styles.fillColor=[240,253,244];d2.cell.styles.textColor=[21,128,61];d2.cell.styles.fontStyle='bold';}}});y=doc.lastAutoTable.finalY+5;}
   if(d.alleAfs.length){doc.autoTable({startY:y,head:[['#','Naam klant','Datum','Type','Status','Door']],body:d.alleAfs.map((af,i)=>[String(i+1),af.naam||'?',fmtDate(af.datum),af.type==='online'?'Online':'Fysiek',(af.status||'gepland').toUpperCase(),af.door||'—']),theme:'grid',headStyles:{fillColor:[21,128,61],textColor:255,fontSize:8,fontStyle:'bold'},bodyStyles:{fontSize:9},columnStyles:{0:{cellWidth:8,textColor:[173,181,189]},1:{fontStyle:'bold'},4:{textColor:[21,128,61],fontStyle:'bold'}},margin:{left:ml,right:14},styles:{cellPadding:2.5,lineColor:[221,226,234]}});}
   const pH=doc.internal.pageSize.height;doc.setDrawColor(21,128,61);doc.setLineWidth(0.4);doc.line(ml,pH-14,W-14,pH-14);doc.setFillColor(21,128,61);doc.roundedRect(ml,pH-12,6,6,1,1,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(4);doc.text('LS',ml+3,pH-8,{align:'center'});doc.setTextColor(21,128,61);doc.setFontSize(8);doc.text('Leadscore',ml+8,pH-7);doc.setTextColor(173,181,189);doc.setFont('helvetica','normal');doc.setFontSize(7);doc.text(d.proj.naam+' · '+d.periode+' · '+d.ref,W-14,pH-7,{align:'right'});
   doc.save('Leadscore_'+d.proj.naam.replace(/\s+/g,'_')+'_'+d.ref+'.pdf');
 }
 
-// ── PROJECTEN ──────────────────────────────────
+function downloadUurPDF(d){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,ml=14,cw=W-ml-14;
+  let y=14;
+  // Header blauw
+  doc.setFillColor(29,78,216);doc.roundedRect(ml,y,cw,20,3,3,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(14);doc.text('Leadscore',ml+7,y+8);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.text('Tijdsregistratie & Facturatie',ml+7,y+14);
+  doc.setFontSize(12);doc.setFont('helvetica','bold');doc.text(d.proj.naam,W-14,y+8,{align:'right'});
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.text(d.periode,W-14,y+14,{align:'right'});
+  if(d.f.contact)doc.text('t.a.v. '+d.f.contact,W-14,y+19,{align:'right'});
+  y+=26;
+  // KPI blokken
+  const totU=d.dagLog.reduce((s,r)=>s+r.uren,0);
+  const omzet=totU*d.tarief;
+  const bw=(cw-6)/3;
+  [{v:totU.toFixed(2)+'u',l:'UREN TOTAAL',c:[29,78,216]},{v:'€'+d.tarief+'/u',l:'UURTARIEF',c:[15,17,23]},{v:fmtEur(omzet),l:'TE FACTUREREN',c:[21,128,61]}].forEach((b,i)=>{
+    const bx=ml+i*(bw+3);
+    doc.setFillColor(i===2?240:i===0?239:240,i===2?253:i===0?246:242,i===2?244:i===0?255:245);
+    doc.setDrawColor(i===2?134:i===0?147:221,i===2?239:i===0?197:226,i===2?172:i===0?253:234);
+    doc.roundedRect(bx,y,bw,16,2,2,'FD');
+    doc.setTextColor(...b.c);doc.setFont('helvetica','bold');doc.setFontSize(11);doc.text(String(b.v),bx+bw/2,y+9,{align:'center'});
+    doc.setFontSize(6);doc.setFont('helvetica','normal');doc.setTextColor(107,118,133);doc.text(b.l,bx+bw/2,y+14,{align:'center'});
+  });y+=22;
+  // Tijdsregistratie tabel
+  const rows=d.dagLog.sort((a,b)=>a.datum.localeCompare(b.datum));
+  doc.autoTable({startY:y,
+    head:[['Datum','Wie','Uren','Omschrijving werkzaamheden']],
+    body:[...rows.map(r=>[r.datum,r.naam,r.uren.toFixed(2)+'u',r.omschr||r.notities||'—']),
+          ['TOTAAL','',totU.toFixed(2)+'u',fmtEur(omzet)+' ('+totU.toFixed(2)+'u × €'+d.tarief+'/u)']],
+    theme:'grid',
+    headStyles:{fillColor:[29,78,216],textColor:255,fontSize:8,fontStyle:'bold'},
+    bodyStyles:{fontSize:9},
+    columnStyles:{0:{cellWidth:22},1:{cellWidth:18},2:{cellWidth:14,textColor:[29,78,216],fontStyle:'bold',halign:'right'},3:{overflow:'linebreak'}},
+    margin:{left:ml,right:14},
+    styles:{cellPadding:2.5,lineColor:[221,226,234]},
+    didParseCell:function(data){if(data.row.index===rows.length){data.cell.styles.fillColor=[239,246,255];data.cell.styles.textColor=[29,78,216];data.cell.styles.fontStyle='bold';}}
+  });
+  y=doc.lastAutoTable.finalY+5;
+  // Per medewerker
+  if(Object.keys(d.ppMap).length>1){
+    doc.autoTable({startY:y,head:[['Naam','Uren','Bedrag']],
+      body:Object.entries(d.ppMap).map(([n,s])=>[n,s.uren.toFixed(2)+'u',fmtEur(s.uren*d.tarief)]),
+      theme:'grid',headStyles:{fillColor:[29,78,216],textColor:255,fontSize:8,fontStyle:'bold'},bodyStyles:{fontSize:9},
+      columnStyles:{0:{fontStyle:'bold'},2:{textColor:[29,78,216],fontStyle:'bold'}},
+      margin:{left:ml,right:14},styles:{cellPadding:2.5,lineColor:[221,226,234]}});
+    y=doc.lastAutoTable.finalY+5;
+  }
+  const pH=doc.internal.pageSize.height;doc.setDrawColor(29,78,216);doc.setLineWidth(0.4);doc.line(ml,pH-14,W-14,pH-14);doc.setFillColor(29,78,216);doc.roundedRect(ml,pH-12,6,6,1,1,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(4);doc.text('LS',ml+3,pH-8,{align:'center'});doc.setTextColor(29,78,216);doc.setFontSize(8);doc.text('Leadscore',ml+8,pH-7);doc.setTextColor(173,181,189);doc.setFont('helvetica','normal');doc.setFontSize(7);doc.text(d.proj.naam+' · '+d.periode+' · '+d.ref,W-14,pH-7,{align:'right'});
+  doc.save('Leadscore_Tijdsreg_'+d.proj.naam.replace(/\s+/g,'_')+'_'+d.ref+'.pdf');
+}
+
+
 function togglePricingUI(){
   const p=document.getElementById('pf-pricing').value;
   document.getElementById('pf-cps-wrap').style.display=p==='cps'?'block':'none';
@@ -1738,6 +1887,7 @@ function avatar(naam,size){
 
 async function init(){
   laad();
+  laadActLokaal();// Lokale data meteen laden
   naam=MEDEWERKERS.length?MEDEWERKERS[0].naam:'';
   updW();
   setDF('week');

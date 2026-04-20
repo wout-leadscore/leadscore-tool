@@ -304,11 +304,13 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
   <div id="adm-panel" style="display:none">
     <div class="ph">
       <div class="ph-title">Admin</div>
-      <div style="display:flex;gap:6px">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
         <button class="btn-secondary" id="adm-tab-proj" onclick="setAdmTab('proj')" style="font-size:12px">Projecten</button>
         <button class="btn-secondary" id="adm-tab-mw" onclick="setAdmTab('mw')" style="font-size:12px">Medewerkers</button>
         <button class="btn-secondary" id="adm-tab-omzet" onclick="setAdmTab('omzet')" style="font-size:12px">Omzet</button>
         <button class="btn-secondary" id="adm-tab-toegang" onclick="setAdmTab('toegang')" style="font-size:12px">🔐 Toegang</button>
+        <button class="btn-secondary" onclick="exportData()" style="font-size:12px" title="Download backup">⬇ Export</button>
+        <button class="btn-secondary" onclick="importData()" style="font-size:12px;background:var(--bbg);border-color:var(--bbr);color:var(--blue)" title="Importeer & sync">⬆ Import & Sync</button>
       </div>
     </div>
     <div id="adm-proj">
@@ -616,10 +618,88 @@ function laad(){
     {id:'lion',naam:'Lion Leadscore',rol:'lead',email:'lion@leadscore.be',tel:'',start:'2024-01-01',dagenCfg:{1:{totaal:7.5,project:4.5,werkt:true},2:{totaal:8.5,project:8.5,werkt:true},3:{totaal:8.5,project:8.5,werkt:true},4:{totaal:8.5,project:8.5,werkt:true},5:{totaal:6,project:6,werkt:true}}},
   ];}
 }
-function slaProj(){localStorage.setItem('ls10_proj',JSON.stringify(PROJECTEN));}
-function slaMW(){localStorage.setItem('ls10_mw',JSON.stringify(MEDEWERKERS));}
-function slaFiches(){localStorage.setItem('ls10_fiches',JSON.stringify(FICHES));}
-function slaPlan(){localStorage.setItem('ls10_plan',JSON.stringify(planData));}
+function slaProj(){localStorage.setItem('ls10_proj',JSON.stringify(PROJECTEN));syncNaarSupabase();}
+function slaMW(){localStorage.setItem('ls10_mw',JSON.stringify(MEDEWERKERS));syncNaarSupabase();}
+function slaFiches(){localStorage.setItem('ls10_fiches',JSON.stringify(FICHES));syncNaarSupabase();}
+// ── SUPABASE CONFIG SYNC ────────────────────────────────────────────
+async function syncNaarSupabase(){
+  const data={projecten:PROJECTEN,fiches:FICHES,medewerkers:MEDEWERKERS};
+  try{
+    // Upsert each config key
+    for(const [key,val] of Object.entries({projecten:PROJECTEN,fiches:FICHES,medewerkers:MEDEWERKERS,planning:planData})){
+      await fetch(SB_URL+'/rest/v1/ls_config',{
+        method:'POST',
+        headers:{...SBH,'Prefer':'resolution=merge-duplicates'},
+        body:JSON.stringify({key,value:val,updated_at:new Date().toISOString()})
+      });
+    }
+    console.log('Config gesynced naar Supabase');
+    return true;
+  }catch(e){console.warn('Sync mislukt:',e);return false;}
+}
+
+async function laadVanSupabase(){
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/ls_config?select=*',{headers:SBH});
+    if(!r.ok)return false;
+    const rows=await r.json();
+    if(!Array.isArray(rows)||!rows.length)return false;
+    rows.forEach(row=>{
+      if(row.key==='projecten'&&Array.isArray(row.value))PROJECTEN=row.value;
+      if(row.key==='fiches'&&Array.isArray(row.value))FICHES=row.value;
+      if(row.key==='medewerkers'&&Array.isArray(row.value))MEDEWERKERS=row.value;
+      if(row.key==='planning'&&row.value&&typeof row.value==='object')Object.assign(planData,row.value);
+    });
+    // Sla lokaal op
+    slaProj();slaFiches();slaMW();slaPlanLokaal();
+    console.log('Config geladen van Supabase');
+    return true;
+  }catch(e){console.warn('Laden mislukt:',e);return false;}
+}
+
+// Export als JSON backup
+function exportData(){
+  const data={
+    versie:'v8',datum:new Date().toISOString(),
+    projecten:PROJECTEN,fiches:FICHES,medewerkers:MEDEWERKERS,
+    planData,activiteit
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='leadscore_backup_'+new Date().toISOString().split('T')[0]+'.json';
+  a.click();
+}
+
+function importData(){
+  const inp=document.createElement('input');
+  inp.type='file';inp.accept='.json';
+  inp.onchange=async function(e){
+    const file=e.target.files[0];if(!file)return;
+    try{
+      const text=await file.text();
+      const data=JSON.parse(text);
+      if(data.projecten)PROJECTEN=data.projecten;
+      if(data.fiches)FICHES=data.fiches;
+      if(data.medewerkers)MEDEWERKERS=data.medewerkers;
+      if(data.planData)Object.assign(planData,data.planData);
+      if(data.activiteit&&data.activiteit.length){
+        // Merge activiteit (niet overschrijven)
+        data.activiteit.forEach(a=>{if(!activiteit.find(x=>x.id===a.id))activiteit.push(a);});
+        slaActOp();
+      }
+      slaProj();slaFiches();slaMW();slaPlanLokaal();slaPlan();
+      // Sync naar Supabase
+      const ok=await syncNaarSupabase();
+      alert('✓ Import geslaagd!'+(ok?' Data gesynced naar Supabase.':' (Supabase sync mislukt, lokaal opgeslagen)'));
+      location.reload();
+    }catch(err){alert('Fout bij importeren: '+err.message);}
+  };
+  inp.click();
+}
+
+function slaPlanLokaal(){localStorage.setItem('ls10_plan',JSON.stringify(planData));}
+function slaPlan(){localStorage.setItem('ls10_plan',JSON.stringify(planData));syncNaarSupabase();}
 
 // ── SUPABASE ───────────────────────────────────
 // ── LOKALE OPSLAG (primair) + Supabase sync (optioneel) ─────────────
@@ -813,6 +893,8 @@ function uitloggen(){
 async function init(){
   laad();
   laadActLokaal();
+  // Laad config van Supabase (overschrijft lokale data als nieuwer)
+  laadVanSupabase().then(ok=>{if(ok){vulInvoerDropdowns();renderPlanning();}});
   // Check login
   const ingelogd=getIngelogd();
   if(!ingelogd){

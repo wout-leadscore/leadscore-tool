@@ -359,15 +359,7 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
     <select id="agenda-filter-proj" onchange="renderAgenda()" style="font-size:12px;padding:6px 10px;border-radius:var(--r);border:1.5px solid var(--b1);background:var(--w)">
       <option value="">Alle projecten</option>
     </select>
-    <select id="agenda-filter-status" onchange="renderAgenda()" style="font-size:12px;padding:6px 10px;border-radius:var(--r);border:1.5px solid var(--b1);background:var(--w)">
-      <option value="">Alle statussen</option>
-      <option value="gepland">📅 Gepland</option>
-      <option value="gedaan">✅ Gedaan</option>
-      <option value="gewonnen">🏆 Gewonnen</option>
-      <option value="verloren">❌ Verloren</option>
-      <option value="no-show">🚫 No Show</option>
-      <option value="herboeken">🔄 Herboeken</option>
-    </select>
+
     <span id="agenda-count" style="font-size:11px;color:var(--mu);font-family:var(--fm)"></span>
   </div>
   <!-- Vandaag banner -->
@@ -383,16 +375,7 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
     <input type="hidden" id="afs-act-id"/>
     <input type="hidden" id="afs-idx"/>
     <div style="background:var(--s1);border-radius:var(--r);padding:10px 12px;margin-bottom:12px" id="afs-info"></div>
-    <div class="fi"><label>Status</label>
-      <select id="afs-status">
-        <option value="gepland">📅 Gepland</option>
-        <option value="gedaan">✅ Gedaan</option>
-        <option value="gewonnen">🏆 Gewonnen</option>
-        <option value="verloren">❌ Verloren</option>
-        <option value="no-show">🚫 No Show</option>
-        <option value="herboeken">🔄 Herboeken</option>
-      </select>
-    </div>
+<input type="hidden" id="afs-status" value="gepland"/>
     <div class="fi">
       <label>Prioriteit</label>
       <div style="display:flex;align-items:center;gap:4px">
@@ -411,8 +394,7 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
     <div class="fi"><label>Notitie / opvolging</label>
       <textarea id="afs-notitie" rows="3" placeholder="Bv: Stuur voorstel na meeting, follow-up volgende week..."></textarea>
     </div>
-    <!-- NO SHOW knop -->
-    <button onclick="markeerNoShow()" style="width:100%;padding:12px;background:#dc2626;color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:800;cursor:pointer;margin-bottom:10px;font-family:var(--fh)">🚫 NO SHOW — Herplannen volgende week</button>
+
     <div class="md-btns">
       <button class="btn-primary" onclick="slaAfsAan()">Opslaan</button>
       <button class="btn-secondary" onclick="sluit('mo-afs')">Annuleren</button>
@@ -1055,33 +1037,25 @@ function markeerNoShow(){
 }
 
 function buildAfsCard(af){
-  var sk=statusKleur(af.status||'gepland');
+  var sk={bg:'var(--w)',c:'var(--tx)',border:'var(--b1)'};
   var isNoShow=af.status==='no-show';
   var fi=getFiche(af.project||'');
   var logoHtml=fi&&fi.logo?'<div style="width:18px;height:18px;border-radius:3px;overflow:hidden;flex-shrink:0"><img src="'+fi.logo+'" style="width:100%;height:100%;object-fit:cover"/></div>':'';
-  var prio=af.prio||0;
-  // 5 sterren altijd tonen — gevuld of leeg
-  var starsHtml='<div style="display:flex;gap:2px;margin:5px 0 4px">';
-  for(var i=1;i<=5;i++){
-    var filled=i<=prio;
-    var clr=prio>=4?'#dc2626':prio>=3?'#f59e0b':'#15803d';
-    starsHtml+='<span data-aid="'+af.actId+'" data-idx="'+af.idx+'" data-pv="'+i+'" onclick="setPrioKaart(this)" style="font-size:14px;cursor:pointer;color:'+(filled?clr:'#d1d5db')+';transition:color .1s">▲</span>';
-  }
-  starsHtml+='</div>';
-  var noShowBtn=isNoShow?''
-    :'<button data-aid="'+af.actId+'" data-idx="'+af.idx+'" onclick="noShowKaart(this);event.stopPropagation()" style="width:100%;margin-top:6px;padding:5px;background:#dc2626;color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer">🚫 NO SHOW</button>';
   return'<div style="border:1.5px solid '+sk.border+';border-radius:var(--r);padding:8px 10px;margin-bottom:6px;background:'+sk.bg+(isNoShow?';opacity:.65':'')+'" onclick="openAfsModalBtn(this)" data-aid="'+af.actId+'" data-idx="'+af.idx+'">'+
     '<div style="display:flex;align-items:center;gap:5px;margin-bottom:2px">'+
     logoHtml+
     '<div style="flex:1;font-size:12px;font-weight:700;color:'+sk.c+'">'+af.naam+'</div>'+
-    '<span style="font-size:11px">'+statusIcon(af.status||'gepland')+'</span></div>'+
+    (isNoShow?'<span style="font-size:9px;background:#dc2626;color:#fff;padding:1px 5px;border-radius:3px;font-weight:700">NO SHOW</span>':'')+
+    '</div>'+
     '<div style="font-size:11px;color:var(--mu)">'+af.projNaam+(af.actNaam?' · '+af.actNaam:'')+'</div>'+
-    '<div style="font-size:10px;margin-top:2px">'+(af.type==='online'?'🌐 Online':'🤝 Fysiek')+'</div>'+
-    starsHtml+
-    noShowBtn+
-    (af.notitie?'<div style="font-size:10px;color:var(--mu);margin-top:4px;font-style:italic;border-top:1px solid rgba(0,0,0,.08);padding-top:4px">'+af.notitie+'</div>':'')+
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">'+
+    '<div style="font-size:10px">'+(af.type==='online'?'🌐 Online':'🤝 Fysiek')+'</div>'+
+    (!isNoShow?'<button data-aid="'+af.actId+'" data-idx="'+af.idx+'" onclick="noShowKaart(this);event.stopPropagation()" style="padding:2px 7px;background:none;color:#dc2626;border:1px solid #dc2626;border-radius:3px;font-size:9px;font-weight:700;cursor:pointer">No Show</button>':'')+
+    '</div>'+
+    (af.notitie?'<div style="font-size:10px;color:var(--mu);margin-top:4px;font-style:italic">'+af.notitie+'</div>':'')+
     '</div>';
 }
+
 
 function setPrioKaart(el){
   el.stopPropagation&&el.stopPropagation();
@@ -1134,16 +1108,16 @@ function renderAgenda(){
     PROJECTEN.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.naam;pf.appendChild(o);});
   }
   const filterProj=document.getElementById('agenda-filter-proj')?.value||'';
-  const filterStatus=document.getElementById('agenda-filter-status')?.value||'';
   const dagen=wDagen(agendaOff);
   const ma=getMa(agendaOff),vr=new Date(ma);vr.setDate(ma.getDate()+4);
   const fs=d=>d.toLocaleDateString('nl-BE',{day:'numeric',month:'short'});
   const sub=document.getElementById('agenda-sub');
   if(sub)sub.textContent=fs(ma)+' – '+fs(vr);
+  const wlbl=document.getElementById('agenda-week-lbl');
+  if(wlbl)wlbl.textContent=fs(ma)+' – '+fs(vr);
 
   let alleAfs=getAlleAfspraken();
   if(filterProj)alleAfs=alleAfs.filter(af=>af.project===filterProj);
-  if(filterStatus)alleAfs=alleAfs.filter(af=>(af.status||'gepland')===filterStatus);
   const cntEl=document.getElementById('agenda-count');
   if(cntEl)cntEl.textContent=alleAfs.length+' afspraken';
   const vandaag=new Date().toISOString().split('T')[0];
@@ -1277,7 +1251,7 @@ function nav(p){
   if(p==='planning'){renderPlanning();updPlanInline();}
   if(p==='pdf'){renderPDF();}
   if(p==='admin'&&adminOk)setAdmTab('proj');
-  if(p==='agenda')renderAgenda();
+  if(p==='agenda'){agendaOff=weekOff;renderAgenda();}
 }
 function navAdmin(){nav('admin');}
 function renderAlles(){

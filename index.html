@@ -176,6 +176,7 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
     <button class="nav-btn" id="nb-invoer" onclick="nav('invoer')">Sessie invoer</button>
     <button class="nav-btn" id="nb-planning" onclick="nav('planning')">Planning</button>
     <button class="nav-btn" id="nb-pdf" onclick="nav('pdf')">PDF</button>
+    <button class="nav-btn" id="nb-agenda" onclick="nav('agenda')">📅 Agenda</button>
     <button class="nav-btn" id="nb-admin" onclick="navAdmin()">⚙ Admin</button>
   </div>
   <div class="tb-right">
@@ -339,6 +340,48 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
         <button class="btn-primary" onclick="voegEmailToe()" style="font-size:12px;padding:7px 14px">+ Email toevoegen</button>
       </div>
       <div id="toegang-lijst"></div>
+    </div>
+  </div>
+</div>
+
+<!-- AGENDA -->
+<div class="pnl" id="pnl-agenda">
+  <div class="ph">
+    <div><div class="ph-title">Agenda</div><div class="ph-sub" id="agenda-sub">—</div></div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="wb" onclick="verschuifAgenda(-1)">←</button>
+      <button class="wb today" onclick="agendaOff=0;renderAgenda()">Vandaag</button>
+      <button class="wb" onclick="verschuifAgenda(1)">→</button>
+    </div>
+  </div>
+  <!-- Vandaag banner -->
+  <div id="agenda-vandaag" style="display:none;background:var(--gbg);border:1.5px solid var(--gbr);border-radius:var(--rl);padding:12px 16px;margin-bottom:16px"></div>
+  <!-- Week grid -->
+  <div id="agenda-week" style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px"></div>
+</div>
+
+<!-- AFSPRAAK MODAL -->
+<div class="mo" id="mo-afs">
+  <div class="md">
+    <div class="md-title" id="afs-modal-title">Afspraak</div>
+    <input type="hidden" id="afs-act-id"/>
+    <input type="hidden" id="afs-idx"/>
+    <div style="background:var(--s1);border-radius:var(--r);padding:10px 12px;margin-bottom:12px" id="afs-info"></div>
+    <div class="fi"><label>Status</label>
+      <select id="afs-status">
+        <option value="gepland">📅 Gepland</option>
+        <option value="gedaan">✅ Gedaan</option>
+        <option value="gewonnen">🏆 Gewonnen</option>
+        <option value="verloren">❌ Verloren</option>
+        <option value="verplaatst">🔄 Verplaatst</option>
+      </select>
+    </div>
+    <div class="fi"><label>Notitie / opvolging</label>
+      <textarea id="afs-notitie" rows="3" placeholder="Bv: Stuur voorstel na meeting, follow-up volgende week..."></textarea>
+    </div>
+    <div class="md-btns">
+      <button class="btn-primary" onclick="slaAfsAan()">Opslaan</button>
+      <button class="btn-secondary" onclick="sluit('mo-afs')">Annuleren</button>
     </div>
   </div>
 </div>
@@ -538,6 +581,8 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
 </div>
 
 <script>
+function openAfsModalBtn(el){openAfsModal(el.getAttribute('data-aid'),parseInt(el.getAttribute('data-idx')));}
+
 function openPDFBtn(btn){openPDF(btn.getAttribute('data-pid'));}
 
 
@@ -890,6 +935,141 @@ function uitloggen(){
   location.reload();
 }
 
+// ── AGENDA ──────────────────────────────────────────────────────────
+let agendaOff=0;
+
+function verschuifAgenda(d){agendaOff+=d;renderAgenda();}
+
+function getAlleAfspraken(){
+  // Verzamel alle afspraken uit alle activiteiten
+  const result=[];
+  activiteit.forEach(a=>{
+    (a.afspraken||[]).forEach((af,idx)=>{
+      if(af.datum)result.push({
+        ...af,
+        actId:a.id,
+        actNaam:a.naam,
+        project:a.project,
+        projNaam:pNaam(a.project),
+        idx
+      });
+    });
+  });
+  return result;
+}
+
+function statusKleur(status){
+  const map={gepland:{bg:'var(--bbg)',c:'var(--blue)',border:'var(--bbr)'},
+    gedaan:{bg:'var(--gbg)',c:'var(--green)',border:'var(--gbr)'},
+    gewonnen:{bg:'var(--gbg)',c:'var(--green)',border:'var(--gbr)'},
+    verloren:{bg:'var(--rbg)',c:'var(--red)',border:'var(--rbr)'},
+    verplaatst:{bg:'var(--abg)',c:'var(--amber)',border:'var(--abr)'}};
+  return map[status]||map.gepland;
+}
+function statusIcon(status){
+  return{gepland:'📅',gedaan:'✅',gewonnen:'🏆',verloren:'❌',verplaatst:'🔄'}[status]||'📅';
+}
+
+function buildAfsCard(af){
+  var sk=statusKleur(af.status||'gepland');
+  var div=document.createElement('div');
+  div.setAttribute('data-aid',af.actId);
+  div.setAttribute('data-idx',af.idx);
+  div.onclick=function(){openAfsModal(this.getAttribute('data-aid'),parseInt(this.getAttribute('data-idx')));};
+  div.style.cssText='cursor:pointer;border:1px solid '+sk.border+';border-radius:var(--r);padding:8px 10px;margin-bottom:6px;background:'+sk.bg;
+  div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">'+
+    '<div style="font-size:12px;font-weight:700;color:'+sk.c+'">'+af.naam+'</div>'+
+    '<span style="font-size:11px">'+statusIcon(af.status||'gepland')+'</span></div>'+
+    '<div style="font-size:11px;color:var(--mu)">'+af.projNaam+(af.actNaam?' · '+af.actNaam:'')+'</div>'+
+    '<div style="font-size:10px;margin-top:2px">'+(af.type==='online'?'🌐 Online':'🤝 Fysiek')+'</div>'+
+    (af.notitie?'<div style="font-size:10px;color:var(--mu);margin-top:4px;font-style:italic">'+af.notitie+'</div>':'');
+  return div.outerHTML;
+}
+
+function renderAgenda(){
+  const dagen=wDagen(agendaOff);
+  const ma=getMa(agendaOff),vr=new Date(ma);vr.setDate(ma.getDate()+4);
+  const fs=d=>d.toLocaleDateString('nl-BE',{day:'numeric',month:'short'});
+  const sub=document.getElementById('agenda-sub');
+  if(sub)sub.textContent=fs(ma)+' – '+fs(vr);
+
+  const alleAfs=getAlleAfspraken();
+  const vandaag=new Date().toISOString().split('T')[0];
+
+  // Vandaag banner
+  const vandaagAfs=alleAfs.filter(af=>af.datum===vandaag&&af.status!=='verloren');
+  const vandaagEl=document.getElementById('agenda-vandaag');
+  if(vandaagEl){
+    if(vandaagAfs.length&&dagen.includes(vandaag)){
+      vandaagEl.style.display='block';
+      vandaagEl.innerHTML='<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--green);margin-bottom:8px">🦁 Vandaag — '+vandaagAfs.length+' afspraak'+(vandaagAfs.length>1?'en':'')+'</div>'+
+        vandaagAfs.map(af=>'<span style="display:inline-flex;align-items:center;gap:5px;background:var(--w);border:1px solid var(--gbr);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;margin:2px">'+
+          (af.type==='online'?'🌐':'🤝')+' <strong>'+af.naam+'</strong> · '+af.projNaam+
+          (af.notitie?'<span style="color:var(--mu);font-weight:400"> — '+af.notitie+'</span>':'')+
+          '</span>').join('');
+    }else vandaagEl.style.display='none';
+  }
+
+  // Week kolommen
+  const dagNamen=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag'];
+  const weekEl=document.getElementById('agenda-week');
+  if(!weekEl)return;
+
+  weekEl.innerHTML=dagen.slice(0,5).map((dag,i)=>{
+    const dagAfs=alleAfs.filter(af=>af.datum===dag).sort((a,b)=>a.naam.localeCompare(b.naam));
+    const isVandaag=dag===vandaag;
+    const d=new Date(dag);
+    const dagLbl=dagNamen[i]+' '+d.getDate()+'/'+(d.getMonth()+1);
+    const gepland=dagAfs.filter(af=>af.status==='gepland'||!af.status).length;
+    const gedaan=dagAfs.filter(af=>af.status==='gedaan'||af.status==='gewonnen').length;
+
+    return'<div style="background:var(--w);border:1.5px solid '+(isVandaag?'var(--gbr)':'var(--b1)')+';border-radius:var(--rx);overflow:hidden;box-shadow:var(--sh)'+(isVandaag?';box-shadow:0 0 0 3px rgba(21,128,61,.1)':'')+'">'+
+      // Dag header
+      '<div style="padding:10px 12px;background:'+(isVandaag?'var(--gbg)':'var(--s1)')+';border-bottom:1px solid var(--b1)">'+
+      '<div style="font-size:12px;font-weight:700;color:'+(isVandaag?'var(--green)':'var(--tx)')+'">'+dagLbl+(isVandaag?' 🦁':'')+'</div>'+
+      (dagAfs.length?'<div style="font-size:10px;color:var(--mu);margin-top:2px">'+dagAfs.length+' afspraken'+(gepland?' · '+gepland+' te doen':'')+(gedaan?' · '+gedaan+' klaar':'')+'</div>':'<div style="font-size:10px;color:var(--mu);margin-top:2px">Geen afspraken</div>')+
+      '</div>'+
+      // Afspraken lijst
+      '<div style="padding:8px">'+
+      (dagAfs.length?dagAfs.map(af=>buildAfsCard(af)).join(''):
+        '<div style="font-size:12px;color:var(--mu);font-style:italic;padding:4px 0;text-align:center">Vrije dag 🎯</div>')+
+      '</div></div>';
+  }).join('');
+}
+
+function openAfsModal(actId,idx){
+  const a=activiteit.find(x=>x.id==actId);
+  if(!a||!a.afspraken||!a.afspraken[idx])return;
+  const af=a.afspraken[idx];
+  document.getElementById('afs-act-id').value=actId;
+  document.getElementById('afs-idx').value=idx;
+  document.getElementById('afs-modal-title').textContent=af.naam;
+  document.getElementById('afs-info').innerHTML=
+    '<div style="font-size:13px;font-weight:600;margin-bottom:4px">'+af.naam+'</div>'+
+    '<div style="font-size:12px;color:var(--mu)">'+pNaam(a.project)+' · '+(af.type==='online'?'🌐 Online':'🤝 Fysiek')+'</div>'+
+    '<div style="font-size:12px;color:var(--mu)">'+fmtDate(af.datum)+'</div>'+
+    (af.door?'<div style="font-size:11px;color:var(--mu);margin-top:3px">Geboekt door: '+af.door+'</div>':'');
+  document.getElementById('afs-status').value=af.status||'gepland';
+  document.getElementById('afs-notitie').value=af.notitie||'';
+  document.getElementById('mo-afs').classList.add('on');
+}
+
+function slaAfsAan(){
+  const actId=parseInt(document.getElementById('afs-act-id').value);
+  const idx=parseInt(document.getElementById('afs-idx').value);
+  const a=activiteit.find(x=>x.id===actId);
+  if(!a||!a.afspraken||!a.afspraken[idx])return;
+  a.afspraken[idx].status=document.getElementById('afs-status').value;
+  a.afspraken[idx].notitie=document.getElementById('afs-notitie').value.trim();
+  slaActOp();
+  // Sync naar Supabase
+  patchAct(actId,{afspraken:a.afspraken});
+  sluit('mo-afs');
+  renderAgenda();
+  // Ook log refreshen als zichtbaar
+  if(document.getElementById('pnl-invoer').classList.contains('on'))renderLog();
+}
+
 async function init(){
   laad();
   laadActLokaal();
@@ -934,7 +1114,7 @@ function sluit(id){document.getElementById(id).classList.remove('on');}
 function mKey(n){return(n||'').replace(/[^a-zA-Z0-9]/g,'_');}
 
 function nav(p){
-  ['dash','invoer','planning','pdf','admin'].forEach(x=>{
+  ['dash','invoer','planning','pdf','agenda','admin'].forEach(x=>{
     document.getElementById('nb-'+x).classList.toggle('on',x===p);
     document.getElementById('pnl-'+x).classList.toggle('on',x===p);
   });
@@ -943,6 +1123,7 @@ function nav(p){
   if(p==='planning'){renderPlanning();updPlanInline();}
   if(p==='pdf'){renderPDF();}
   if(p==='admin'&&adminOk)setAdmTab('proj');
+  if(p==='agenda')renderAgenda();
 }
 function navAdmin(){nav('admin');}
 function renderAlles(){

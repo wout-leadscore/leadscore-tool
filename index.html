@@ -354,6 +354,22 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
       <button class="wb" onclick="verschuifAgenda(1)">→</button>
     </div>
   </div>
+  <!-- Filter balk -->
+  <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+    <select id="agenda-filter-proj" onchange="renderAgenda()" style="font-size:12px;padding:6px 10px;border-radius:var(--r);border:1.5px solid var(--b1);background:var(--w)">
+      <option value="">Alle projecten</option>
+    </select>
+    <select id="agenda-filter-status" onchange="renderAgenda()" style="font-size:12px;padding:6px 10px;border-radius:var(--r);border:1.5px solid var(--b1);background:var(--w)">
+      <option value="">Alle statussen</option>
+      <option value="gepland">📅 Gepland</option>
+      <option value="gedaan">✅ Gedaan</option>
+      <option value="gewonnen">🏆 Gewonnen</option>
+      <option value="verloren">❌ Verloren</option>
+      <option value="no-show">🚫 No Show</option>
+      <option value="herboeken">🔄 Herboeken</option>
+    </select>
+    <span id="agenda-count" style="font-size:11px;color:var(--mu);font-family:var(--fm)"></span>
+  </div>
   <!-- Vandaag banner -->
   <div id="agenda-vandaag" style="display:none;background:var(--gbg);border:1.5px solid var(--gbr);border-radius:var(--rl);padding:12px 16px;margin-bottom:16px"></div>
   <!-- Week grid -->
@@ -373,12 +389,30 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
         <option value="gedaan">✅ Gedaan</option>
         <option value="gewonnen">🏆 Gewonnen</option>
         <option value="verloren">❌ Verloren</option>
-        <option value="verplaatst">🔄 Verplaatst</option>
+        <option value="no-show">🚫 No Show</option>
+        <option value="herboeken">🔄 Herboeken</option>
       </select>
+    </div>
+    <div class="fi">
+      <label>Prioriteit</label>
+      <div style="display:flex;align-items:center;gap:4px">
+        <span style="font-size:11px;color:var(--mu);margin-right:4px">Laag</span>
+        <div id="prio-stars" style="display:flex;gap:3px">
+          <span class="prio-star" data-v="1" onclick="setPrio(1)" style="font-size:22px;cursor:pointer;opacity:.3">▲</span>
+          <span class="prio-star" data-v="2" onclick="setPrio(2)" style="font-size:22px;cursor:pointer;opacity:.3">▲</span>
+          <span class="prio-star" data-v="3" onclick="setPrio(3)" style="font-size:22px;cursor:pointer;opacity:.3">▲</span>
+          <span class="prio-star" data-v="4" onclick="setPrio(4)" style="font-size:22px;cursor:pointer;opacity:.3">▲</span>
+          <span class="prio-star" data-v="5" onclick="setPrio(5)" style="font-size:22px;cursor:pointer;opacity:.3">▲</span>
+        </div>
+        <span style="font-size:11px;color:var(--mu);margin-left:4px">Hoog</span>
+        <input type="hidden" id="afs-prio" value="0"/>
+      </div>
     </div>
     <div class="fi"><label>Notitie / opvolging</label>
       <textarea id="afs-notitie" rows="3" placeholder="Bv: Stuur voorstel na meeting, follow-up volgende week..."></textarea>
     </div>
+    <!-- NO SHOW knop -->
+    <button onclick="markeerNoShow()" style="width:100%;padding:12px;background:#dc2626;color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:800;cursor:pointer;margin-bottom:10px;font-family:var(--fh)">🚫 NO SHOW — Herplannen volgende week</button>
     <div class="md-btns">
       <button class="btn-primary" onclick="slaAfsAan()">Opslaan</button>
       <button class="btn-secondary" onclick="sluit('mo-afs')">Annuleren</button>
@@ -970,30 +1004,148 @@ function statusIcon(status){
   return{gepland:'📅',gedaan:'✅',gewonnen:'🏆',verloren:'❌',verplaatst:'🔄'}[status]||'📅';
 }
 
+function setPrio(v){
+  document.getElementById('afs-prio').value=v;
+  document.querySelectorAll('.prio-star').forEach(s=>{
+    const sv=parseInt(s.getAttribute('data-v'));
+    s.style.opacity=sv<=v?'1':'0.25';
+    s.style.color=sv<=v?(v>=4?'#dc2626':v>=3?'#f59e0b':'#15803d'):'var(--mu)';
+  });
+}
+
+function markeerNoShow(){
+  const actId=parseInt(document.getElementById('afs-act-id').value);
+  const idx=parseInt(document.getElementById('afs-idx').value);
+  const a=activiteit.find(x=>x.id===actId);
+  if(!a||!a.afspraken||!a.afspraken[idx])return;
+  const af=a.afspraken[idx];
+  // Mark as no-show
+  af.status='no-show';
+  af.notitie=(document.getElementById('afs-notitie').value.trim()||'')+(af.notitie?' | '+af.notitie:'');
+  af.prio=parseInt(document.getElementById('afs-prio').value)||0;
+  slaActOp();
+  patchAct(actId,{afspraken:a.afspraken});
+  // Add to planning next week as a note
+  const volgendeWk=wKey(1); // weekOff+1
+  const mBoeker=MEDEWERKERS.find(m=>m.naam===af.door);
+  if(mBoeker){
+    const key=af.door+'_'+wKey(weekOff+1);
+    if(!planData[key])planData[key]={blokken:[]};
+    // Check if already has no-show block
+    const bestaand=planData[key].blokken.find(b=>b.projId==='noshow_'+actId+'_'+idx);
+    if(!bestaand){
+      planData[key].blokken.push({
+        projId:'noshow_'+actId+'_'+idx,
+        naam:'🚫 Herboeken: '+af.naam+' ('+pNaam(a.project)+')',
+        uren:1,
+        kleur:'#dc2626',
+        isNoShow:true
+      });
+      slaPlan();
+    }
+  }
+  sluit('mo-afs');
+  renderAgenda();
+  // Show confirmation
+  const msg=document.createElement('div');
+  msg.style.cssText='position:fixed;top:70px;right:20px;z-index:300;background:#dc2626;color:#fff;padding:12px 18px;border-radius:var(--r);font-size:13px;font-weight:600;box-shadow:var(--sh2)';
+  msg.textContent='🚫 No Show gemarkeerd — staat in planning volgende week bij '+af.door;
+  document.body.appendChild(msg);
+  setTimeout(()=>msg.remove(),4000);
+}
+
 function buildAfsCard(af){
   var sk=statusKleur(af.status||'gepland');
-  var div=document.createElement('div');
-  div.setAttribute('data-aid',af.actId);
-  div.setAttribute('data-idx',af.idx);
-  div.onclick=function(){openAfsModal(this.getAttribute('data-aid'),parseInt(this.getAttribute('data-idx')));};
-  div.style.cssText='cursor:pointer;border:1px solid '+sk.border+';border-radius:var(--r);padding:8px 10px;margin-bottom:6px;background:'+sk.bg;
-  div.innerHTML='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">'+
-    '<div style="font-size:12px;font-weight:700;color:'+sk.c+'">'+af.naam+'</div>'+
+  var isNoShow=af.status==='no-show';
+  var fi=getFiche(af.project||'');
+  var logoHtml=fi&&fi.logo?'<div style="width:18px;height:18px;border-radius:3px;overflow:hidden;flex-shrink:0"><img src="'+fi.logo+'" style="width:100%;height:100%;object-fit:cover"/></div>':'';
+  var prio=af.prio||0;
+  // 5 sterren altijd tonen — gevuld of leeg
+  var starsHtml='<div style="display:flex;gap:2px;margin:5px 0 4px">';
+  for(var i=1;i<=5;i++){
+    var filled=i<=prio;
+    var clr=prio>=4?'#dc2626':prio>=3?'#f59e0b':'#15803d';
+    starsHtml+='<span data-aid="'+af.actId+'" data-idx="'+af.idx+'" data-pv="'+i+'" onclick="setPrioKaart(this)" style="font-size:14px;cursor:pointer;color:'+(filled?clr:'#d1d5db')+';transition:color .1s">▲</span>';
+  }
+  starsHtml+='</div>';
+  var noShowBtn=isNoShow?''
+    :'<button data-aid="'+af.actId+'" data-idx="'+af.idx+'" onclick="noShowKaart(this);event.stopPropagation()" style="width:100%;margin-top:6px;padding:5px;background:#dc2626;color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer">🚫 NO SHOW</button>';
+  return'<div style="border:1.5px solid '+sk.border+';border-radius:var(--r);padding:8px 10px;margin-bottom:6px;background:'+sk.bg+(isNoShow?';opacity:.65':'')+'" onclick="openAfsModalBtn(this)" data-aid="'+af.actId+'" data-idx="'+af.idx+'">'+
+    '<div style="display:flex;align-items:center;gap:5px;margin-bottom:2px">'+
+    logoHtml+
+    '<div style="flex:1;font-size:12px;font-weight:700;color:'+sk.c+'">'+af.naam+'</div>'+
     '<span style="font-size:11px">'+statusIcon(af.status||'gepland')+'</span></div>'+
     '<div style="font-size:11px;color:var(--mu)">'+af.projNaam+(af.actNaam?' · '+af.actNaam:'')+'</div>'+
     '<div style="font-size:10px;margin-top:2px">'+(af.type==='online'?'🌐 Online':'🤝 Fysiek')+'</div>'+
-    (af.notitie?'<div style="font-size:10px;color:var(--mu);margin-top:4px;font-style:italic">'+af.notitie+'</div>':'');
-  return div.outerHTML;
+    starsHtml+
+    noShowBtn+
+    (af.notitie?'<div style="font-size:10px;color:var(--mu);margin-top:4px;font-style:italic;border-top:1px solid rgba(0,0,0,.08);padding-top:4px">'+af.notitie+'</div>':'')+
+    '</div>';
+}
+
+function setPrioKaart(el){
+  el.stopPropagation&&el.stopPropagation();
+  var actId=el.getAttribute('data-aid');
+  var idx=parseInt(el.getAttribute('data-idx'));
+  var pv=parseInt(el.getAttribute('data-pv'));
+  var a=activiteit.find(x=>x.id==actId);
+  if(!a||!a.afspraken||!a.afspraken[idx])return;
+  a.afspraken[idx].prio=pv;
+  slaActOp();
+  patchAct(parseInt(actId),{afspraken:a.afspraken});
+  renderAgenda();
+}
+
+function noShowKaart(el){
+  var actId=el.getAttribute('data-aid');
+  var idx=parseInt(el.getAttribute('data-idx'));
+  var a=activiteit.find(x=>x.id==actId);
+  if(!a||!a.afspraken||!a.afspraken[idx])return;
+  var af=a.afspraken[idx];
+  if(!confirm('No Show markeren voor '+af.naam+'?'))return;
+  af.status='no-show';
+  slaActOp();
+  patchAct(parseInt(actId),{afspraken:a.afspraken});
+  // Voeg toe aan planning volgende week bij persoon die boekte
+  if(af.door){
+    var key=af.door+'_'+wKey(weekOff+1);
+    if(!planData[key])planData[key]={blokken:[]};
+    var exists=planData[key].blokken.find(b=>b.projId==='ns_'+actId+'_'+idx);
+    if(!exists){
+      planData[key].blokken.push({
+        projId:'ns_'+actId+'_'+idx,
+        naam:'🚫 Herboeken: '+af.naam+' ('+pNaam(a.project)+')',
+        uren:0.5,kleur:'#dc2626',isNoShow:true
+      });
+      slaPlan();
+    }
+  }
+  renderAgenda();
+  var msg=document.createElement('div');
+  msg.style.cssText='position:fixed;top:70px;right:20px;z-index:300;background:#dc2626;color:#fff;padding:12px 18px;border-radius:var(--r);font-size:13px;font-weight:700;box-shadow:var(--sh2)';
+  msg.textContent='🚫 No Show — staat in planning volgende week'+(af.door?' bij '+af.door:'');
+  document.body.appendChild(msg);setTimeout(()=>msg.remove(),4000);
 }
 
 function renderAgenda(){
+  // Populate project filter
+  const pf=document.getElementById('agenda-filter-proj');
+  if(pf&&pf.options.length<=1){
+    PROJECTEN.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.naam;pf.appendChild(o);});
+  }
+  const filterProj=document.getElementById('agenda-filter-proj')?.value||'';
+  const filterStatus=document.getElementById('agenda-filter-status')?.value||'';
   const dagen=wDagen(agendaOff);
   const ma=getMa(agendaOff),vr=new Date(ma);vr.setDate(ma.getDate()+4);
   const fs=d=>d.toLocaleDateString('nl-BE',{day:'numeric',month:'short'});
   const sub=document.getElementById('agenda-sub');
   if(sub)sub.textContent=fs(ma)+' – '+fs(vr);
 
-  const alleAfs=getAlleAfspraken();
+  let alleAfs=getAlleAfspraken();
+  if(filterProj)alleAfs=alleAfs.filter(af=>af.project===filterProj);
+  if(filterStatus)alleAfs=alleAfs.filter(af=>(af.status||'gepland')===filterStatus);
+  const cntEl=document.getElementById('agenda-count');
+  if(cntEl)cntEl.textContent=alleAfs.length+' afspraken';
   const vandaag=new Date().toISOString().split('T')[0];
 
   // Vandaag banner
@@ -1051,6 +1203,7 @@ function openAfsModal(actId,idx){
     (af.door?'<div style="font-size:11px;color:var(--mu);margin-top:3px">Geboekt door: '+af.door+'</div>':'');
   document.getElementById('afs-status').value=af.status||'gepland';
   document.getElementById('afs-notitie').value=af.notitie||'';
+  setPrio(af.prio||0);
   document.getElementById('mo-afs').classList.add('on');
 }
 
@@ -1061,6 +1214,7 @@ function slaAfsAan(){
   if(!a||!a.afspraken||!a.afspraken[idx])return;
   a.afspraken[idx].status=document.getElementById('afs-status').value;
   a.afspraken[idx].notitie=document.getElementById('afs-notitie').value.trim();
+  a.afspraken[idx].prio=parseInt(document.getElementById('afs-prio').value)||0;
   slaActOp();
   // Sync naar Supabase
   patchAct(actId,{afspraken:a.afspraken});

@@ -1338,15 +1338,15 @@ function renderDash(){
   const warnEl=document.getElementById('dash-warn');
   if(warnEl)warnEl.innerHTML=warns.length?'<div class="warn-box"><strong>⚠ Budget waarschuwing</strong><div style="margin-top:6px">'+warns.map(w=>'<div style="display:flex;justify-content:space-between"><span>'+w.naam+'</span><span style="font-weight:700;color:'+(w.pct>=100?'var(--red)':'var(--amber)')+'">'+fmtEur(w.omzet)+' / '+fmtEur(w.budget)+' ('+w.pct+'%)</span></div>').join('')+'</div></div>':'';
   // KPI per project - toon altijd alle actieve projecten
-  const projs=PROJECTEN.filter(p=>getFiche(p.id).status!=='non-actief'&&getFiche(p.id).status!=='afgerond');
+  const projs=PROJECTEN.filter(p=>{const f=getFiche(p.id);return !f.status||f.status==='actief'||f.status==='ingepland';});
   const kpiEl=document.getElementById('dash-kpi');
   if(!kpiEl)return;
-  if(!projs.length){kpiEl.innerHTML='<div style="grid-column:1/-1;padding:14px;font-size:13px;color:var(--mu)">Geen projecten ingepland.</div>';return;}
+  if(!projs.length){kpiEl.innerHTML='<div style="grid-column:1/-1;padding:14px;font-size:13px;color:var(--mu)">Geen actieve projecten. Voeg projecten toe via Admin.</div>';return;}
   let html='';
   projs.forEach(proj=>{
     const f=getFiche(proj.id);
     const pAct=entries.filter(a=>a.project===proj.id);
-    const totA=Math.max(pAct.reduce((s,a)=>s+(a.afs||0),0), alleAfs.length);
+    const totA=pAct.reduce((s,a)=>s+(a.afs||0),0);
     const totC=pAct.reduce((s,a)=>s+(a.calls||0),0);
     const totM=pAct.reduce((s,a)=>s+(a.manueel||0)+(a.auto||0),0);
     const myAct=pAct.filter(a=>a.naam===naam);
@@ -1529,17 +1529,14 @@ function renderLog(){
   const dagen=wDagen(weekOff);
   const acts=activiteit.filter(a=>dagen.includes(a.datum)).sort((a,b)=>b.datum.localeCompare(a.datum)||b.id-a.id);
   const el=document.getElementById('inv-log');if(!el)return;
-  if(!acts.length){el.innerHTML='<div style="font-size:13px;color:var(--mu)">Geen sessies deze week.</div>';return;}
-
-  // Groepeer per dag
-  const perDag={};
-  acts.forEach(a=>{
-    if(!perDag[a.datum])perDag[a.datum]=[];
-    perDag[a.datum].push(a);
-  });
+  if(!acts.length){el.innerHTML='<div style="font-size:13px;color:var(--mu);padding:10px 0">Geen sessies deze week.</div>';return;}
 
   const dagNamen=['zo','ma','di','wo','do','vr','za'];
   const mndNamen=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+
+  // Group by day
+  const perDag={};
+  acts.forEach(a=>{if(!perDag[a.datum])perDag[a.datum]=[];perDag[a.datum].push(a);});
 
   el.innerHTML=Object.entries(perDag).map(([dag,dagActs])=>{
     const d=new Date(dag);
@@ -1547,58 +1544,54 @@ function renderLog(){
     const totC=dagActs.reduce((s,a)=>s+(a.calls||0),0);
     const totM=dagActs.reduce((s,a)=>s+(a.manueel||0)+(a.auto||0),0);
     const totA=dagActs.reduce((s,a)=>s+(a.afs||0),0);
-    const totU=dagActs.reduce((s,a)=>s+((a.duur||60)/60),0);
+    const totU=(dagActs.reduce((s,a)=>s+(a.duur||60),0)/60).toFixed(1);
     const dagId='dag_'+dag.replace(/-/g,'');
 
-    const sessies=dagActs.map(a=>{
+    const sessieHtml=dagActs.map(a=>{
       const h=Math.floor((a.duur||60)/60),m2=(a.duur||60)%60;
       const dur=h>0?h+'u'+(m2>0?' '+m2+'m':''):m2+'m';
       const parts=[a.calls?a.calls+' calls':'',(a.manueel||a.auto)?(a.manueel+a.auto)+' mails':'',a.dataUren?a.dataUren+'u data':'',a.meetMin?a.meetMin+'u meeting':''].filter(Boolean);
-      return'<div style="padding:9px 12px;border-bottom:1px solid var(--s1);background:var(--w)">'+
+      return'<div style="padding:9px 12px;border-bottom:1px solid var(--s1)">'+
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'+
-        '<div style="display:flex;align-items:center;gap:6px">'+
+        '<div style="display:flex;align-items:center;gap:7px">'+
         avatar(a.naam,22)+
         '<span style="font-size:12px;font-weight:600">'+a.naam+'</span>'+
-        '<span style="font-size:11px;color:var(--mu)">·</span>'+
-        '<span style="font-size:12px;font-weight:600">'+pNaam(a.project)+'</span>'+
+        '<span style="font-size:12px;color:var(--mu)">·</span>'+
+        '<span style="font-size:12px;font-weight:600;color:var(--green)">'+pNaam(a.project)+'</span>'+
         '</div>'+
         '<div style="display:flex;align-items:center;gap:6px">'+
         '<span style="font-size:11px;color:var(--mu);font-family:var(--fm)">'+dur+'</span>'+
-        '<button onclick="openSessieEdit('+a.id+')" style="font-size:11px;padding:2px 7px;border:1px solid var(--b1);border-radius:var(--r);background:var(--s1);cursor:pointer">⚙</button>'+
+        '<button data-sid="'+a.id+'" onclick="openSessieEdit(this.dataset.sid)" style="font-size:11px;padding:2px 7px;border:1px solid var(--b1);border-radius:var(--r);background:var(--s1);cursor:pointer">⚙</button>'+
         '</div></div>'+
         '<div>'+parts.map(p=>'<span class="chip">'+p+'</span>').join('')+(a.afs?'<span class="chip green">'+a.afs+' afspraken</span>':'')+
         (a.omschr?'<div style="font-size:11px;color:var(--mu);margin-top:4px;font-style:italic">'+a.omschr+'</div>':'')+
-        '</div>'+
-        (a.afspraken&&a.afspraken.length?'<div style="margin-top:5px">'+a.afspraken.map(af=>'<span class="chip">'+af.naam+' · '+fmtDate(af.datum)+'</span>').join('')+'</div>':'')+
-        '</div>';
+        '</div></div>';
     }).join('');
 
     return'<div style="background:var(--w);border:1px solid var(--b1);border-radius:var(--rl);margin-bottom:10px;overflow:hidden;box-shadow:var(--sh)">'+
-      // Dag header - klikbaar
+      '<div data-lid="'+dagId+'" onclick="toggleDagLog(this)" style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;cursor:pointer;background:var(--s1);user-select:none">'+
       '<div style="display:flex;align-items:center;gap:10px">'+
       '<span style="font-size:13px;font-weight:700;text-transform:capitalize">'+dagLbl+'</span>'+
       '<div style="display:flex;gap:5px">'+
       (totC?'<span class="chip">'+totC+' calls</span>':'')+
       (totM?'<span class="chip">'+totM+' mails</span>':'')+
       (totA?'<span class="chip green">'+totA+' afsp.</span>':'')+
-      '<span class="chip">'+totU.toFixed(1)+'u</span>'+
-      '<span class="chip">'+dagActs.length+' sessie'+(dagActs.length>1?'s':'')+'</span>'+
+      '<span class="chip">'+totU+'u · '+dagActs.length+' sessie'+(dagActs.length>1?'s':'')+'</span>'+
       '</div></div>'+
       '<span id="arr_'+dagId+'" style="font-size:12px;color:var(--mu)">▾</span>'+
       '</div>'+
-      // Sessies (standaard open)
-      '<div id="'+dagId+'" style="display:block">'+sessies+'</div>'+
+      '<div id="'+dagId+'">'+sessieHtml+'</div>'+
       '</div>';
   }).join('');
 }
 
-function toggleDagLog(ev){
-  var id=ev.currentTarget?ev.currentTarget.getAttribute('data-lid'):ev;
-  var el=document.getElementById(id);
+function toggleDagLog(el){
+  var id=el.getAttribute('data-lid');
+  var body=document.getElementById(id);
   var arr=document.getElementById('arr_'+id);
-  if(!el)return;
-  var open=el.style.display!=='none';
-  el.style.display=open?'none':'block';
+  if(!body)return;
+  var open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
   if(arr)arr.textContent=open?'▸':'▾';
 }
 

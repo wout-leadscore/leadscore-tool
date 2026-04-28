@@ -351,21 +351,8 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
 <div class="pnl" id="pnl-agenda">
   <div class="ph">
     <div><div class="ph-title">Agenda</div><div class="ph-sub" id="agenda-sub">—</div></div>
-    <div style="display:flex;gap:8px;align-items:center">
 
-      <button class="wb" onclick="verschuifAgenda(-1)">←</button>
-      <span id="agenda-week-lbl" style="font-size:12px;font-family:var(--fm);color:var(--mu);background:var(--s1);padding:5px 14px;border-radius:20px;border:1px solid var(--b1);min-width:150px;text-align:center">—</span>
-      <button class="wb" onclick="verschuifAgenda(1)">→</button>
-      <button class="wb" onclick="agendaOff=0;renderAgenda()" style="color:var(--green);font-size:11px">Vandaag</button>
-    </div>
   </div>
-  <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
-    <select id="agenda-filter-proj" onchange="renderAgenda()" style="font-size:12px;padding:6px 10px;border-radius:var(--r);border:1.5px solid var(--b1);background:var(--w);max-width:220px">
-      <option value="">Alle projecten</option>
-    </select>
-    <span id="agenda-count" style="font-size:11px;color:var(--mu);font-family:var(--fm)"></span>
-  </div>
-
   <div id="agenda-week" style="display:none"></div>
   <div id="agenda-maand-view"></div>
 </div>
@@ -1004,9 +991,6 @@ function renderMaandAgenda(alleAfs){
     return d.getMonth()===mnd&&d.getFullYear()===yr;
   });
 
-  const cntEl=document.getElementById('agenda-count');
-  if(cntEl)cntEl.textContent=maandAfs.length+' afspraken in '+mndNamen[mnd];
-
   if(!maandAfs.length){
     el.innerHTML='<div style="font-size:13px;color:var(--mu);padding:30px;text-align:center">Geen afspraken in '+mndNamen[mnd]+' '+yr+'</div>';
     return;
@@ -1114,12 +1098,7 @@ function noShowKaart(el){
 }
 
 function renderAgenda(){
-  // Populate project filter
-  const pf=document.getElementById('agenda-filter-proj');
-  if(pf&&pf.options.length<=1){
-    PROJECTEN.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=p.naam;pf.appendChild(o);});
-  }
-  const filterProj=document.getElementById('agenda-filter-proj')?.value||'';
+  const filterProj='';
   const dagen=wDagen(agendaOff);
   const ma=getMa(agendaOff),vr=new Date(ma);vr.setDate(ma.getDate()+4);
   const fs=d=>d.toLocaleDateString('nl-BE',{day:'numeric',month:'short'});
@@ -1129,7 +1108,6 @@ function renderAgenda(){
   if(wlbl)wlbl.textContent=fs(ma)+' – '+fs(vr);
 
   let alleAfs=getAlleAfspraken();
-  if(filterProj)alleAfs=alleAfs.filter(af=>af.project===filterProj);
   const cntEl=document.getElementById('agenda-count');
   if(cntEl)cntEl.textContent=alleAfs.length+' afspraken';
   const vandaag=new Date().toISOString().split('T')[0];

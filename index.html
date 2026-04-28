@@ -1348,6 +1348,10 @@ function renderDash(){
     const pAct=entries.filter(a=>a.project===proj.id);
     const totA=pAct.reduce((s,a)=>s+(a.afs||0),0);
     const totC=pAct.reduce((s,a)=>s+(a.calls||0),0);
+    const totU=pAct.reduce((s,a)=>s+((a.duur||60)/60),0);
+    const doelU=MEDEWERKERS.reduce((s,m)=>{const b=(getPlan(m.naam,weekOff).blokken||[]).find(b=>b.projId===proj.id);return s+(b?b.uren:0);},0);
+    const uPct=doelU>0?Math.min(100,Math.round((totU/doelU)*100)):null;
+    const uClr=uPct===null?'var(--mu)':kleur(uPct);
     const totM=pAct.reduce((s,a)=>s+(a.manueel||0)+(a.auto||0),0);
     const myAct=pAct.filter(a=>a.naam===naam);
     const myA=myAct.reduce((s,a)=>s+(a.afs||0),0);
@@ -1374,7 +1378,12 @@ function renderDash(){
       '<div style="background:rgba(0,0,0,.04);border-radius:5px;padding:5px 3px"><div style="font-size:15px;font-weight:800;font-family:var(--fm)">'+totM+'</div><div style="font-size:9px;color:var(--mu);text-transform:uppercase;margin-top:2px">Mails</div></div>'+
       '<div style="background:'+(myA>0?'var(--gbg)':'rgba(0,0,0,.04)')+';border-radius:5px;padding:5px 3px"><div style="font-size:15px;font-weight:800;font-family:var(--fm);color:'+(myA>0?'var(--green)':'inherit')+'">'+myA+'</div><div style="font-size:9px;color:var(--mu);text-transform:uppercase;margin-top:2px">Mijn ✓</div></div>'+
       '</div>'+
-      (doel>0?'<div style="margin-top:7px;font-size:10px;color:var(--mu);font-family:var(--fm)">'+totA+'/'+doel+' afsp.</div>':'<div style="margin-top:7px;font-size:10px;color:var(--mu)">'+totA+' afsp.</div>')+
+      (doel>0?'<div style="margin-top:5px;font-size:10px;color:var(--mu);font-family:var(--fm)">'+totA+'/'+doel+' afsp.</div>':'<div style="margin-top:5px;font-size:10px;color:var(--mu)">'+totA+' afsp.</div>')+
+      '<div style="width:100%;margin-top:6px;padding:5px 8px;background:var(--s1);border-radius:var(--r);display:flex;justify-content:space-between;align-items:center;gap:4px">'+
+      '<span style="font-size:10px;color:var(--mu)">⏱</span>'+
+      '<span style="font-size:11px;font-weight:700;font-family:var(--fm)">'+totU.toFixed(1)+'u'+(doelU>0?' / '+doelU+'u':'')+'</span>'+
+      (uPct!==null?'<span style="font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;background:'+(uPct>=100?'var(--gbg)':uPct>=60?'var(--abg)':'var(--rbg)')+';color:'+uClr+'">'+uPct+'%</span>':'')+
+      '</div>'+
       (budgetPct!==null?'<div style="width:100%;margin-top:5px;height:3px;background:var(--s2);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+budgetPct+'%;background:'+(budgetPct>=100?'var(--red)':budgetPct>=80?'var(--amber)':'var(--blue)')+'"></div></div>':'')+
       '</div>';
   });
@@ -1597,7 +1606,8 @@ function toggleDagLog(el){
 
 
 function openSessieEdit(id){
-  const a=activiteit.find(x=>x.id===id);if(!a)return;
+  id=parseInt(id)||id;
+  const a=activiteit.find(x=>x.id==id);if(!a)return;
   document.getElementById('se-id').value=id;
   document.getElementById('se-datum').value=a.datum;
   document.getElementById('se-duur').value=a.duur||60;

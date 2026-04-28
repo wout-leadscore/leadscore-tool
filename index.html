@@ -224,12 +224,19 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
       <div class="fi"><label>Datum</label><input type="date" id="inv-datum"/></div>
     </div>
     <div class="fi"><label>Duur</label>
-      <select id="inv-duur">
-        <option value="30">30 min</option><option value="60" selected>1u</option>
-        <option value="90">1u30</option><option value="120">2u</option>
-        <option value="150">2u30</option><option value="180">3u</option>
-        <option value="240">4u</option><option value="300">5u</option><option value="360">6u</option>
-      </select>
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="inv-duur" onchange="syncDuurCustom(this.value)" style="flex:1">
+          <option value="30">30 min</option><option value="60" selected>1u</option>
+          <option value="90">1u30</option><option value="120">2u</option>
+          <option value="150">2u30</option><option value="180">3u</option>
+          <option value="240">4u</option><option value="300">5u</option><option value="360">6u</option>
+          <option value="custom">Custom...</option>
+        </select>
+        <div id="inv-duur-custom-wrap" style="display:none;align-items:center;gap:4px">
+          <input type="number" id="inv-duur-custom" min="0.5" max="24" step="0.5" placeholder="uren" style="width:70px;font-family:var(--fm);font-weight:600"/>
+          <span style="font-size:11px;color:var(--mu)">u</span>
+        </div>
+      </div>
     </div>
     <div class="fi"><label>Project</label><select id="inv-proj"><option value="">— Kies project —</option></select></div>
     <div class="g3">
@@ -1480,6 +1487,22 @@ function checkMeetLimiet(){
     warn.textContent=(tot>max?'⚠ Over':'✓')+' '+tot.toFixed(2)+'u / '+max+'u max/maand';
   }
 }
+function syncDuurCustom(v){
+  const wrap=document.getElementById('inv-duur-custom-wrap');
+  if(!wrap)return;
+  if(v==='custom'){wrap.style.display='flex';document.getElementById('inv-duur-custom').focus();}
+  else wrap.style.display='none';
+}
+
+function getDuurWaarde(){
+  const sel=document.getElementById('inv-duur');
+  if(sel.value==='custom'){
+    const u=parseFloat(document.getElementById('inv-duur-custom').value)||1;
+    return Math.round(u*60);
+  }
+  return parseInt(sel.value)||60;
+}
+
 function bouwAfs(n){
   const c=document.getElementById('inv-afs-v');c.innerHTML='';
   for(let i=0;i<n;i++){
@@ -1501,31 +1524,39 @@ async function slaKPIOp(){
   const afs=afsRows.map(r=>({naam:r.querySelector('.af-naam').value.trim(),datum:r.querySelector('.af-datum').value,type:r.querySelector('.af-type').value,status:'gepland',door:wie}));
   if(afs.some(a=>!a.naam)){msg.textContent='⚠ Vul namen in';msg.style.color='var(--red)';return;}
   const wie2=document.getElementById('inv-wie2')?.value||'';
-  const duur=parseInt(document.getElementById('inv-duur').value)||60;
+  const duur=getDuurWaarde();
   const calls=parseInt(document.getElementById('inv-calls').value)||0;
   const manueel=parseInt(document.getElementById('inv-mailm').value)||0;
   const auto=parseInt(document.getElementById('inv-maila').value)||0;
   const dataUren=parseFloat(document.getElementById('inv-data').value)||0;
   const meetMin=parseFloat(document.getElementById('inv-meet').value)||0;
   const omschr=document.getElementById('inv-omschr').value.trim();
+  // Afspraken verdelen bij 2 personen
+  let afs1=afs, afs2=[];
+  if(wie2&&afs.length>=2){
+    const helft=Math.floor(afs.length/2);
+    afs1=afs.slice(0,afs.length-helft);
+    afs2=afs.slice(afs.length-helft);
+  } else if(wie2){
+    afs1=afs; afs2=[];// 1 afspraak → hoofdboeker krijgt hem
+  }
   const e={
     id:Date.now(),naam:wie,datum,duur:wie2?Math.round(duur/2):duur,
     calls:wie2?Math.round(calls/2):calls,
     manueel:wie2?Math.round(manueel/2):manueel,
     auto:wie2?Math.round(auto/2):auto,
-    project:projId,afs:afs.length,afspraken:afs,
+    project:projId,afs:afs1.length,afspraken:afs1,
     dataUren:wie2?dataUren/2:dataUren,
     meetMin:wie2?meetMin/2:meetMin,
     omschr:wie2?omschr+' [50/50 met '+wie2+']':omschr
   };
   msg.textContent='Opslaan...';msg.style.color='var(--mu)';
   await postAct(e);
-  // 2e persoon registreren
   if(wie2){
     const e2={
       id:Date.now()+1,naam:wie2,datum,duur:Math.round(duur/2),
       calls:Math.round(calls/2),manueel:Math.round(manueel/2),auto:Math.round(auto/2),
-      project:projId,afs:0,afspraken:[],
+      project:projId,afs:afs2.length,afspraken:afs2.map(af=>({...af,door:wie2})),
       dataUren:dataUren/2,meetMin:meetMin/2,
       omschr:omschr+' [50/50 met '+wie+']'
     };

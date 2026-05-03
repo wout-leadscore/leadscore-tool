@@ -1264,21 +1264,22 @@ function vulWeekOpties(selId, geselecteerd){
   const defaultOpt=document.createElement('option');
   defaultOpt.value='';defaultOpt.textContent='— Kies week —';
   sel.appendChild(defaultOpt);
-  // Genereer alle weken van dit jaar en volgend jaar
+  // Genereer alle weken ISO van dit jaar en volgend jaar
   const nu=new Date();
   const huidigWk=datumNaarWKey(nu.toISOString().split('T')[0]);
   for(let jr=nu.getFullYear();jr<=nu.getFullYear()+1;jr++){
-    for(let wn=1;wn<=52;wn++){
-      // Bereken maandag van deze week
-      const d=new Date(jr,0,1);
-      d.setDate(d.getDate()+(wn-1)*7-(d.getDay()||7)+1);
-      if(d.getFullYear()>jr+1)break;
-      const vr=new Date(d);vr.setDate(d.getDate()+4);
+    for(let wn=1;wn<=53;wn++){
+      const ma=wkNaarMaISO(jr+'-'+String(wn).padStart(2,'0'));
+      if(ma.getFullYear()<jr&&wn===1)continue;
+      if(ma.getFullYear()>jr+1)break;
+      const vr=new Date(ma);vr.setDate(ma.getDate()+4);
       const fs=function(x){return x.getDate()+'/'+(x.getMonth()+1);};
       const wk=jr+'-'+String(wn).padStart(2,'0');
+      // Verify this week actually belongs to this year
+      if(datumNaarWKey(ma.toISOString().split('T')[0]).split('-')[0]!==String(jr)&&wn<52)continue;
       const opt=document.createElement('option');
       opt.value=wk;
-      opt.textContent='W'+wn+' ('+jr+') · '+fs(d)+' - '+fs(vr)+(wk===huidigWk?' ★':'');
+      opt.textContent='W'+wn+' ('+jr+') - '+fs(ma)+' t/m '+fs(vr)+(wk===huidigWk?' ★':'');
       if(wk===geselecteerd)opt.selected=true;
       sel.appendChild(opt);
     }
@@ -1327,13 +1328,31 @@ function verwijderSdd(){
 }
 
 function datumNaarWKey(datum){
+  // ISO 8601 week number
   const d=new Date(datum);
-  const dag=d.getDay()||7;
-  d.setDate(d.getDate()-dag+1);
-  const yr=d.getFullYear();
-  const start=new Date(yr,0,1);
-  const wn=Math.ceil(((d-start)/86400000+start.getDay()+1)/7);
+  d.setHours(0,0,0,0);
+  // Thursday in current week
+  const thu=new Date(d);
+  thu.setDate(d.getDate()-((d.getDay()+6)%7)+3);
+  const yr=thu.getFullYear();
+  // Jan 4 is always in week 1
+  const jan4=new Date(yr,0,4);
+  const wn=Math.round(((thu-jan4)/86400000+((jan4.getDay()+6)%7))/7)+1;
   return yr+'-'+String(wn).padStart(2,'0');
+}
+
+function wkNaarMaISO(wk){
+  // Convert weekKey "2026-19" to Monday date using ISO
+  const p=wk.split('-');
+  const yr=parseInt(p[0]),wn=parseInt(p[1]);
+  // Jan 4 always in W1
+  const jan4=new Date(yr,0,4);
+  const w1mon=new Date(jan4);
+  w1mon.setDate(jan4.getDate()-((jan4.getDay()+6)%7));
+  const ma=new Date(w1mon);
+  ma.setDate(w1mon.getDate()+(wn-1)*7);
+  ma.setHours(0,0,0,0);
+  return ma;
 }
 
 function renderSDD(){
@@ -1348,12 +1367,7 @@ function renderSDD(){
   ].map(b=>'<div class="stat"><div class="stat-n" style="color:'+b.c+'">'+b.n+'</div><div class="stat-l">'+b.l+'</div></div>').join('');
   const wpEl=document.getElementById('sdd-weekplan');
   if(!wpEl)return;
-  function wkNaarMa(wk){
-    const p=wk.split('-');
-    const d=new Date(parseInt(p[0]),0,1);
-    d.setDate(d.getDate()+(parseInt(p[1])-1)*7-(d.getDay()||7)+1);
-    d.setHours(0,0,0,0);return d;
-  }
+  function wkNaarMa(wk){return wkNaarMaISO(wk);}
   const weekMap={};
   lijst.forEach(function(item,i){
     if(!item.start)return;
@@ -1376,7 +1390,7 @@ function renderSDD(){
   wpEl.innerHTML='';
   weken.forEach(function(wk){
     const parts=wk.split('-');
-    const ma=wkNaarMa(wk);
+    const ma=wkNaarMaISO(wk);
     const vr=new Date(ma);vr.setDate(ma.getDate()+4);
     const fs=function(x){return x.getDate()+'/'+(x.getMonth()+1);};
     const isHuidig=wk===vandaagWk;

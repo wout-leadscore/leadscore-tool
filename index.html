@@ -1264,20 +1264,24 @@ function vulWeekOpties(selId, geselecteerd){
   const defaultOpt=document.createElement('option');
   defaultOpt.value='';defaultOpt.textContent='— Kies week —';
   sel.appendChild(defaultOpt);
-  // Genereer weken: 8 weken terug tot 26 weken vooruit
-  const vandaag=new Date();
-  for(let i=-8;i<=26;i++){
-    const ma=getMa(i);
-    const vr=new Date(ma);vr.setDate(ma.getDate()+4);
-    const fs=function(d){return d.getDate()+'/'+(d.getMonth()+1);};
-    const wk=datumNaarWKey(ma.toISOString().split('T')[0]);
-    const parts=wk.split('-');
-    const lbl='W'+parts[1]+' · '+fs(ma)+' – '+fs(vr);
-    const opt=document.createElement('option');
-    opt.value=wk;opt.textContent=lbl;
-    if(i===0)opt.textContent+=' ★';
-    if(wk===geselecteerd)opt.selected=true;
-    sel.appendChild(opt);
+  // Genereer alle weken van dit jaar en volgend jaar
+  const nu=new Date();
+  const huidigWk=datumNaarWKey(nu.toISOString().split('T')[0]);
+  for(let jr=nu.getFullYear();jr<=nu.getFullYear()+1;jr++){
+    for(let wn=1;wn<=52;wn++){
+      // Bereken maandag van deze week
+      const d=new Date(jr,0,1);
+      d.setDate(d.getDate()+(wn-1)*7-(d.getDay()||7)+1);
+      if(d.getFullYear()>jr+1)break;
+      const vr=new Date(d);vr.setDate(d.getDate()+4);
+      const fs=function(x){return x.getDate()+'/'+(x.getMonth()+1);};
+      const wk=jr+'-'+String(wn).padStart(2,'0');
+      const opt=document.createElement('option');
+      opt.value=wk;
+      opt.textContent='W'+wn+' ('+jr+') · '+fs(d)+' - '+fs(vr)+(wk===huidigWk?' ★':'');
+      if(wk===geselecteerd)opt.selected=true;
+      sel.appendChild(opt);
+    }
   }
 }
 

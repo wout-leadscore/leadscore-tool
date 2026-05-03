@@ -177,6 +177,7 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
     <button class="nav-btn" id="nb-planning" onclick="nav('planning')">Planning</button>
     <button class="nav-btn" id="nb-pdf" onclick="nav('pdf')">PDF</button>
     <button class="nav-btn" id="nb-agenda" onclick="nav('agenda')">📅 Agenda</button>
+    <button class="nav-btn" id="nb-sdd" onclick="nav('sdd')">📊 SDD</button>
     <button class="nav-btn" id="nb-admin" onclick="navAdmin()">⚙ Admin</button>
   </div>
   <div class="tb-right">
@@ -404,7 +405,56 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
   </div>
 </div>
 
+<!-- SDD PAGINA -->
+<div class="pnl" id="pnl-sdd">
+  <div class="ph">
+    <div><div class="ph-title">Sales Due Diligence</div><div class="ph-sub">Weekplanning</div></div>
+    <button class="btn-primary" onclick="openSddModal()" style="font-size:12px;padding:7px 14px">+ Nieuw SDD project</button>
+  </div>
+  <!-- Stats -->
+  <div class="stats" id="sdd-stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px"></div>
+  <!-- Weekplanning -->
+  <div id="sdd-weekplan"></div>
+</div>
+
+
+
+<!-- SDD MODAL -->
+<div class="mo" id="mo-sdd">
+  <div class="md">
+    <div class="md-title" id="sdd-modal-title">Nieuw SDD project</div>
+    <input type="hidden" id="sdd-edit-idx" value="-1"/>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <div id="sdd-logo-preview" onclick="document.getElementById('sdd-logo-input').click()" style="width:48px;height:48px;border-radius:var(--r);background:var(--s1);border:1.5px solid var(--b1);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;overflow:hidden">📋</div>
+      <div><div style="font-size:12px;font-weight:600">Logo (klik)</div>
+        <input type="file" id="sdd-logo-input" accept="image/*" style="display:none" onchange="laadFotoPreview(this,'sdd-logo-preview','sdd-logo-data')"/>
+        <input type="hidden" id="sdd-logo-data"/>
+      </div>
+    </div>
+    <div class="fi"><label>Naam bedrijf</label><input type="text" id="sdd-naam" placeholder="Bv. ECS, Integra..."/></div>
+    <div class="fi"><label>Sales Due Diligence week</label>
+      <select id="sdd-start" style="font-family:var(--fm);font-size:13px">
+        <option value="">— Kies week —</option>
+      </select>
+      <input type="hidden" id="sdd-eind" value=""/>
+    </div>
+    <div class="fi"><label>Status</label>
+      <select id="sdd-status">
+        <option value="ingepland">📅 Ingepland</option>
+        <option value="afgerond">🏆 Afgerond</option>
+      </select>
+    </div>
+    <div class="md-btns">
+      <button class="btn-primary" onclick="slaSddOp()">Opslaan</button>
+      <button class="btn-danger" id="sdd-del-btn" style="display:none" onclick="verwijderSdd()">Verwijderen</button>
+      <button class="btn-secondary" onclick="sluit('mo-sdd')">Annuleren</button>
+    </div>
+  </div>
+</div>
 </div><!-- /page -->
+
+
+
 
 <!-- SESSIE EDIT MODAL -->
 <div class="mo" id="mo-sessie">
@@ -477,6 +527,12 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
           <option value="ingepland">📅 Ingepland (SDD)</option>
           <option value="afgerond">🏆 Afgerond (SDD)</option>
         </select>
+      </div>
+    </div>
+    <div id="pf-sdd-datum-wrap" style="display:none">
+      <div class="g2">
+        <div class="fi"><label>Startdatum SDD</label><input type="date" id="pf-startdatum"/></div>
+        <div class="fi"><label>Einddatum SDD</label><input type="date" id="pf-einddatum"/></div>
       </div>
     </div>
     <div style="height:1px;background:var(--b1);margin:10px 0"></div>
@@ -689,7 +745,7 @@ async function syncNaarSupabase(){
   const data={projecten:PROJECTEN,fiches:FICHES,medewerkers:MEDEWERKERS};
   try{
     // Upsert each config key
-    for(const [key,val] of Object.entries({projecten:PROJECTEN,fiches:FICHES,medewerkers:MEDEWERKERS,planning:planData})){
+    for(const [key,val] of Object.entries({projecten:PROJECTEN,fiches:FICHES,medewerkers:MEDEWERKERS,planning:planData,sdd:laadSDD()})){
       await fetch(SB_URL+'/rest/v1/ls_config',{
         method:'POST',
         headers:{...SBH,'Prefer':'resolution=merge-duplicates'},
@@ -712,6 +768,7 @@ async function laadVanSupabase(){
       if(row.key==='fiches'&&Array.isArray(row.value))FICHES=row.value;
       if(row.key==='medewerkers'&&Array.isArray(row.value))MEDEWERKERS=row.value;
       if(row.key==='planning'&&row.value&&typeof row.value==='object')Object.assign(planData,row.value);
+      if(row.key==='sdd'&&Array.isArray(row.value))localStorage.setItem('ls10_sdd',JSON.stringify(row.value));
     });
     // Sla lokaal op
     slaProj();slaFiches();slaMW();slaPlanLokaal();
@@ -1193,6 +1250,158 @@ function slaAfsAan(){
   if(document.getElementById('pnl-invoer').classList.contains('on'))renderLog();
 }
 
+// ── SDD ─────────────────────────────────────────────────────────────
+// SDD data: [{id, naam, logo, start, eind, status}]
+function laadSDD(){try{const d=localStorage.getItem('ls10_sdd');return d?JSON.parse(d):[];}catch(e){return[];}}
+function slaSDD(lijst){localStorage.setItem('ls10_sdd',JSON.stringify(lijst));syncNaarSupabase();}
+
+function vulWeekOpties(selId, geselecteerd){
+  const sel=document.getElementById(selId);
+  if(!sel)return;
+  // Clear and rebuild options
+  while(sel.options&&sel.options.length>0)sel.remove(0);
+  if(!sel.options)return;// not a select element
+  const defaultOpt=document.createElement('option');
+  defaultOpt.value='';defaultOpt.textContent='— Kies week —';
+  sel.appendChild(defaultOpt);
+  // Genereer weken: 8 weken terug tot 26 weken vooruit
+  const vandaag=new Date();
+  for(let i=-8;i<=26;i++){
+    const ma=getMa(i);
+    const vr=new Date(ma);vr.setDate(ma.getDate()+4);
+    const fs=function(d){return d.getDate()+'/'+(d.getMonth()+1);};
+    const wk=datumNaarWKey(ma.toISOString().split('T')[0]);
+    const parts=wk.split('-');
+    const lbl='W'+parts[1]+' · '+fs(ma)+' – '+fs(vr);
+    const opt=document.createElement('option');
+    opt.value=wk;opt.textContent=lbl;
+    if(i===0)opt.textContent+=' ★';
+    if(wk===geselecteerd)opt.selected=true;
+    sel.appendChild(opt);
+  }
+}
+
+function openSddModal(idx){
+  const lijst=laadSDD();
+  const isNew=idx===undefined;
+  const item=isNew?{}:lijst[idx];
+  document.getElementById('sdd-modal-title').textContent=isNew?'Nieuw SDD project':'SDD aanpassen';
+  document.getElementById('sdd-edit-idx').value=isNew?-1:idx;
+  document.getElementById('sdd-naam').value=item.naam||'';
+  vulWeekOpties('sdd-start',item.start||'');
+  vulWeekOpties('sdd-eind',item.eind||'');
+  document.getElementById('sdd-status').value=item.status||'ingepland';
+  document.getElementById('sdd-logo-data').value=item.logo||'';
+  const prev=document.getElementById('sdd-logo-preview');
+  prev.innerHTML=item.logo?'<img src="'+item.logo+'" style="width:100%;height:100%;object-fit:cover"/>':'📋';
+  document.getElementById('sdd-del-btn').style.display=isNew?'none':'block';
+  document.getElementById('mo-sdd').classList.add('on');
+}
+
+function slaSddOp(){
+  const naam=document.getElementById('sdd-naam').value.trim();
+  if(!naam){alert('Naam verplicht');return;}
+  const idx=parseInt(document.getElementById('sdd-edit-idx').value);
+  const item={
+    id:idx>=0?laadSDD()[idx].id:Date.now(),
+    naam,
+    logo:document.getElementById('sdd-logo-data').value||'',
+    start:document.getElementById('sdd-start').value||'',
+    eind:document.getElementById('sdd-eind').value||'',
+    status:document.getElementById('sdd-status').value
+  };
+  const lijst=laadSDD();
+  if(idx>=0)lijst[idx]=item;else lijst.push(item);
+  slaSDD(lijst);sluit('mo-sdd');renderSDD();
+}
+
+function verwijderSdd(){
+  const idx=parseInt(document.getElementById('sdd-edit-idx').value);
+  if(idx<0||!confirm('SDD project verwijderen?'))return;
+  const lijst=laadSDD();lijst.splice(idx,1);
+  slaSDD(lijst);sluit('mo-sdd');renderSDD();
+}
+
+function datumNaarWKey(datum){
+  const d=new Date(datum);
+  const dag=d.getDay()||7;
+  d.setDate(d.getDate()-dag+1);
+  const yr=d.getFullYear();
+  const start=new Date(yr,0,1);
+  const wn=Math.ceil(((d-start)/86400000+start.getDay()+1)/7);
+  return yr+'-'+String(wn).padStart(2,'0');
+}
+
+function renderSDD(){
+  const lijst=laadSDD();
+  const ingepland=lijst.filter(s=>!s.status||s.status==='ingepland');
+  const afgerond=lijst.filter(s=>s.status==='afgerond');
+  const statsEl=document.getElementById('sdd-stats');
+  if(statsEl)statsEl.innerHTML=[
+    {n:lijst.length,l:'Totaal SDD',c:'var(--tx)'},
+    {n:ingepland.length,l:'Ingepland',c:'var(--blue)'},
+    {n:afgerond.length,l:'Afgerond',c:'var(--green)'}
+  ].map(b=>'<div class="stat"><div class="stat-n" style="color:'+b.c+'">'+b.n+'</div><div class="stat-l">'+b.l+'</div></div>').join('');
+  const wpEl=document.getElementById('sdd-weekplan');
+  if(!wpEl)return;
+  function wkNaarMa(wk){
+    const p=wk.split('-');
+    const d=new Date(parseInt(p[0]),0,1);
+    d.setDate(d.getDate()+(parseInt(p[1])-1)*7-(d.getDay()||7)+1);
+    d.setHours(0,0,0,0);return d;
+  }
+  const weekMap={};
+  lijst.forEach(function(item,i){
+    if(!item.start)return;
+    const startMa=wkNaarMa(item.start);
+    const eindMa=item.eind?wkNaarMa(item.eind):new Date(startMa);
+    const cur=new Date(startMa);
+    while(cur<=eindMa){
+      const wk=datumNaarWKey(cur.toISOString().split('T')[0]);
+      if(!weekMap[wk])weekMap[wk]=[];
+      weekMap[wk].push({item:item,idx:i});
+      cur.setDate(cur.getDate()+7);
+    }
+  });
+  const weken=Object.keys(weekMap).sort();
+  const vandaagWk=datumNaarWKey(new Date().toISOString().split('T')[0]);
+  if(!weken.length){
+    wpEl.innerHTML='<div style="font-size:13px;color:var(--mu);font-style:italic;padding:20px 0">Nog geen SDD projecten. Klik + Nieuw SDD project.</div>';
+    return;
+  }
+  wpEl.innerHTML='';
+  weken.forEach(function(wk){
+    const parts=wk.split('-');
+    const ma=wkNaarMa(wk);
+    const vr=new Date(ma);vr.setDate(ma.getDate()+4);
+    const fs=function(x){return x.getDate()+'/'+(x.getMonth()+1);};
+    const isHuidig=wk===vandaagWk;
+    const isVerleden=wk<vandaagWk;
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:12px;padding:10px 14px;margin-bottom:8px;background:'+(isHuidig?'var(--gbg)':'var(--w)')+';border:1.5px solid '+(isHuidig?'var(--gbr)':'var(--b1)')+';border-radius:var(--rl);opacity:'+(isVerleden?'0.5':'1');
+    const wnEl=document.createElement('div');
+    wnEl.style.cssText='font-size:13px;font-weight:800;font-family:var(--fm);color:'+(isHuidig?'var(--green)':'var(--mu)')+';min-width:40px';
+    wnEl.textContent='W'+parts[1];
+    const datEl=document.createElement('div');
+    datEl.style.cssText='font-size:11px;color:var(--mu);min-width:110px';
+    datEl.textContent=fs(ma)+' - '+fs(vr);
+    const projsEl=document.createElement('div');
+    projsEl.style.cssText='display:flex;flex-wrap:wrap;gap:8px;flex:1';
+    weekMap[wk].forEach(function(entry){
+      const chip=document.createElement('span');
+      const isAfg=entry.item.status==='afgerond';
+      chip.style.cssText='display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;cursor:pointer;background:'+(isAfg?'var(--gbg)':'var(--bbg)')+';border:1px solid '+(isAfg?'var(--gbr)':'var(--bbr)')+';color:'+(isAfg?'var(--green)':'var(--blue)');
+      if(entry.item.logo){const img=document.createElement('img');img.src=entry.item.logo;img.style.cssText='width:16px;height:16px;border-radius:3px;object-fit:cover';chip.appendChild(img);}
+      const lbl=document.createElement('strong');lbl.textContent=entry.item.naam;chip.appendChild(lbl);
+      chip.addEventListener('click',function(){openSddModal(entry.idx);});
+      projsEl.appendChild(chip);
+    });
+    row.appendChild(wnEl);row.appendChild(datEl);row.appendChild(projsEl);
+    wpEl.appendChild(row);
+  });
+}
+
+
 async function init(){
   laad();
   laadActLokaal();
@@ -1237,7 +1446,7 @@ function sluit(id){document.getElementById(id).classList.remove('on');}
 function mKey(n){return(n||'').replace(/[^a-zA-Z0-9]/g,'_');}
 
 function nav(p){
-  ['dash','invoer','planning','pdf','agenda','admin'].forEach(x=>{
+  ['dash','invoer','planning','pdf','agenda','sdd','admin'].forEach(x=>{
     document.getElementById('nb-'+x).classList.toggle('on',x===p);
     document.getElementById('pnl-'+x).classList.toggle('on',x===p);
   });
@@ -1247,6 +1456,7 @@ function nav(p){
   if(p==='pdf'){renderPDF();}
   if(p==='admin'&&adminOk)setAdmTab('proj');
   if(p==='agenda'){agendaOff=weekOff;renderAgenda();}
+  if(p==='sdd')renderSDD();
 }
 function navAdmin(){nav('admin');}
 function renderAlles(){
@@ -2044,10 +2254,13 @@ function downloadUurPDF(d){
 // ── PROJECTEN ───────────────────────────────────────────────────────
 function togglePricingUI(){
   const p=document.getElementById('pf-pricing').value;
+  const cat=document.getElementById('pf-cat').value;
   document.getElementById('pf-cps-wrap').style.display=p==='cps'?'block':'none';
   document.getElementById('pf-uur-wrap').style.display=p==='uur'?'block':'none';
   document.getElementById('pf-sdd-wrap').style.display=p==='sdd'?'block':'none';
   document.getElementById('pf-budget-wrap').style.display=p==='sdd'?'none':'block';
+  const sddDatum=document.getElementById('pf-sdd-datum-wrap');
+  if(sddDatum)sddDatum.style.display=(p==='sdd'||cat==='sdd')?'block':'none';
 }
 function openProjModal(id){
   const isNew=!id;
@@ -2074,11 +2287,13 @@ function openProjModal(id){
   document.getElementById('pf-max-meet').value=f.maxMeet||2;
   document.getElementById('pf-info').value=f.info||'';
   document.getElementById('pf-del').style.display=isNew?'none':'block';
+  document.getElementById('pf-startdatum').value=f.startdatum||'';
+  document.getElementById('pf-einddatum').value=f.einddatum||'';
+  togglePricingUI();
   const lprev=document.getElementById('pf-logo-preview');
   document.getElementById('pf-logo-data').value=f.logo||'';
   if(f.logo)lprev.innerHTML='<img src="'+f.logo+'" style="width:100%;height:100%;object-fit:cover;border-radius:var(--r)"/>';
   else lprev.innerHTML='🏢';
-  togglePricingUI();
   document.getElementById('mo-proj').classList.add('on');
 }
 function slaFicheOp(){
@@ -2105,7 +2320,9 @@ function slaFicheOp(){
       maxData:parseFloat(document.getElementById('pf-max-data').value)||6,
       maxMeet:parseFloat(document.getElementById('pf-max-meet').value)||2,
       info:document.getElementById('pf-info').value,
-      logo:document.getElementById('pf-logo-data').value||''};
+      logo:document.getElementById('pf-logo-data').value||'',
+      startdatum:document.getElementById('pf-startdatum').value||'',
+      einddatum:document.getElementById('pf-einddatum').value||''};
     if(fi>-1)FICHES[fi]=fiche;else FICHES.push(fiche);
   }else{
     const newId=naam2.toLowerCase().replace(/[^a-z0-9]/g,'_')+'_'+Date.now();
@@ -2122,7 +2339,9 @@ function slaFicheOp(){
       maxData:parseFloat(document.getElementById('pf-max-data').value)||6,
       maxMeet:parseFloat(document.getElementById('pf-max-meet').value)||2,
       info:document.getElementById('pf-info').value,
-      logo:document.getElementById('pf-logo-data').value||''});
+      logo:document.getElementById('pf-logo-data').value||'',
+      startdatum:document.getElementById('pf-startdatum').value||'',
+      einddatum:document.getElementById('pf-einddatum').value||''});
   }
   slaProj();slaFiches();sluit('mo-proj');renderProjecten();
 }

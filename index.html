@@ -1266,7 +1266,7 @@ function vulWeekOpties(selId, geselecteerd){
   sel.appendChild(defaultOpt);
   // Genereer alle weken ISO van dit jaar en volgend jaar
   const nu=new Date();
-  const huidigWk=datumNaarWKey(nu.toISOString().split('T')[0]);
+  const huidigWk=datumNaarWKey(dStrLocal(nu));
   for(let jr=nu.getFullYear();jr<=nu.getFullYear()+1;jr++){
     for(let wn=1;wn<=53;wn++){
       const ma=wkNaarMaISO(jr+'-'+String(wn).padStart(2,'0'));
@@ -1341,17 +1341,18 @@ function datumNaarWKey(datum){
   return yr+'-'+String(wn).padStart(2,'0');
 }
 
+function dStrLocal(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
 function wkNaarMaISO(wk){
-  // Convert weekKey "2026-19" to Monday date using ISO
   const p=wk.split('-');
   const yr=parseInt(p[0]),wn=parseInt(p[1]);
-  // Jan 4 always in W1
   const jan4=new Date(yr,0,4);
   const w1mon=new Date(jan4);
   w1mon.setDate(jan4.getDate()-((jan4.getDay()+6)%7));
   const ma=new Date(w1mon);
   ma.setDate(w1mon.getDate()+(wn-1)*7);
-  ma.setHours(0,0,0,0);
+  ma.setHours(12,0,0,0);// noon to avoid DST issues
   return ma;
 }
 
@@ -1375,14 +1376,14 @@ function renderSDD(){
     const eindMa=item.eind?wkNaarMa(item.eind):new Date(startMa);
     const cur=new Date(startMa);
     while(cur<=eindMa){
-      const wk=datumNaarWKey(cur.toISOString().split('T')[0]);
+      const wk=datumNaarWKey(dStrLocal(cur));
       if(!weekMap[wk])weekMap[wk]=[];
       weekMap[wk].push({item:item,idx:i});
       cur.setDate(cur.getDate()+7);
     }
   });
   const weken=Object.keys(weekMap).sort();
-  const vandaagWk=datumNaarWKey(new Date().toISOString().split('T')[0]);
+  const vandaagWk=datumNaarWKey(dStrLocal(new Date()));
   if(!weken.length){
     wpEl.innerHTML='<div style="font-size:13px;color:var(--mu);font-style:italic;padding:20px 0">Nog geen SDD projecten. Klik + Nieuw SDD project.</div>';
     return;

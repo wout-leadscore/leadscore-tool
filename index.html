@@ -1566,7 +1566,7 @@ function renderDash(){
   projs.forEach(proj=>{
     const f=getFiche(proj.id);
     const pAct=entries.filter(a=>a.project===proj.id);
-    const totA=pAct.reduce((s,a)=>s+(a.afs||0),0);
+    const totA=alleAfs.length||pAct.reduce((s,a)=>s+(a.afs||0),0);
     const totC=pAct.reduce((s,a)=>s+(a.calls||0),0);
     const totU=pAct.reduce((s,a)=>s+((a.duur||60)/60),0);
     const doelU=MEDEWERKERS.reduce((s,m)=>{const b=(getPlan(m.naam,weekOff).blokken||[]).find(b=>b.projId===proj.id);return s+(b?b.uren:0);},0);
@@ -2123,8 +2123,10 @@ function openPDF(projId){
   const isUur=(f.pricing||proj.pricing)==='uur';
   const dagen=wDagen(weekOff);
   const pAct=activiteit.filter(a=>dagen.includes(a.datum)&&a.project===projId);
-  // Afspraken geboekt deze week voor dit project
+  // Afspraken geboekt DEZE WEEK voor dit project (sessiedatum in week)
   const alleAfs=pAct.flatMap(a=>(a.afspraken||[]).map(af=>({...af,door:a.naam,sessiedatum:a.datum})));
+  // Debug: log
+  console.log('PDF alleAfs voor '+projId+':', alleAfs.length, 'pAct:', pAct.length);
   const totC=pAct.reduce((s,a)=>s+(a.calls||0),0),totMa=pAct.reduce((s,a)=>s+(a.manueel||0),0);
   const totAu=pAct.reduce((s,a)=>s+(a.auto||0),0),totA=pAct.reduce((s,a)=>s+(a.afs||0),0);
   const totDU=pAct.reduce((s,a)=>s+(a.dataUren||0),0),totMU=pAct.reduce((s,a)=>s+(a.meetMin||0),0);
@@ -2205,7 +2207,10 @@ function buildUurRapport(d){
     '<tbody>'+rows.map((r,i)=>'<tr style="background:'+(i%2===0?'#fff':'#f8fafc')+'"><td style="padding:8px 10px;border:1px solid #dde2ea;font-family:monospace;font-size:11px">'+r.datum+'</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-weight:600">'+r.naam+'</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-family:monospace;font-weight:700;color:#1d4ed8;text-align:right">'+r.uren.toFixed(2)+'</td><td style="padding:8px 10px;border:1px solid #dde2ea;color:#3d4452">'+(r.omschr||r.notities||'—')+'</td></tr>').join('')+
     '<tr style="background:#eff6ff;font-weight:700"><td colspan="2" style="padding:8px 10px;border:1px solid #93c5fd;color:#1d4ed8">TOTAAL</td><td style="padding:8px 10px;border:1px solid #93c5fd;font-family:monospace;font-weight:800;color:#1d4ed8;text-align:right">'+totU.toFixed(2)+'</td><td style="padding:8px 10px;border:1px solid #93c5fd;color:#1d4ed8">'+fmtEur(omzet)+' ('+totU.toFixed(2)+'u × €'+d.tarief+'/u)</td></tr>'+
     '</tbody></table></div>'+
-    '<div style="padding-top:12px;border-top:2px solid #1d4ed8;display:flex;justify-content:space-between;align-items:center">'+
+    (d.alleAfs&&d.alleAfs.length?'<div style="margin-bottom:18px"><div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7685;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #dde2ea">Afspraken ('+d.alleAfs.length+')</div>'+
+    '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#1d4ed8"><th style="padding:8px 10px;border:1px solid #1e40af;text-align:left;color:#fff">#</th><th style="padding:8px 10px;border:1px solid #1e40af;text-align:left;color:#fff">Naam</th><th style="padding:8px 10px;border:1px solid #1e40af;text-align:left;color:#fff">Datum</th><th style="padding:8px 10px;border:1px solid #1e40af;text-align:left;color:#fff">Type</th><th style="padding:8px 10px;border:1px solid #1e40af;text-align:left;color:#fff">Door</th></tr></thead>'+
+    '<tbody>'+d.alleAfs.map(function(af,i){return'<tr style="background:'+(i%2===0?'#fff':'#f8fafc')+'"><td style="padding:8px 10px;border:1px solid #dde2ea;color:#adb5bd">'+(i+1)+'</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-weight:600">'+(af.naam||'?')+'</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-family:monospace">'+fmtDate(af.datum)+'</td><td style="padding:8px 10px;border:1px solid #dde2ea">'+(af.type==='online'?'🌐 Online':'🤝 Fysiek')+'</td><td style="padding:8px 10px;border:1px solid #dde2ea">'+(af.door||'—')+'</td></tr>';}).join('')+
+    '</tbody></table></div>':'')+'    <div style="padding-top:12px;border-top:2px solid #1d4ed8;display:flex;justify-content:space-between;align-items:center">'+
     '<div style="display:flex;align-items:center;gap:8px"><div style="width:24px;height:24px;background:#1d4ed8;border-radius:5px;display:flex;align-items:center;justify-content:center"><div style="width:5px;height:5px;background:#fff;border-radius:50%"></div></div><div style="font-size:13px;font-weight:700;color:#1d4ed8">Leadscore</div></div>'+
     '<div style="font-size:10px;color:#adb5bd;font-family:monospace">'+d.proj.naam+' · '+d.periode+' · Ref: '+d.ref+'</div></div></div>';
 }
@@ -2266,6 +2271,19 @@ function downloadUurPDF(d){
     columnStyles:{0:{cellWidth:22},1:{cellWidth:18},2:{cellWidth:14,textColor:[29,78,216],fontStyle:'bold',halign:'right'},3:{overflow:'linebreak'}},
     margin:{left:ml,right:14},styles:{cellPadding:2.5,lineColor:[221,226,234]},
     didParseCell:function(dd){if(dd.row.index===rows.length){dd.cell.styles.fillColor=[239,246,255];dd.cell.styles.textColor=[29,78,216];dd.cell.styles.fontStyle='bold';}}});
+  // Afspraken sectie
+  if(d.alleAfs&&d.alleAfs.length){
+    doc.autoTable({
+      startY:doc.lastAutoTable.finalY+5,
+      head:[['#','Naam klant','Datum','Type','Door']],
+      body:d.alleAfs.map(function(af,i){return[String(i+1),af.naam||'?',fmtDate(af.datum),af.type==='online'?'Online':'Fysiek',af.door||'—'];}),
+      theme:'grid',
+      headStyles:{fillColor:[29,78,216],textColor:255,fontSize:8,fontStyle:'bold'},
+      bodyStyles:{fontSize:9},
+      margin:{left:ml,right:14},
+      styles:{cellPadding:2.5,lineColor:[221,226,234]}
+    });
+  }
   const pH=doc.internal.pageSize.height;doc.setDrawColor(29,78,216);doc.setLineWidth(0.4);doc.line(ml,pH-14,W-14,pH-14);doc.setFillColor(29,78,216);doc.roundedRect(ml,pH-12,6,6,1,1,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(4);doc.text('LS',ml+3,pH-8,{align:'center'});doc.setTextColor(29,78,216);doc.setFontSize(8);doc.text('Leadscore',ml+8,pH-7);doc.setTextColor(173,181,189);doc.setFont('helvetica','normal');doc.setFontSize(7);doc.text(d.proj.naam+' · '+d.periode+' · '+d.ref,W-14,pH-7,{align:'right'});
   doc.save('Leadscore_Tijdsreg_'+d.proj.naam.replace(/\s+/g,'_')+'_'+d.ref+'.pdf');
 }

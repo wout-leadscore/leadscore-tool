@@ -1566,7 +1566,7 @@ function renderDash(){
   projs.forEach(proj=>{
     const f=getFiche(proj.id);
     const pAct=entries.filter(a=>a.project===proj.id);
-    const totA=alleAfs.length||pAct.reduce((s,a)=>s+(a.afs||0),0);
+    const totA=pAct.reduce((s,a)=>s+(a.afs||0),0);
     const totC=pAct.reduce((s,a)=>s+(a.calls||0),0);
     const totU=pAct.reduce((s,a)=>s+((a.duur||60)/60),0);
     const doelU=MEDEWERKERS.reduce((s,m)=>{const b=(getPlan(m.naam,weekOff).blokken||[]).find(b=>b.projId===proj.id);return s+(b?b.uren:0);},0);

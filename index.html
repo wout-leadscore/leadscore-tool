@@ -2522,6 +2522,129 @@ function getGeselecteerdeMaand(){
   return nu.getFullYear()+'-'+String(nu.getMonth()+1).padStart(2,'0');
 }
 
+function downloadProjFactuurPDF(projId){
+  const maandKey=getGeselecteerdeMaand();
+  const [mYr,mMn]=maandKey.split('-');
+  const mnd=parseInt(mMn)-1,yr=parseInt(mYr);
+  const mndNamen=['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
+  const p=PROJECTEN.find(x=>x.id===projId);if(!p)return;
+  const f=getFiche(projId);
+  const mndAct=activiteit.filter(a=>{const d=new Date(a.datum);return d.getMonth()===mnd&&d.getFullYear()===yr&&a.project===projId;});
+  const alleAfs=mndAct.flatMap(a=>(a.afspraken||[]).map(af=>({...af,door:a.naam})));
+  const totC=mndAct.reduce((s,a)=>s+(a.calls||0),0);
+  const totM=mndAct.reduce((s,a)=>s+(a.manueel||0)+(a.auto||0),0);
+  const totA=alleAfs.length||mndAct.reduce((s,a)=>s+(a.afs||0),0);
+  const totU=mndAct.reduce((s,a)=>s+((a.duur||60)/60),0);
+  const totData=mndAct.reduce((s,a)=>s+(a.dataUren||0),0);
+  const totMeet=mndAct.reduce((s,a)=>s+(a.meetMin||0),0);
+  const omzet=berekenOmzet(mndAct,projId);
+  const budget=p.pricing==='sdd'?f.vast:f.budget;
+
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,ml=14,cw=W-ml-14;let y=14;
+
+  // Header
+  doc.setFillColor(21,128,61);doc.roundedRect(ml,y,cw,26,3,3,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(18);
+  doc.text('Leadscore',ml+8,y+10);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text('info@leadscore.be',ml+8,y+16);
+  doc.text('Activiteitsoverzicht - '+mndNamen[mnd]+' '+yr,ml+8,y+21);
+  doc.setFontSize(14);doc.setFont('helvetica','bold');
+  doc.text(p.naam,W-14,y+10,{align:'right'});
+  if(f.contact){doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text('t.a.v. '+f.contact,W-14,y+16,{align:'right'});}
+  doc.setFontSize(9);doc.text(new Date().toLocaleDateString('nl-BE'),W-14,y+21,{align:'right'});
+  y+=32;
+
+  // Stats blokken
+  const bw=(cw-15)/4;
+  [{v:String(totC),l:'CALLS',c:[29,78,216]},{v:String(totM),l:'MAILS',c:[29,78,216]},
+   {v:String(totA),l:'AFSPRAKEN',c:[21,128,61]},{v:fmtEur(omzet),l:'OMZET',c:[21,128,61]}
+  ].forEach(function(b,i){
+    const bx=ml+i*(bw+5);
+    doc.setFillColor(240,242,245);doc.roundedRect(bx,y,bw,16,2,2,'F');
+    doc.setTextColor(...b.c);doc.setFont('helvetica','bold');doc.setFontSize(11);
+    doc.text(String(b.v),bx+bw/2,y+9,{align:'center'});
+    doc.setFontSize(6);doc.setFont('helvetica','normal');doc.setTextColor(107,118,133);
+    doc.text(b.l,bx+bw/2,y+14,{align:'center'});
+  });
+  y+=22;
+
+  // Budget balkje
+  if(budget){
+    const pct=Math.min(100,Math.round((omzet/budget)*100));
+    doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(15,17,23);
+    doc.text('Budget: '+fmtEur(omzet)+' / '+fmtEur(budget)+' ('+pct+'%)',ml,y+4);
+    y+=7;doc.setFillColor(228,232,239);doc.roundedRect(ml,y,cw,3,1,1,'F');
+    const pw=cw*(pct/100);
+    doc.setFillColor(...(pct>=100?[153,27,27]:pct>=80?[146,64,14]:[21,128,61]));
+    doc.roundedRect(ml,y,pw,3,1,1,'F');y+=8;
+  }
+
+  // Extra uren info
+  if(totU>0||totData>0||totMeet>0){
+    const parts=[];
+    if(totU>0)parts.push('Uren: '+totU.toFixed(1)+'u');
+    if(totData>0)parts.push('Data/Scraping: '+totData.toFixed(1)+'u');
+    if(totMeet>0)parts.push('Meeting: '+totMeet.toFixed(1)+'u');
+    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(107,118,133);
+    doc.text(parts.join('   ·   '),ml,y+4);y+=10;
+  }
+
+  // Sessie log
+  if(mndAct.length){
+    const dagNamen=['zo','ma','di','wo','do','vr','za'];
+    const mndN=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+    doc.autoTable({
+      startY:y,
+      head:[['Datum','Wie','Uren','Activiteit']],
+      body:mndAct.map(function(a){
+        const d=new Date(a.datum);
+        const parts=[];
+        if(a.calls)parts.push(a.calls+' calls');
+        if((a.manueel||0)+(a.auto||0))parts.push((a.manueel+a.auto)+' mails');
+        if(a.dataUren)parts.push('data '+a.dataUren+'u');
+        if(a.meetMin)parts.push('meeting '+a.meetMin+'u');
+        const afspCount=((a.afspraken||[]).length)||(a.afs||0);
+        if(afspCount)parts.push(afspCount+' afsp.');
+        return[dagNamen[d.getDay()]+' '+d.getDate()+' '+mndN[d.getMonth()],
+          a.naam,((a.duur||60)/60).toFixed(1)+'u',parts.join(' · ')||'—'];
+      }),
+      theme:'grid',
+      headStyles:{fillColor:[21,128,61],textColor:255,fontSize:8,fontStyle:'bold'},
+      bodyStyles:{fontSize:8},
+      columnStyles:{0:{cellWidth:24},1:{cellWidth:18},2:{cellWidth:12,halign:'right'},3:{overflow:'linebreak'}},
+      margin:{left:ml,right:14},styles:{cellPadding:2.5,lineColor:[221,226,234]}
+    });
+    y=doc.lastAutoTable.finalY+6;
+  }
+
+  // Afspraken
+  if(alleAfs.length){
+    if(y>220){doc.addPage();y=14;}
+    doc.autoTable({
+      startY:y,
+      head:[['#','Naam klant','Datum afspraak','Type','Geboekt door']],
+      body:alleAfs.map(function(af,i){return[String(i+1),af.naam||'?',fmtDate(af.datum||''),af.type==='online'?'Online':'Fysiek',af.door||'—'];}),
+      theme:'grid',
+      headStyles:{fillColor:[21,128,61],textColor:255,fontSize:8,fontStyle:'bold'},
+      bodyStyles:{fontSize:8},
+      margin:{left:ml,right:14},styles:{cellPadding:2.5,lineColor:[221,226,234]}
+    });
+  }
+
+  // Footer
+  const pH=doc.internal.pageSize.height;
+  doc.setDrawColor(21,128,61);doc.setLineWidth(0.4);doc.line(ml,pH-12,W-14,pH-12);
+  doc.setTextColor(21,128,61);doc.setFontSize(7);doc.setFont('helvetica','bold');
+  doc.text('Leadscore',ml,pH-7);
+  doc.setTextColor(173,181,189);doc.setFont('helvetica','normal');
+  doc.text(p.naam+' · '+mndNamen[mnd]+' '+yr+' · '+fmtEur(omzet),W-14,pH-7,{align:'right'});
+
+  doc.save('Leadscore_'+p.naam.replace(/\s+/g,'_')+'_'+maandKey+'.pdf');
+}
+
 function downloadFactuurPDF(){
   const maandKey=getGeselecteerdeMaand();
   const [yr,mn]=maandKey.split('-');
@@ -2535,16 +2658,18 @@ function downloadFactuurPDF(){
   let y=14;
 
   // Header
-  doc.setFillColor(21,128,61);doc.roundedRect(ml,y,cw,22,3,3,'F');
-  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(16);
-  doc.text('Leadscore',ml+8,y+9);
-  doc.setFontSize(9);doc.setFont('helvetica','normal');
-  doc.text('Maandoverzicht activiteiten',ml+8,y+16);
+  doc.setFillColor(21,128,61);doc.roundedRect(ml,y,cw,26,3,3,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(18);
+  doc.text('Leadscore',ml+8,y+10);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text('Bredestraat 2, 2000 Antwerpen',ml+8,y+16);
+  doc.text('info@leadscore.be',ml+8,y+21);
   doc.setFontSize(14);doc.setFont('helvetica','bold');
-  doc.text(mndNamen[mnd]+' '+yr,W-14,y+9,{align:'right'});
-  doc.setFontSize(9);doc.setFont('helvetica','normal');
-  doc.text('Gegenereerd: '+new Date().toLocaleDateString('nl-BE'),W-14,y+16,{align:'right'});
-  y+=28;
+  doc.text(mndNamen[mnd]+' '+yr,W-14,y+10,{align:'right'});
+  doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text('Activiteitsoverzicht',W-14,y+16,{align:'right'});
+  doc.text('Gegenereerd: '+new Date().toLocaleDateString('nl-BE'),W-14,y+21,{align:'right'});
+  y+=32;
 
   // Per project
   const projMetAct=PROJECTEN.filter(p=>mndAct.some(a=>a.project===p.id));
@@ -2611,12 +2736,19 @@ function downloadFactuurPDF(){
     if(y>220){doc.addPage();y=14;}
 
     // Project header
-    doc.setFillColor(240,242,245);doc.roundedRect(ml,y,cw,8,2,2,'F');
-    doc.setTextColor(15,17,23);doc.setFont('helvetica','bold');doc.setFontSize(10);
-    doc.text(p.naam,ml+4,y+5.5);
-    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(107,118,133);
-    doc.text(fmtEur(omzet),W-14,y+5.5,{align:'right'});
-    y+=11;
+    doc.setFillColor(21,128,61);doc.roundedRect(ml,y,cw,10,2,2,'F');
+    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(11);
+    doc.text(p.naam,ml+4,y+6.5);
+    doc.setFont('helvetica','normal');doc.setFontSize(8);
+    if(f.contact)doc.text('t.a.v. '+f.contact,ml+4,y+10.5-1);
+    doc.setFont('helvetica','bold');doc.setFontSize(9);
+    doc.text(fmtEur(omzet),W-14,y+6.5,{align:'right'});
+    if(f.pricing||p.pricing){
+      const pricingLbl=(f.pricing||p.pricing)==='cps'?'CPS':(f.pricing||p.pricing)==='uur'?'Uurtarief':'SDD';
+      doc.setFont('helvetica','normal');doc.setFontSize(7);
+      doc.text(pricingLbl,W-14,y+10.5-1,{align:'right'});
+    }
+    y+=14;
 
     // Sessie log
     if(pAct.length){
@@ -2680,187 +2812,68 @@ function downloadFactuurPDF(){
 }
 
 function renderAdm(){
+  vulMaandSelector();
   const el=document.getElementById('adm-content');if(!el)return;
-  if(!activiteit.length){el.innerHTML='<p style="font-size:13px;color:var(--mu)">Geen data.</p>';return;}
+  const maandKey=getGeselecteerdeMaand();
+  const [mYr,mMn]=maandKey.split('-');
+  const mnd=parseInt(mMn)-1,yr=parseInt(mYr);
+  const mndNamen=['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
 
-  // Build per-day rows
-  const dagMap={};
-  activiteit.forEach(a=>{
-    if(!dagMap[a.datum])dagMap[a.datum]={};
-    if(!dagMap[a.datum][a.naam])dagMap[a.datum][a.naam]={calls:0,mails:0,afs:0,uren:0,omzet:0,projecten:new Set()};
-    const d=dagMap[a.datum][a.naam];
-    d.calls+=a.calls||0;
-    d.mails+=(a.manueel||0)+(a.auto||0);
-    d.afs+=a.afs||0;
-    d.uren+=((a.duur||60)/60);
-    d.omzet+=berekenOmzet([a],a.project||'');
-    if(a.project)d.projecten.add(pNaam(a.project));
+  const mndAct=activiteit.filter(a=>{const d=new Date(a.datum);return d.getMonth()===mnd&&d.getFullYear()===yr;});
+  const projMetAct=PROJECTEN.filter(p=>mndAct.some(a=>a.project===p.id));
+
+  if(!projMetAct.length){
+    el.innerHTML='<div style="font-size:13px;color:var(--mu);padding:20px 0">Geen activiteit in '+mndNamen[mnd]+' '+yr+'.</div>';
+    return;
+  }
+
+  let totaalOmzet=0;
+  const rows=projMetAct.map(p=>{
+    const f=getFiche(p.id);
+    const pAct=mndAct.filter(a=>a.project===p.id);
+    const totC=pAct.reduce((s,a)=>s+(a.calls||0),0);
+    const totM=pAct.reduce((s,a)=>s+(a.manueel||0)+(a.auto||0),0);
+    const alleAfs=pAct.flatMap(a=>a.afspraken||[]);
+    const totA=alleAfs.length||pAct.reduce((s,a)=>s+(a.afs||0),0);
+    const totU=pAct.reduce((s,a)=>s+((a.duur||60)/60),0);
+    const totData=pAct.reduce((s,a)=>s+(a.dataUren||0),0);
+    const totMeet=pAct.reduce((s,a)=>s+(a.meetMin||0),0);
+    const omzet=berekenOmzet(pAct,p.id);
+    totaalOmzet+=omzet;
+    const budget=p.pricing==='sdd'?f.vast:f.budget;
+    const pct=budget>0?Math.min(100,Math.round((omzet/budget)*100)):null;
+    const clr=pct===null?'var(--mu)':pct>=100?'var(--red)':pct>=80?'var(--amber)':'var(--green)';
+    return{p,f,totC,totM,totA,totU,totData,totMeet,omzet,budget,pct,clr};
   });
 
-  const dagen=Object.keys(dagMap).sort().reverse();
-  
-  // Totalen
-  const totC=activiteit.reduce((s,a)=>s+(a.calls||0),0);
-  const totM=activiteit.reduce((s,a)=>s+(a.manueel||0)+(a.auto||0),0);
-  const totA=activiteit.reduce((s,a)=>s+(a.afs||0),0);
-  const totO=activiteit.reduce((s,a)=>s+berekenOmzet([a],a.project||''),0);
-  const totU=activiteit.reduce((s,a)=>s+((a.duur||60)/60),0);
-
-  let html='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">';
-  [{v:totC,l:'Calls totaal',c:'var(--tx)'},{v:totM,l:'Mails totaal',c:'var(--tx)'},{v:totA,l:'Afspraken',c:'var(--green)'},{v:fmtEur(totO),l:'Omzet totaal',c:'var(--blue)'}].forEach(b=>{
-    html+='<div style="background:var(--w);border:1px solid var(--b1);border-radius:var(--rl);padding:14px;box-shadow:var(--sh);text-align:center">'+
-      '<div style="font-size:22px;font-weight:800;font-family:var(--fm);color:'+b.c+'">'+b.v+'</div>'+
-      '<div style="font-size:10px;color:var(--mu);text-transform:uppercase;margin-top:4px">'+b.l+'</div></div>';
-  });
-  html+='</div>';
-
-  // Per dag tabel
-  html+='<table class="adm-tbl"><thead><tr>'+
-    '<th>Datum</th><th>Naam</th><th>Calls</th><th>Mails</th><th>Afsp.</th><th>Uren</th><th style="color:var(--blue)">Omzet</th><th>Projecten</th>'+
-    '</tr></thead><tbody>';
-
-  let prevDag='';
-  dagen.forEach(dag=>{
-    const namen=Object.keys(dagMap[dag]).sort();
-    // Dag subtotaal
-    const dagC=namen.reduce((s,n)=>s+dagMap[dag][n].calls,0);
-    const dagM=namen.reduce((s,n)=>s+dagMap[dag][n].mails,0);
-    const dagA=namen.reduce((s,n)=>s+dagMap[dag][n].afs,0);
-    const dagU=namen.reduce((s,n)=>s+dagMap[dag][n].uren,0);
-    const dagO=namen.reduce((s,n)=>s+dagMap[dag][n].omzet,0);
-    const d=new Date(dag);
-    const dagNamen=['zo','ma','di','wo','do','vr','za'];
-    const dagLbl=dagNamen[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
-    
-    // Dag header row
-    html+='<tr style="background:var(--s2)">'+
-      '<td style="font-weight:700;font-size:12px">'+dagLbl+'</td>'+
-      '<td style="font-size:11px;color:var(--mu)">'+namen.length+' persoon/personen</td>'+
-      '<td style="font-family:var(--fm);font-weight:700">'+dagC+'</td>'+
-      '<td style="font-family:var(--fm);font-weight:700">'+dagM+'</td>'+
-      '<td style="font-family:var(--fm);font-weight:700;color:var(--green)">'+dagA+'</td>'+
-      '<td style="font-family:var(--fm);font-weight:700">'+dagU.toFixed(1)+'u</td>'+
-      '<td style="font-family:var(--fm);font-weight:700;color:var(--blue)">'+fmtEur(dagO)+'</td>'+
-      '<td></td></tr>';
-
-    // Per persoon
-    namen.forEach(n=>{
-      const d2=dagMap[dag][n];
-      html+='<tr>'+
-        '<td style="color:var(--mu);font-size:11px;padding-left:20px">└</td>'+
-        '<td style="font-weight:600">'+n+'</td>'+
-        '<td style="font-family:var(--fm)">'+d2.calls+'</td>'+
-        '<td style="font-family:var(--fm)">'+d2.mails+'</td>'+
-        '<td style="font-family:var(--fm);color:var(--green)">'+d2.afs+'</td>'+
-        '<td style="font-family:var(--fm)">'+d2.uren.toFixed(1)+'u</td>'+
-        '<td style="font-family:var(--fm);font-weight:600;color:var(--blue)">'+fmtEur(d2.omzet)+'</td>'+
-        '<td style="font-size:11px;color:var(--mu)">'+Array.from(d2.projecten).join(', ')+'</td>'+
-        '</tr>';
-    });
-  });
-  html+='</tbody></table>';
-  el.innerHTML=html;
+  el.innerHTML='<div style="margin-bottom:16px;padding:12px 16px;background:var(--gbg);border:1.5px solid var(--gbr);border-radius:var(--rl);display:flex;justify-content:space-between;align-items:center">'+
+    '<span style="font-size:13px;font-weight:600;color:var(--mu)">Totaal '+mndNamen[mnd]+' '+yr+'</span>'+
+    '<span style="font-size:20px;font-weight:800;font-family:var(--fm);color:var(--green)">'+fmtEur(totaalOmzet)+'</span>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">'+
+    rows.map(function(r){
+      const logoHtml=r.f.logo?'<div style="width:36px;height:36px;border-radius:6px;overflow:hidden;flex-shrink:0"><img src="'+r.f.logo+'" style="width:100%;height:100%;object-fit:cover"/></div>':'';
+      return'<div style="background:var(--w);border:1px solid var(--b1);border-radius:var(--rl);padding:14px;box-shadow:var(--sh)">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'+logoHtml+
+        '<div><div style="font-size:14px;font-weight:700">'+r.p.naam+'</div>'+
+        (r.f.contact?'<div style="font-size:11px;color:var(--mu)">'+r.f.contact+'</div>':'')+
+        '</div></div>'+
+        '<div style="font-size:22px;font-weight:800;font-family:var(--fm);color:var(--green);margin-bottom:8px">'+fmtEur(r.omzet)+'</div>'+
+        (r.budget?'<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--mu);margin-bottom:4px"><span>Budget</span><span style="font-weight:600;color:'+r.clr+'">'+r.pct+'%</span></div>'+
+        '<div style="height:5px;background:var(--s2);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+r.pct+'%;background:'+r.clr+';border-radius:3px"></div></div>'+
+        '<div style="font-size:10px;color:var(--mu);margin-top:3px;text-align:right">'+fmtEur(r.omzet)+' / '+fmtEur(r.budget)+'</div></div>':'')+
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px">'+
+        '<div style="background:var(--s1);border-radius:5px;padding:5px;text-align:center"><div style="font-size:14px;font-weight:700;font-family:var(--fm)">'+r.totC+'</div><div style="font-size:9px;color:var(--mu);text-transform:uppercase">Calls</div></div>'+
+        '<div style="background:var(--s1);border-radius:5px;padding:5px;text-align:center"><div style="font-size:14px;font-weight:700;font-family:var(--fm)">'+r.totM+'</div><div style="font-size:9px;color:var(--mu);text-transform:uppercase">Mails</div></div>'+
+        '<div style="background:var(--gbg);border-radius:5px;padding:5px;text-align:center"><div style="font-size:14px;font-weight:700;font-family:var(--fm);color:var(--green)">'+r.totA+'</div><div style="font-size:9px;color:var(--mu);text-transform:uppercase">Afsp.</div></div>'+
+        '</div>'+
+        (r.totU>0?'<div style="margin-top:5px;font-size:11px;color:var(--mu);font-family:var(--fm)">'+r.totU.toFixed(1)+'u'+(r.totData>0?' · data '+r.totData.toFixed(1)+'u':'')+(r.totMeet>0?' · meeting '+r.totMeet.toFixed(1)+'u':'')+'</div>':'')+
+        '<button data-pid="'+r.p.id+'" onclick="downloadProjFactuurPDF(this.dataset.pid)" style="width:100%;margin-top:10px;padding:7px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fh)">⬇ Download PDF</button>'+
+        '</div>';
+    }).join('')+
+    '</div>';
 }
 
-function downloadOmzetPDF(){
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-  const W=210,ml=14,cw=W-ml-14;
-  let y=14;
-
-  // Header
-  doc.setFillColor(21,128,61);doc.roundedRect(ml,y,cw,20,3,3,'F');
-  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(14);
-  doc.text('Leadscore',ml+7,y+8);
-  doc.setFontSize(8);doc.setFont('helvetica','normal');
-  doc.text('Omzet & activiteitsoverzicht',ml+7,y+14);
-  const nu=new Date();
-  const datumStr=nu.toLocaleDateString('nl-BE',{day:'numeric',month:'long',year:'numeric'});
-  doc.text('Gegenereerd: '+datumStr,W-14,y+14,{align:'right'});
-  y+=26;
-
-  // Totalen blokken
-  const totC=activiteit.reduce((s,a)=>s+(a.calls||0),0);
-  const totM=activiteit.reduce((s,a)=>s+(a.manueel||0)+(a.auto||0),0);
-  const totA=activiteit.reduce((s,a)=>s+(a.afs||0),0);
-  const totO=activiteit.reduce((s,a)=>s+berekenOmzet([a],a.project||''),0);
-  const bw=(cw-9)/4;
-  [{v:String(totC),l:'CALLS',c:[29,78,216]},{v:String(totM),l:'MAILS',c:[29,78,216]},
-   {v:String(totA),l:'AFSPRAKEN',c:[21,128,61]},{v:fmtEur(totO),l:'OMZET TOTAAL',c:[21,128,61]}
-  ].forEach((b,i)=>{
-    const bx=ml+i*(bw+3);
-    doc.setFillColor(240,242,245);doc.setDrawColor(221,226,234);
-    doc.roundedRect(bx,y,bw,16,2,2,'FD');
-    doc.setTextColor(...b.c);doc.setFont('helvetica','bold');doc.setFontSize(11);
-    doc.text(String(b.v),bx+bw/2,y+9,{align:'center'});
-    doc.setFontSize(6);doc.setFont('helvetica','normal');doc.setTextColor(107,118,133);
-    doc.text(b.l,bx+bw/2,y+14,{align:'center'});
-  });
-  y+=22;
-
-  // Per dag tabel
-  const dagMap={};
-  activiteit.forEach(a=>{
-    if(!dagMap[a.datum])dagMap[a.datum]={};
-    if(!dagMap[a.datum][a.naam])dagMap[a.datum][a.naam]={calls:0,mails:0,afs:0,uren:0,omzet:0,projecten:[]};
-    const d=dagMap[a.datum][a.naam];
-    d.calls+=a.calls||0;d.mails+=(a.manueel||0)+(a.auto||0);
-    d.afs+=a.afs||0;d.uren+=((a.duur||60)/60);
-    d.omzet+=berekenOmzet([a],a.project||'');
-    if(a.project&&!d.projecten.includes(pNaam(a.project)))d.projecten.push(pNaam(a.project));
-  });
-  const dagen=Object.keys(dagMap).sort().reverse();
-  const dagNamen=['zo','ma','di','wo','do','vr','za'];
-
-  const rows=[];
-  dagen.forEach(dag=>{
-    const namen=Object.keys(dagMap[dag]).sort();
-    const dagC=namen.reduce((s,n)=>s+dagMap[dag][n].calls,0);
-    const dagM=namen.reduce((s,n)=>s+dagMap[dag][n].mails,0);
-    const dagA=namen.reduce((s,n)=>s+dagMap[dag][n].afs,0);
-    const dagU=namen.reduce((s,n)=>s+dagMap[dag][n].uren,0);
-    const dagO=namen.reduce((s,n)=>s+dagMap[dag][n].omzet,0);
-    const d=new Date(dag);
-    const lbl=dagNamen[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
-    // Dag totaal row
-    rows.push({dag:lbl,naam:'TOTAAL',calls:dagC,mails:dagM,afs:dagA,uren:dagU.toFixed(1)+'u',omzet:fmtEur(dagO),proj:'',isDag:true});
-    // Per persoon
-    namen.forEach(n=>{
-      const dd=dagMap[dag][n];
-      rows.push({dag:'',naam:n,calls:dd.calls,mails:dd.mails,afs:dd.afs,uren:dd.uren.toFixed(1)+'u',omzet:fmtEur(dd.omzet),proj:dd.projecten.join(', '),isDag:false});
-    });
-  });
-
-  doc.autoTable({
-    startY:y,
-    head:[['Datum','Naam','Calls','Mails','Afsp.','Uren','Omzet','Projecten']],
-    body:rows.map(r=>[r.dag,r.naam,r.isDag?String(r.calls):String(r.calls),r.isDag?String(r.mails):String(r.mails),r.isDag?String(r.afs):String(r.afs),r.uren,r.omzet,r.proj]),
-    theme:'grid',
-    headStyles:{fillColor:[21,128,61],textColor:255,fontSize:7,fontStyle:'bold'},
-    bodyStyles:{fontSize:7},
-    columnStyles:{0:{cellWidth:22},1:{cellWidth:22,fontStyle:'bold'},2:{cellWidth:12,halign:'right'},3:{cellWidth:12,halign:'right'},4:{cellWidth:12,halign:'right',textColor:[21,128,61]},5:{cellWidth:14,halign:'right'},6:{cellWidth:20,halign:'right',textColor:[29,78,216],fontStyle:'bold'},7:{overflow:'linebreak'}},
-    margin:{left:ml,right:14},
-    styles:{cellPadding:2,lineColor:[221,226,234],overflow:'linebreak'},
-    didParseCell:function(data){
-      if(data.row.raw&&data.row.raw[1]==='TOTAAL'){
-        data.cell.styles.fillColor=[240,242,245];
-        data.cell.styles.fontStyle='bold';
-      }
-    }
-  });
-
-  // Footer
-  const pH=doc.internal.pageSize.height;
-  doc.setDrawColor(21,128,61);doc.setLineWidth(0.4);doc.line(ml,pH-14,W-14,pH-14);
-  doc.setFillColor(21,128,61);doc.roundedRect(ml,pH-12,6,6,1,1,'F');
-  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(4);
-  doc.text('LS',ml+3,pH-8,{align:'center'});
-  doc.setTextColor(21,128,61);doc.setFontSize(8);doc.text('Leadscore',ml+8,pH-7);
-  doc.setTextColor(173,181,189);doc.setFont('helvetica','normal');doc.setFontSize(7);
-  doc.text('Omzet overzicht · '+datumStr,W-14,pH-7,{align:'right'});
-
-  doc.save('Leadscore_Omzet_'+nu.toISOString().split('T')[0]+'.pdf');
-}
 
 function renderToegang(){
   const lijst=getToegang();

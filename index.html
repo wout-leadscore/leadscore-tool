@@ -383,7 +383,11 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
 <div class="pnl" id="pnl-agenda">
   <div class="ph">
     <div><div class="ph-title">Agenda</div><div class="ph-sub" id="agenda-sub">—</div></div>
-
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="wb" onclick="verschuifAgenda(-1)">←</button>
+      <span id="agenda-week-lbl" style="font-size:12px;font-family:var(--fm);color:var(--mu);background:var(--s1);padding:5px 14px;border-radius:20px;border:1px solid var(--b1);min-width:130px;text-align:center">—</span>
+      <button class="wb" onclick="verschuifAgenda(1)">→</button>
+    </div>
   </div>
   <div id="agenda-week" style="display:none"></div>
   <div id="agenda-maand-view"></div>
@@ -1148,72 +1152,57 @@ function buildAfsCard(af){
   var fi=getFiche(af.project||'');
   var commissie=fi.commissie||0;
   var logoHtml=fi&&fi.logo?'<div style="width:18px;height:18px;border-radius:3px;overflow:hidden;flex-shrink:0"><img src="'+fi.logo+'" style="width:100%;height:100%;object-fit:cover"/></div>':'';
+  var borderClr=isNoShow?'var(--rbr)':isBevestigd?'var(--gbr)':'var(--b1)';
+  var bgClr=isNoShow?'var(--rbg)':isBevestigd?'var(--gbg)':'var(--w)';
+  var opacity=isNoShow?';opacity:.7':'';
 
-  var card=document.createElement('div');
-  card.style.cssText='border:1.5px solid '+(isNoShow?'var(--rbr)':isBevestigd?'var(--gbr)':'var(--b1)')+';border-radius:var(--r);padding:8px 10px;margin-bottom:6px;background:'+(isNoShow?'var(--rbg)':isBevestigd?'var(--gbg)':'var(--w)')+(isNoShow?';opacity:.7':'');
-  card.setAttribute('data-aid',af.actId);
-  card.setAttribute('data-idx',af.idx);
-  card.addEventListener('click',function(){openAfsModal(this.getAttribute('data-aid'),parseInt(this.getAttribute('data-idx')));});
+  var commBtn='';
+  if(!isNoShow){
+    if(commissie>0&&!isBevestigd){
+      commBtn='<button data-aid="'+af.actId+'" data-idx="'+af.idx+'" onclick="bevestigCommissie(this);event.stopPropagation()" style="flex:1;padding:4px 6px;background:var(--gbg);color:var(--green);border:1.5px solid var(--gbr);border-radius:4px;font-size:11px;font-weight:700;cursor:pointer">💰 '+fmtEur(commissie)+'</button>';
+    } else if(commissie>0&&isBevestigd){
+      commBtn='<div style="flex:1;font-size:11px;color:var(--green);font-weight:600;padding:4px 0">💰 '+fmtEur(commissie)+' ✓</div>';
+    }
+  }
+  var noShowBtn=isNoShow?'':'<button data-aid="'+af.actId+'" data-idx="'+af.idx+'" onclick="noShowKaart(this);event.stopPropagation()" style="padding:3px 8px;background:none;color:#dc2626;border:1px solid #dc2626;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer">No Show</button>';
+  var btnsRow=(commBtn||noShowBtn)?'<div style="display:flex;gap:5px;margin-top:6px">'+commBtn+noShowBtn+'</div>':'';
 
-  var html='<div style="display:flex;align-items:center;gap:5px;margin-bottom:2px">'+
+  return'<div data-aid="'+af.actId+'" data-idx="'+af.idx+'" onclick="openAfsModalBtn(this)" style="border:1.5px solid '+borderClr+';border-radius:var(--r);padding:8px 10px;margin-bottom:6px;background:'+bgClr+opacity+';cursor:pointer">'+
+    '<div style="display:flex;align-items:center;gap:5px;margin-bottom:2px">'+
     logoHtml+
     '<div style="flex:1;font-size:12px;font-weight:700">'+af.naam+'</div>'+
     (isNoShow?'<span style="font-size:9px;background:#dc2626;color:#fff;padding:1px 5px;border-radius:3px;font-weight:700">NO SHOW</span>':'')+
     (isBevestigd?'<span style="font-size:9px;background:var(--gbg);color:var(--green);border:1px solid var(--gbr);padding:1px 5px;border-radius:3px;font-weight:700">✓</span>':'')+
     '</div>'+
     '<div style="font-size:11px;color:var(--mu)">'+af.projNaam+(af.actNaam?' · '+af.actNaam:'')+'</div>'+
-    '<div style="font-size:10px;margin-top:2px">'+(af.type==='online'?'🌐 Online':'🤝 Fysiek')+'</div>';
-
-  if(!isNoShow){
-    html+='<div style="display:flex;gap:5px;margin-top:6px">';
-    if(commissie>0&&!isBevestigd){
-      html+='<button data-aid="'+af.actId+'" data-idx="'+af.idx+'" onclick="bevestigCommissie(this);event.stopPropagation()" '+
-        'style="flex:1;padding:4px 6px;background:var(--gbg);color:var(--green);border:1.5px solid var(--gbr);border-radius:4px;font-size:11px;font-weight:700;cursor:pointer">'+
-        '💰 '+fmtEur(commissie)+'</button>';
-    } else if(commissie>0&&isBevestigd){
-      html+='<div style="flex:1;font-size:11px;color:var(--green);font-weight:600;padding:4px 0">💰 '+fmtEur(commissie)+' ✓</div>';
-    }
-    html+='<button data-aid="'+af.actId+'" data-idx="'+af.idx+'" onclick="noShowKaart(this);event.stopPropagation()" '+
-      'style="padding:3px 8px;background:none;color:#dc2626;border:1px solid #dc2626;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer">No Show</button>';
-    html+='</div>';
-  }
-
-  if(af.notitie)html+='<div style="font-size:10px;color:var(--mu);margin-top:4px;font-style:italic">'+af.notitie+'</div>';
-  card.innerHTML=html;
-  return card.outerHTML;
+    '<div style="font-size:10px;margin-top:2px">'+(af.type==='online'?'🌐 Online':'🤝 Fysiek')+'</div>'+
+    btnsRow+
+    (af.notitie?'<div style="font-size:10px;color:var(--mu);margin-top:4px;font-style:italic">'+af.notitie+'</div>':'')+
+    '</div>';
 }
 
+
+function bevestigCommissie(el){
+  var actId=el.getAttribute('data-aid');
+  var idx=parseInt(el.getAttribute('data-idx'));
+  var a=activiteit.find(function(x){return x.id==actId;});
+  if(!a||!a.afspraken||!a.afspraken[idx])return;
+  a.afspraken[idx].status='bevestigd';
+  slaActOp();
+  patchAct(parseInt(actId),{afspraken:a.afspraken});
+  renderAgenda();
+}
 
 function herboekAfspraak(el){
   var actId=el.getAttribute('data-aid');
   var idx=parseInt(el.getAttribute('data-idx'));
-  var a=activiteit.find(x=>x.id==actId);
+  var a=activiteit.find(function(x){return x.id==actId;});
   if(!a||!a.afspraken||!a.afspraken[idx])return;
   var af=a.afspraken[idx];
-  // Reset status naar gepland
   a.afspraken[idx].status='gepland';
-  a.afspraken[idx].notitie=(af.notitie||'')+(af.notitie?' | ':'' )+'Herboekt na no show';
   slaActOp();
   patchAct(parseInt(actId),{afspraken:a.afspraken});
-  // Voeg toe aan planning volgende week
-  if(af.door){
-    var key=af.door+'_'+wKey(agendaOff+1);
-    if(!planData[key])planData[key]={blokken:[]};
-    var exists=planData[key].blokken.find(b=>b.projId==='herboek_'+actId+'_'+idx);
-    if(!exists){
-      planData[key].blokken.push({
-        projId:'herboek_'+actId+'_'+idx,
-        naam:'🔄 Herboeken: '+af.naam+' ('+pNaam(a.project)+')',
-        uren:0.5,kleur:'#1d4ed8',isNoShow:false
-      });
-      slaPlan();
-    }
-  }
   renderAgenda();
-  var msg=document.createElement('div');
-  msg.style.cssText='position:fixed;top:70px;right:20px;z-index:300;background:var(--blue);color:#fff;padding:12px 18px;border-radius:var(--r);font-size:13px;font-weight:700;box-shadow:var(--sh2)';
-  msg.textContent='🔄 Herboekt — staat in planning volgende week'+(af.door?' bij '+af.door:'');
-  document.body.appendChild(msg);setTimeout(()=>msg.remove(),4000);
 }
 
 function noShowKaart(el){

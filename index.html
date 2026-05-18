@@ -1126,8 +1126,23 @@ function getAlleAfspraken(){
   return result;
 }
 
+function statusKleur(status){
+  const map={
+    gepland:{bg:'var(--w)',c:'var(--tx)',border:'var(--b1)'},
+    bevestigd:{bg:'var(--gbg)',c:'var(--green)',border:'var(--gbr)'},
+    gedaan:{bg:'var(--gbg)',c:'var(--green)',border:'var(--gbr)'},
+    gewonnen:{bg:'var(--gbg)',c:'var(--green)',border:'var(--gbr)'},
+    verloren:{bg:'var(--rbg)',c:'var(--red)',border:'var(--rbr)'},
+    'no-show':{bg:'var(--rbg)',c:'var(--red)',border:'var(--rbr)'},
+    herboeken:{bg:'var(--abg)',c:'var(--amber)',border:'var(--abr)'}
+  };
+  return map[status]||map.gepland;
+}
+function statusIcon(status){
+  return{gepland:'📅',bevestigd:'✅',gedaan:'✅',gewonnen:'🏆',verloren:'❌','no-show':'🚫',herboeken:'🔄'}[status]||'📅';
+}
+
 function buildAfsCard(af){
-  var sk=statusKleur(af.status||'gepland');
   var isNoShow=af.status==='no-show';
   var isBevestigd=af.status==='bevestigd';
   var fi=getFiche(af.project||'');
@@ -1135,39 +1150,32 @@ function buildAfsCard(af){
   var logoHtml=fi&&fi.logo?'<div style="width:18px;height:18px;border-radius:3px;overflow:hidden;flex-shrink:0"><img src="'+fi.logo+'" style="width:100%;height:100%;object-fit:cover"/></div>':'';
 
   var card=document.createElement('div');
-  card.style.cssText='border:1.5px solid '+sk.border+';border-radius:var(--r);padding:8px 10px;margin-bottom:6px;background:'+sk.bg+(isNoShow?';opacity:.65':'');
+  card.style.cssText='border:1.5px solid '+(isNoShow?'var(--rbr)':isBevestigd?'var(--gbr)':'var(--b1)')+';border-radius:var(--r);padding:8px 10px;margin-bottom:6px;background:'+(isNoShow?'var(--rbg)':isBevestigd?'var(--gbg)':'var(--w)')+(isNoShow?';opacity:.7':'');
   card.setAttribute('data-aid',af.actId);
   card.setAttribute('data-idx',af.idx);
   card.addEventListener('click',function(){openAfsModal(this.getAttribute('data-aid'),parseInt(this.getAttribute('data-idx')));});
 
   var html='<div style="display:flex;align-items:center;gap:5px;margin-bottom:2px">'+
     logoHtml+
-    '<div style="flex:1;font-size:12px;font-weight:700;color:'+sk.c+'">'+af.naam+'</div>'+
+    '<div style="flex:1;font-size:12px;font-weight:700">'+af.naam+'</div>'+
     (isNoShow?'<span style="font-size:9px;background:#dc2626;color:#fff;padding:1px 5px;border-radius:3px;font-weight:700">NO SHOW</span>':'')+
-    (isBevestigd?'<span style="font-size:9px;background:var(--gbg);color:var(--green);border:1px solid var(--gbr);padding:1px 5px;border-radius:3px;font-weight:700">✓ Bevestigd</span>':'')+
+    (isBevestigd?'<span style="font-size:9px;background:var(--gbg);color:var(--green);border:1px solid var(--gbr);padding:1px 5px;border-radius:3px;font-weight:700">✓</span>':'')+
     '</div>'+
     '<div style="font-size:11px;color:var(--mu)">'+af.projNaam+(af.actNaam?' · '+af.actNaam:'')+'</div>'+
     '<div style="font-size:10px;margin-top:2px">'+(af.type==='online'?'🌐 Online':'🤝 Fysiek')+'</div>';
 
-  // Commissie + knoppen
   if(!isNoShow){
-    html+='<div style="display:flex;gap:5px;margin-top:6px;align-items:center">';
+    html+='<div style="display:flex;gap:5px;margin-top:6px">';
     if(commissie>0&&!isBevestigd){
       html+='<button data-aid="'+af.actId+'" data-idx="'+af.idx+'" onclick="bevestigCommissie(this);event.stopPropagation()" '+
         'style="flex:1;padding:4px 6px;background:var(--gbg);color:var(--green);border:1.5px solid var(--gbr);border-radius:4px;font-size:11px;font-weight:700;cursor:pointer">'+
-        '💰 '+fmtEur(commissie)+' bevestigen</button>';
+        '💰 '+fmtEur(commissie)+'</button>';
     } else if(commissie>0&&isBevestigd){
       html+='<div style="flex:1;font-size:11px;color:var(--green);font-weight:600;padding:4px 0">💰 '+fmtEur(commissie)+' ✓</div>';
     }
     html+='<button data-aid="'+af.actId+'" data-idx="'+af.idx+'" onclick="noShowKaart(this);event.stopPropagation()" '+
       'style="padding:3px 8px;background:none;color:#dc2626;border:1px solid #dc2626;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer">No Show</button>';
     html+='</div>';
-  } else {
-    // No show - toon herboeken knop
-    html+='<div style="margin-top:6px">'+
-      '<button data-aid="'+af.actId+'" data-idx="'+af.idx+'" onclick="herboekAfspraak(this);event.stopPropagation()" '+
-      'style="width:100%;padding:4px;background:var(--bbg);color:var(--blue);border:1px solid var(--bbr);border-radius:4px;font-size:10px;font-weight:700;cursor:pointer">🔄 Herboeken</button>'+
-      '</div>';
   }
 
   if(af.notitie)html+='<div style="font-size:10px;color:var(--mu);margin-top:4px;font-style:italic">'+af.notitie+'</div>';
@@ -1175,17 +1183,6 @@ function buildAfsCard(af){
   return card.outerHTML;
 }
 
-
-function bevestigCommissie(el){
-  var actId=el.getAttribute('data-aid');
-  var idx=parseInt(el.getAttribute('data-idx'));
-  var a=activiteit.find(x=>x.id==actId);
-  if(!a||!a.afspraken||!a.afspraken[idx])return;
-  a.afspraken[idx].status='bevestigd';
-  slaActOp();
-  patchAct(parseInt(actId),{afspraken:a.afspraken});
-  renderAgenda();
-}
 
 function herboekAfspraak(el){
   var actId=el.getAttribute('data-aid');

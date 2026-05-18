@@ -327,6 +327,7 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
         <button class="btn-secondary" id="adm-tab-mw" onclick="setAdmTab('mw')" style="font-size:12px">Medewerkers</button>
         <button class="btn-secondary" id="adm-tab-omzet" onclick="setAdmTab('omzet')" style="font-size:12px">Omzet</button>
         <button class="btn-secondary" id="adm-tab-toegang" onclick="setAdmTab('toegang')" style="font-size:12px">🔐 Toegang</button>
+        <button class="btn-secondary" id="adm-tab-commissie" onclick="setAdmTab('commissie')" style="font-size:12px">💰 Commissie</button>
         <button class="btn-secondary" onclick="exportData()" style="font-size:12px" title="Download backup">⬇ Export</button>
         <button class="btn-secondary" onclick="importData()" style="font-size:12px;background:var(--bbg);border-color:var(--bbr);color:var(--blue)" title="Importeer & sync">⬆ Import & Sync</button>
       </div>
@@ -358,6 +359,15 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
         </div>
       </div>
       <div id="adm-content"></div>
+    </div>
+    <div id="adm-commissie" style="display:none">
+      <div style="margin-bottom:12px">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
+          <label style="font-size:12px;font-weight:600;color:var(--mu);margin:0">Maand:</label>
+          <select id="comm-maand" onchange="renderCommissie()" style="font-size:12px;padding:6px 10px;border-radius:var(--r);border:1.5px solid var(--b1)"></select>
+        </div>
+        <div id="commissie-content"></div>
+      </div>
     </div>
     <div id="adm-toegang" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -568,6 +578,11 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
     <div class="g2">
       <div class="fi"><label>Max data (u/maand)</label><input type="number" id="pf-max-data" min="0" step="0.5" placeholder="6"/></div>
       <div class="fi"><label>Max meeting (u/maand)</label><input type="number" id="pf-max-meet" min="0" step="0.25" placeholder="2"/></div>
+    </div>
+    <div class="fi">
+      <label>💰 Commissie per afspraak (€)</label>
+      <input type="number" id="pf-commissie" min="0" step="0.5" placeholder="0" style="max-width:160px"/>
+      <div style="font-size:11px;color:var(--mu);margin-top:3px">Bedrag dat medewerker krijgt per geboekte afspraak</div>
     </div>
     <div class="fi"><label>Omschrijving</label><textarea id="pf-info" rows="2"></textarea></div>
     <div class="md-btns">
@@ -970,7 +985,7 @@ function checkAdm(){
 }
 function renderAdminPanel(){if(adminOk)setAdmTab('proj');}
 function setAdmTab(tab){
-  ['proj','mw','omzet','toegang'].forEach(t=>{
+  ['proj','mw','omzet','toegang','commissie'].forEach(t=>{
     const el=document.getElementById('adm-'+t);
     if(el)el.style.display=t===tab?'block':'none';
     const btn=document.getElementById('adm-tab-'+t);
@@ -980,6 +995,7 @@ function setAdmTab(tab){
   if(tab==='mw')renderMedewerkers();
   if(tab==='omzet'){vulMaandSelector();renderAdm();}
   if(tab==='toegang')renderToegang();
+  if(tab==='commissie')renderCommissie();
 }
 
 
@@ -1111,37 +1127,96 @@ function getAlleAfspraken(){
 }
 
 function buildAfsCard(af){
-  var sk={bg:'var(--w)',c:'var(--tx)',border:'var(--b1)'};
+  var sk=statusKleur(af.status||'gepland');
   var isNoShow=af.status==='no-show';
+  var isBevestigd=af.status==='bevestigd';
   var fi=getFiche(af.project||'');
+  var commissie=fi.commissie||0;
   var logoHtml=fi&&fi.logo?'<div style="width:18px;height:18px;border-radius:3px;overflow:hidden;flex-shrink:0"><img src="'+fi.logo+'" style="width:100%;height:100%;object-fit:cover"/></div>':'';
-  return'<div style="border:1.5px solid '+sk.border+';border-radius:var(--r);padding:8px 10px;margin-bottom:6px;background:'+sk.bg+(isNoShow?';opacity:.65':'')+'" onclick="openAfsModalBtn(this)" data-aid="'+af.actId+'" data-idx="'+af.idx+'">'+
-    '<div style="display:flex;align-items:center;gap:5px;margin-bottom:2px">'+
+
+  var card=document.createElement('div');
+  card.style.cssText='border:1.5px solid '+sk.border+';border-radius:var(--r);padding:8px 10px;margin-bottom:6px;background:'+sk.bg+(isNoShow?';opacity:.65':'');
+  card.setAttribute('data-aid',af.actId);
+  card.setAttribute('data-idx',af.idx);
+  card.addEventListener('click',function(){openAfsModal(this.getAttribute('data-aid'),parseInt(this.getAttribute('data-idx')));});
+
+  var html='<div style="display:flex;align-items:center;gap:5px;margin-bottom:2px">'+
     logoHtml+
     '<div style="flex:1;font-size:12px;font-weight:700;color:'+sk.c+'">'+af.naam+'</div>'+
     (isNoShow?'<span style="font-size:9px;background:#dc2626;color:#fff;padding:1px 5px;border-radius:3px;font-weight:700">NO SHOW</span>':'')+
+    (isBevestigd?'<span style="font-size:9px;background:var(--gbg);color:var(--green);border:1px solid var(--gbr);padding:1px 5px;border-radius:3px;font-weight:700">✓ Bevestigd</span>':'')+
     '</div>'+
     '<div style="font-size:11px;color:var(--mu)">'+af.projNaam+(af.actNaam?' · '+af.actNaam:'')+'</div>'+
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">'+
-    '<div style="font-size:10px">'+(af.type==='online'?'🌐 Online':'🤝 Fysiek')+'</div>'+
-    (!isNoShow?'<button data-aid="'+af.actId+'" data-idx="'+af.idx+'" onclick="noShowKaart(this);event.stopPropagation()" style="padding:2px 7px;background:none;color:#dc2626;border:1px solid #dc2626;border-radius:3px;font-size:9px;font-weight:700;cursor:pointer">No Show</button>':'')+
-    '</div>'+
-    (af.notitie?'<div style="font-size:10px;color:var(--mu);margin-top:4px;font-style:italic">'+af.notitie+'</div>':'')+
-    '</div>';
+    '<div style="font-size:10px;margin-top:2px">'+(af.type==='online'?'🌐 Online':'🤝 Fysiek')+'</div>';
+
+  // Commissie + knoppen
+  if(!isNoShow){
+    html+='<div style="display:flex;gap:5px;margin-top:6px;align-items:center">';
+    if(commissie>0&&!isBevestigd){
+      html+='<button data-aid="'+af.actId+'" data-idx="'+af.idx+'" onclick="bevestigCommissie(this);event.stopPropagation()" '+
+        'style="flex:1;padding:4px 6px;background:var(--gbg);color:var(--green);border:1.5px solid var(--gbr);border-radius:4px;font-size:11px;font-weight:700;cursor:pointer">'+
+        '💰 '+fmtEur(commissie)+' bevestigen</button>';
+    } else if(commissie>0&&isBevestigd){
+      html+='<div style="flex:1;font-size:11px;color:var(--green);font-weight:600;padding:4px 0">💰 '+fmtEur(commissie)+' ✓</div>';
+    }
+    html+='<button data-aid="'+af.actId+'" data-idx="'+af.idx+'" onclick="noShowKaart(this);event.stopPropagation()" '+
+      'style="padding:3px 8px;background:none;color:#dc2626;border:1px solid #dc2626;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer">No Show</button>';
+    html+='</div>';
+  } else {
+    // No show - toon herboeken knop
+    html+='<div style="margin-top:6px">'+
+      '<button data-aid="'+af.actId+'" data-idx="'+af.idx+'" onclick="herboekAfspraak(this);event.stopPropagation()" '+
+      'style="width:100%;padding:4px;background:var(--bbg);color:var(--blue);border:1px solid var(--bbr);border-radius:4px;font-size:10px;font-weight:700;cursor:pointer">🔄 Herboeken</button>'+
+      '</div>';
+  }
+
+  if(af.notitie)html+='<div style="font-size:10px;color:var(--mu);margin-top:4px;font-style:italic">'+af.notitie+'</div>';
+  card.innerHTML=html;
+  return card.outerHTML;
 }
 
 
-function setPrioKaart(el){
-  el.stopPropagation&&el.stopPropagation();
+function bevestigCommissie(el){
   var actId=el.getAttribute('data-aid');
   var idx=parseInt(el.getAttribute('data-idx'));
-  var pv=parseInt(el.getAttribute('data-pv'));
   var a=activiteit.find(x=>x.id==actId);
   if(!a||!a.afspraken||!a.afspraken[idx])return;
-  a.afspraken[idx].prio=pv;
+  a.afspraken[idx].status='bevestigd';
   slaActOp();
   patchAct(parseInt(actId),{afspraken:a.afspraken});
   renderAgenda();
+}
+
+function herboekAfspraak(el){
+  var actId=el.getAttribute('data-aid');
+  var idx=parseInt(el.getAttribute('data-idx'));
+  var a=activiteit.find(x=>x.id==actId);
+  if(!a||!a.afspraken||!a.afspraken[idx])return;
+  var af=a.afspraken[idx];
+  // Reset status naar gepland
+  a.afspraken[idx].status='gepland';
+  a.afspraken[idx].notitie=(af.notitie||'')+(af.notitie?' | ':'' )+'Herboekt na no show';
+  slaActOp();
+  patchAct(parseInt(actId),{afspraken:a.afspraken});
+  // Voeg toe aan planning volgende week
+  if(af.door){
+    var key=af.door+'_'+wKey(agendaOff+1);
+    if(!planData[key])planData[key]={blokken:[]};
+    var exists=planData[key].blokken.find(b=>b.projId==='herboek_'+actId+'_'+idx);
+    if(!exists){
+      planData[key].blokken.push({
+        projId:'herboek_'+actId+'_'+idx,
+        naam:'🔄 Herboeken: '+af.naam+' ('+pNaam(a.project)+')',
+        uren:0.5,kleur:'#1d4ed8',isNoShow:false
+      });
+      slaPlan();
+    }
+  }
+  renderAgenda();
+  var msg=document.createElement('div');
+  msg.style.cssText='position:fixed;top:70px;right:20px;z-index:300;background:var(--blue);color:#fff;padding:12px 18px;border-radius:var(--r);font-size:13px;font-weight:700;box-shadow:var(--sh2)';
+  msg.textContent='🔄 Herboekt — staat in planning volgende week'+(af.door?' bij '+af.door:'');
+  document.body.appendChild(msg);setTimeout(()=>msg.remove(),4000);
 }
 
 function noShowKaart(el){
@@ -2645,6 +2720,82 @@ function downloadProjFactuurPDF(projId){
   doc.save('Leadscore_'+p.naam.replace(/\s+/g,'_')+'_'+maandKey+'.pdf');
 }
 
+function downloadOmzetPDF(){
+  const maandKey=getGeselecteerdeMaand();
+  const [mYr,mMn]=maandKey.split('-');
+  const mnd=parseInt(mMn)-1,yr=parseInt(mYr);
+  const mndNamen=['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
+  const mndAct=activiteit.filter(a=>{const d=new Date(a.datum);return d.getMonth()===mnd&&d.getFullYear()===yr;});
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,ml=14,cw=W-ml-14;let y=14;
+  const nu=new Date();
+  const datumStr=nu.toLocaleDateString('nl-BE',{day:'numeric',month:'long',year:'numeric'});
+  doc.setFillColor(21,128,61);doc.roundedRect(ml,y,cw,20,3,3,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(14);
+  doc.text('Leadscore',ml+7,y+8);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text('Dagelijks activiteitsoverzicht - '+mndNamen[mnd]+' '+yr,ml+7,y+14);
+  doc.text('Gegenereerd: '+datumStr,W-14,y+14,{align:'right'});
+  y+=26;
+  const totC=mndAct.reduce((s,a)=>s+(a.calls||0),0);
+  const totM=mndAct.reduce((s,a)=>s+(a.manueel||0)+(a.auto||0),0);
+  const totA=mndAct.reduce((s,a)=>s+(a.afs||0),0);
+  const totO=mndAct.reduce((s,a)=>s+berekenOmzet([a],a.project||''),0);
+  const bw=(cw-9)/4;
+  [{v:String(totC),l:'CALLS',c:[29,78,216]},{v:String(totM),l:'MAILS',c:[29,78,216]},
+   {v:String(totA),l:'AFSPRAKEN',c:[21,128,61]},{v:fmtEur(totO),l:'OMZET TOTAAL',c:[21,128,61]}
+  ].forEach((b,i)=>{
+    const bx=ml+i*(bw+3);doc.setFillColor(240,242,245);doc.setDrawColor(221,226,234);
+    doc.roundedRect(bx,y,bw,16,2,2,'FD');
+    doc.setTextColor(...b.c);doc.setFont('helvetica','bold');doc.setFontSize(11);
+    doc.text(String(b.v),bx+bw/2,y+9,{align:'center'});
+    doc.setFontSize(6);doc.setFont('helvetica','normal');doc.setTextColor(107,118,133);
+    doc.text(b.l,bx+bw/2,y+14,{align:'center'});
+  });y+=22;
+  const dagMap={};
+  mndAct.forEach(a=>{
+    if(!dagMap[a.datum])dagMap[a.datum]={};
+    if(!dagMap[a.datum][a.naam])dagMap[a.datum][a.naam]={calls:0,mails:0,afs:0,uren:0,omzet:0,projecten:[]};
+    const d=dagMap[a.datum][a.naam];
+    d.calls+=a.calls||0;d.mails+=(a.manueel||0)+(a.auto||0);
+    d.afs+=a.afs||0;d.uren+=((a.duur||60)/60);
+    d.omzet+=berekenOmzet([a],a.project||'');
+    if(a.project&&!d.projecten.includes(pNaam(a.project)))d.projecten.push(pNaam(a.project));
+  });
+  const dagen=Object.keys(dagMap).sort().reverse();
+  const dagNamen=['zo','ma','di','wo','do','vr','za'];
+  const rows=[];
+  dagen.forEach(dag=>{
+    const namen=Object.keys(dagMap[dag]).sort();
+    const dagC=namen.reduce((s,n)=>s+dagMap[dag][n].calls,0);
+    const dagM=namen.reduce((s,n)=>s+dagMap[dag][n].mails,0);
+    const dagA=namen.reduce((s,n)=>s+dagMap[dag][n].afs,0);
+    const dagU=namen.reduce((s,n)=>s+dagMap[dag][n].uren,0);
+    const dagO=namen.reduce((s,n)=>s+dagMap[dag][n].omzet,0);
+    const d=new Date(dag);
+    const lbl=dagNamen[d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear();
+    rows.push({dag:lbl,naam:'TOTAAL',calls:dagC,mails:dagM,afs:dagA,uren:dagU.toFixed(1)+'u',omzet:fmtEur(dagO),proj:'',isDag:true});
+    namen.forEach(n=>{
+      const dd=dagMap[dag][n];
+      rows.push({dag:'',naam:n,calls:dd.calls,mails:dd.mails,afs:dd.afs,uren:dd.uren.toFixed(1)+'u',omzet:fmtEur(dd.omzet),proj:dd.projecten.join(', '),isDag:false});
+    });
+  });
+  doc.autoTable({startY:y,head:[['Datum','Naam','Calls','Mails','Afsp.','Uren','Omzet','Projecten']],
+    body:rows.map(r=>[r.dag,r.naam,String(r.calls),String(r.mails),String(r.afs),r.uren,r.omzet,r.proj]),
+    theme:'grid',headStyles:{fillColor:[21,128,61],textColor:255,fontSize:7,fontStyle:'bold'},
+    bodyStyles:{fontSize:7},columnStyles:{0:{cellWidth:22},1:{cellWidth:22,fontStyle:'bold'},2:{cellWidth:12,halign:'right'},3:{cellWidth:12,halign:'right'},4:{cellWidth:12,halign:'right',textColor:[21,128,61]},5:{cellWidth:14,halign:'right'},6:{cellWidth:20,halign:'right',textColor:[29,78,216],fontStyle:'bold'},7:{overflow:'linebreak'}},
+    margin:{left:ml,right:14},styles:{cellPadding:2,lineColor:[221,226,234],overflow:'linebreak'},
+    didParseCell:function(data){if(data.row.raw&&data.row.raw[1]==='TOTAAL'){data.cell.styles.fillColor=[240,242,245];data.cell.styles.fontStyle='bold';}}
+  });
+  const pH=doc.internal.pageSize.height;
+  doc.setDrawColor(21,128,61);doc.setLineWidth(0.4);doc.line(ml,pH-14,W-14,pH-14);
+  doc.setTextColor(21,128,61);doc.setFontSize(8);doc.setFont('helvetica','bold');doc.text('Leadscore',ml+8,pH-7);
+  doc.setTextColor(173,181,189);doc.setFont('helvetica','normal');doc.setFontSize(7);
+  doc.text('Dagelijks overzicht · '+mndNamen[mnd]+' '+yr,W-14,pH-7,{align:'right'});
+  doc.save('Leadscore_Omzet_'+maandKey+'.pdf');
+}
+
 function downloadFactuurPDF(){
   const maandKey=getGeselecteerdeMaand();
   const [yr,mn]=maandKey.split('-');
@@ -2874,6 +3025,77 @@ function renderAdm(){
     '</div>';
 }
 
+
+function renderCommissie(){
+  // Populate maand selector
+  const sel=document.getElementById('comm-maand');
+  if(sel&&sel.options.length<=1){
+    getMaandOpties().forEach(function(m){
+      const p=m.split('-');
+      const mn=['Jan','Feb','Mrt','Apr','Mei','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
+      const opt=document.createElement('option');
+      opt.value=m;opt.textContent=mn[parseInt(p[1])-1]+' '+p[0];
+      sel.appendChild(opt);
+    });
+  }
+  const maandKey=sel&&sel.value?sel.value:getGeselecteerdeMaand();
+  const [mYr,mMn]=maandKey.split('-');
+  const mnd=parseInt(mMn)-1,yr=parseInt(mYr);
+  const mndNamen=['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
+  const mndAct=activiteit.filter(a=>{const d=new Date(a.datum);return d.getMonth()===mnd&&d.getFullYear()===yr;});
+
+  // Bereken commissie per medewerker
+  const mwMap={};
+  MEDEWERKERS.forEach(m=>{mwMap[m.naam]={naam:m.naam,foto:m.foto||'',commissie:0,afspraken:[],details:[]};});
+
+  mndAct.forEach(a=>{
+    if(!mwMap[a.naam])mwMap[a.naam]={naam:a.naam,foto:'',commissie:0,afspraken:[],details:[]};
+    const f=getFiche(a.project);
+    const commPerAfs=f.commissie||0;
+    const afs=a.afspraken||[];
+    afs.forEach(af=>{
+      mwMap[a.naam].commissie+=commPerAfs;
+      mwMap[a.naam].afspraken.push({...af,project:pNaam(a.project),commPerAfs});
+    });
+    if(afs.length&&commPerAfs>0){
+      mwMap[a.naam].details.push({project:pNaam(a.project),afs:afs.length,commPerAfs,totaal:afs.length*commPerAfs});
+    }
+  });
+
+  const mwLijst=Object.values(mwMap).filter(m=>m.afspraken.length>0).sort((a,b)=>b.commissie-a.commissie);
+  const el=document.getElementById('commissie-content');
+  if(!el)return;
+
+  const totaal=mwLijst.reduce((s,m)=>s+m.commissie,0);
+
+  if(!mwLijst.length){
+    el.innerHTML='<div style="font-size:13px;color:var(--mu);padding:20px 0">Geen afspraken met commissie in '+mndNamen[mnd]+' '+yr+'.<br><small>Stel commissie in via Admin → Projecten → project bewerken.</small></div>';
+    return;
+  }
+
+  el.innerHTML='<div style="margin-bottom:16px;padding:12px 16px;background:var(--gbg);border:1.5px solid var(--gbr);border-radius:var(--rl);display:flex;justify-content:space-between;align-items:center">'+
+    '<span style="font-size:13px;font-weight:600;color:var(--mu)">Totale commissie '+mndNamen[mnd]+' '+yr+'</span>'+
+    '<span style="font-size:20px;font-weight:800;font-family:var(--fm);color:var(--green)">'+fmtEur(totaal)+'</span>'+
+    '</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">'+
+    mwLijst.map(function(m){
+      return'<div style="background:var(--w);border:1.5px solid var(--gbr);border-radius:var(--rx);padding:16px;box-shadow:var(--sh)">'+
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">'+
+        avatar(m.naam,40)+
+        '<div><div style="font-size:15px;font-weight:700">'+m.naam+'</div>'+
+        '<div style="font-size:11px;color:var(--mu)">'+m.afspraken.length+' afspraken</div></div></div>'+
+        '<div style="font-size:26px;font-weight:800;font-family:var(--fm);color:var(--green);margin-bottom:10px">'+fmtEur(m.commissie)+'</div>'+
+        '<div style="border-top:1px solid var(--b1);padding-top:8px">'+
+        m.details.map(function(d){
+          return'<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px">'+
+            '<span style="color:var(--mu)">'+d.project+'</span>'+
+            '<span><span style="color:var(--mu)">'+d.afs+' × '+fmtEur(d.commPerAfs)+' = </span>'+
+            '<strong style="color:var(--green)">'+fmtEur(d.totaal)+'</strong></span></div>';
+        }).join('')+
+        '</div></div>';
+    }).join('')+
+    '</div>';
+}
 
 function renderToegang(){
   const lijst=getToegang();

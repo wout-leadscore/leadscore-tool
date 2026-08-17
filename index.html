@@ -868,12 +868,16 @@ async function postAct(e){
         calls:e.calls,manueel:e.manueel,auto:e.auto,
         project:e.project,afs:e.afs,afspraken:e.afspraken,
         min:e.duur,duur:e.duur,
-        data_uren:e.dataUren,meet_min:e.meetMin,
-        data_omschr:e.omschr||''
+        data_uren:e.dataUren,meet_min:e.meetMin
       })
     });
-    if(!r.ok)console.warn('Supabase sync mislukt:',r.status);
-  }catch(err){console.warn('Supabase niet bereikbaar, lokaal opgeslagen.');}
+    if(!r.ok){
+      const txt=await r.text();
+      console.error('Supabase fout:',r.status,txt);
+    } else {
+      console.log('Supabase: sessie opgeslagen ✓');
+    }
+  }catch(err){console.error('Supabase connectie fout:',err.message);}
 }
 async function patchAct(id,data){
   // Lokaal updaten
@@ -894,8 +898,7 @@ async function patchAct(id,data){
       body:JSON.stringify({datum:data.datum,duur:data.duur,min:data.duur,
         calls:data.calls,manueel:data.manueel,auto:data.auto,project:data.project,
         afs:data.afs||0,afspraken:data.afspraken||[],
-        data_uren:data.data_uren||0,meet_min:data.meet_min||0,
-        data_omschr:data.omschr||''})
+        data_uren:data.data_uren||0,meet_min:data.meet_min||0})
     });
   }catch(err){console.warn('Supabase patch mislukt, lokaal opgeslagen.');}
 }
@@ -922,7 +925,7 @@ async function laadActiviteit(){
           duur:r.duur||r.min||60,
           calls:r.calls||0,manueel:r.manueel||0,auto:r.auto||0,
           project:r.project||'',afs:r.afs||0,afspraken:r.afspraken||[],
-          dataUren:r.data_uren||0,meetMin:r.meet_min||0,omschr:r.data_omschr||''
+          dataUren:r.data_uren||0,meetMin:r.meet_min||0,omschr:r.data_omschr||r.omschr||''
         }));
         slaActOp();// Lokaal updaten met Supabase data
       }

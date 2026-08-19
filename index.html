@@ -208,8 +208,27 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
 
 <!-- SESSIE INVOER -->
 <div class="pnl" id="pnl-invoer">
-  <div class="ph"><div class="ph-title">Sessie registreren</div></div>
-  <div class="card" style="margin-bottom:16px">
+  <div class="ph">
+    <div class="ph-title">Sessie registreren</div>
+    <button class="btn-secondary" onclick="downloadBackupPDF()" style="font-size:12px;padding:7px 14px">⬇ Backup PDF</button>
+  </div>
+  <!-- Data aanvragen todo lijst -->
+  <div id="data-todo-wrap" style="background:var(--w);border:1.5px solid var(--bbr);border-radius:var(--rx);padding:14px 16px;margin-bottom:12px;box-shadow:var(--sh)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:700;color:var(--blue)">🗄 Data aanvragen <span id="todo-count" style="font-size:11px;background:var(--bbg);border:1px solid var(--bbr);border-radius:10px;padding:1px 8px;margin-left:4px">0</span></div>
+      <button onclick="openTodoModal()" style="font-size:12px;padding:5px 12px;background:var(--blue);color:#fff;border:none;border-radius:var(--r);cursor:pointer;font-weight:600">+ Aanvraag</button>
+    </div>
+    <div id="todo-lijst"></div>
+  </div>
+
+  <!-- Sessie type toggle -->
+  <div style="display:flex;gap:0;margin-bottom:12px;border:1.5px solid var(--b1);border-radius:var(--r);overflow:hidden;max-width:260px">
+    <button id="inv-type-calls" onclick="setInvType('calls')" style="flex:1;padding:9px 16px;font-size:13px;font-weight:700;border:none;background:var(--accent);color:#fff;cursor:pointer">📞 Calls</button>
+    <button id="inv-type-data" onclick="setInvType('data')" style="flex:1;padding:9px 16px;font-size:13px;font-weight:700;border:none;background:var(--w);color:var(--mu);cursor:pointer">🗄 Data</button>
+  </div>
+
+  <!-- CALLS mode -->
+  <div id="inv-mode-calls" class="card" style="margin-bottom:16px">
     <div class="g2">
       <div class="fi">
         <label>Wie werkt er vandaag?</label>
@@ -269,6 +288,45 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
       <span class="smsg" id="inv-msg"></span>
     </div>
   </div>
+  <!-- DATA mode -->
+  <div id="inv-mode-data" class="card" style="margin-bottom:16px;display:none">
+    <div class="g2">
+      <div class="fi">
+        <label>Wie?</label>
+        <select id="data-wie" style="margin-bottom:8px"></select>
+      </div>
+      <div class="fi"><label>Datum</label><input type="date" id="data-datum"/></div>
+    </div>
+    <div class="g2">
+      <div class="fi">
+        <label>Duur</label>
+        <select id="data-duur" onchange="syncDataDuur(this.value)">
+          <option value="30">30 min</option>
+          <option value="60" selected>1u</option>
+          <option value="90">1u30</option>
+          <option value="120">2u</option>
+          <option value="180">3u</option>
+          <option value="240">4u</option>
+          <option value="300">5u</option>
+          <option value="360">6u</option>
+          <option value="custom">Custom...</option>
+        </select>
+        <div id="data-duur-custom-wrap" style="display:none;margin-top:6px">
+          <input type="number" id="data-duur-custom" min="0.5" max="24" step="0.5" placeholder="uren" style="width:80px;font-family:var(--fm)"/>
+          <span style="font-size:11px;color:var(--mu)"> u</span>
+        </div>
+      </div>
+      <div class="fi"><label>Project</label><select id="data-proj"><option value="">— Project —</option></select></div>
+    </div>
+    <div class="fi"><label>Omschrijving (wat gedaan / hoe gedaan)</label>
+      <textarea id="data-omschr" rows="3" placeholder="Bv: LinkedIn scraping sector technologie, 500 contacten gevonden via Sales Navigator..." style="resize:vertical"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn-primary" onclick="slaDataOp()">Registreren</button>
+      <span class="smsg" id="data-msg"></span>
+    </div>
+  </div>
+
   <div class="sec-title">Sessies deze week</div>
   <div id="inv-log"></div>
 </div>
@@ -277,7 +335,18 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
 <div class="pnl" id="pnl-planning">
   <div class="ph">
     <div><div class="ph-title">Planning</div><div class="ph-sub" id="plan-sub">—</div></div>
-    <button class="btn-secondary" onclick="clearWeekPlanning()" style="font-size:12px">Week wissen</button>
+    <div style="display:flex;gap:8px">
+      <button id="wout-todo-btn" onclick="toggleWoutTodo()" style="font-size:12px;padding:7px 14px;background:var(--w);color:var(--mu);border:1.5px solid var(--b1);border-radius:var(--r);cursor:pointer;font-weight:600">🦁 Wout DK</button>
+      <button class="btn-secondary" onclick="clearWeekPlanning()" style="font-size:12px">Week wissen</button>
+    </div>
+  </div>
+  <!-- Wout Todo -->
+  <div id="wout-todo-panel" style="display:none;background:var(--w);border:1.5px solid var(--gbr);border-radius:var(--rx);padding:16px;margin-bottom:16px;box-shadow:var(--sh)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-size:14px;font-weight:700;color:var(--green)">🦁 Wout — To-Do</div>
+      <button onclick="openWoutTodoModal()" style="font-size:12px;padding:6px 14px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);cursor:pointer;font-weight:600">+ Taak</button>
+    </div>
+    <div id="wout-todo-agenda"></div>
   </div>
   <div style="background:var(--w);border:1px solid var(--b1);border-radius:var(--rx);padding:14px 16px;margin-bottom:16px;box-shadow:var(--sh)">
     <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);margin-bottom:10px">Project inplannen</div>
@@ -430,11 +499,17 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
 <!-- SDD PAGINA -->
 <div class="pnl" id="pnl-sdd">
   <div class="ph">
-    <div><div class="ph-title">Sales Due Diligence</div><div class="ph-sub">Weekplanning</div></div>
-    <button class="btn-primary" onclick="openSddModal()" style="font-size:12px;padding:7px 14px">+ Nieuw SDD project</button>
+    <div><div class="ph-title">Sales Due Diligence</div><div class="ph-sub">Weekoverzicht</div></div>
+    <button class="btn-primary" onclick="openSddModal()" style="font-size:12px;padding:7px 14px">+ Nieuw item</button>
+  </div>
+  <!-- Filter tabs -->
+  <div style="display:flex;gap:0;margin-bottom:16px;border:1.5px solid var(--b1);border-radius:var(--r);overflow:hidden;max-width:320px">
+    <button id="sdd-tab-all" onclick="setSddTab('all')" style="flex:1;padding:8px;font-size:12px;font-weight:700;border:none;background:var(--accent);color:#fff;cursor:pointer">Alles</button>
+    <button id="sdd-tab-sdd" onclick="setSddTab('sdd')" style="flex:1;padding:8px;font-size:12px;font-weight:700;border:none;background:var(--w);color:var(--mu);cursor:pointer">📊 SDD</button>
+    <button id="sdd-tab-demo" onclick="setSddTab('demo')" style="flex:1;padding:8px;font-size:12px;font-weight:700;border:none;background:var(--w);color:var(--mu);cursor:pointer">🎯 Demo</button>
   </div>
   <!-- Stats -->
-  <div class="stats" id="sdd-stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px"></div>
+  <div class="stats" id="sdd-stats" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px"></div>
   <!-- Weekplanning -->
   <div id="sdd-weekplan"></div>
 </div>
@@ -453,11 +528,22 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
         <input type="hidden" id="sdd-logo-data"/>
       </div>
     </div>
-    <div class="fi"><label>Naam bedrijf</label><input type="text" id="sdd-naam" placeholder="Bv. ECS, Integra..."/></div>
-    <div class="fi"><label>Sales Due Diligence week</label>
-      <select id="sdd-start" style="font-family:var(--fm);font-size:13px">
-        <option value="">— Kies week —</option>
-      </select>
+    <!-- Type -->
+    <div style="display:flex;gap:0;margin-bottom:14px;border:1.5px solid var(--b1);border-radius:var(--r);overflow:hidden">
+      <button id="sdd-type-sdd" onclick="setSddType('sdd')" style="flex:1;padding:8px;font-size:12px;font-weight:700;border:none;background:var(--accent);color:#fff;cursor:pointer">📊 Sales Due Diligence</button>
+      <button id="sdd-type-demo" onclick="setSddType('demo')" style="flex:1;padding:8px;font-size:12px;font-weight:700;border:none;background:var(--w);color:var(--mu);cursor:pointer">🎯 Sales Demo</button>
+    </div>
+    <input type="hidden" id="sdd-type" value="sdd"/>
+    <div class="fi"><label>Naam bedrijf</label><input type="text" id="sdd-naam" placeholder="Bv. ECS, Integra, nieuw bedrijf..."/></div>
+    <div class="g2">
+      <div class="fi"><label>Aantal calls</label><input type="number" id="sdd-calls" min="0" placeholder="0"/></div>
+      <div class="fi"><label>Factuurbedrag (€)</label><input type="number" id="sdd-prijs" min="0" step="0.01" placeholder="0.00"/></div>
+    </div>
+    <div class="fi"><label>Omschrijving</label>
+      <textarea id="sdd-omschr" rows="2" placeholder="Bv: beslissing uitgesteld, interesse in module X..." style="resize:vertical"></textarea>
+    </div>
+    <div class="fi"><label>Datum</label>
+      <input type="date" id="sdd-start"/>
       <input type="hidden" id="sdd-eind" value=""/>
     </div>
     <div class="fi"><label>Status</label>
@@ -473,6 +559,47 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
     </div>
   </div>
 </div>
+<!-- TODO AANVRAAG MODAL -->
+<div class="mo" id="mo-todo">
+  <div class="md">
+    <div class="md-title">📋 Data aanvraag indienen</div>
+    <div class="fi"><label>Project</label><select id="todo-proj"><option value="">— Project —</option></select></div>
+    <div class="fi"><label>Omschrijving (wat heb je nodig?)</label>
+      <textarea id="todo-omschr" rows="3" placeholder="Bv: LinkedIn scraping sector technologie, 500 bedrijven met >50 werknemers..." style="resize:vertical"></textarea>
+    </div>
+    <div class="g2">
+      <div class="fi"><label>Deadline</label><input type="date" id="todo-deadline"/></div>
+      <div class="fi"><label>Ingediend door</label>
+        <select id="todo-wie"><option value="">— Wie ben jij? —</option></select>
+      </div>
+    </div>
+    <div class="md-btns">
+      <button class="btn-primary" onclick="slaAanvraagOp()">Indienen</button>
+      <button class="btn-secondary" onclick="sluit('mo-todo')">Annuleren</button>
+    </div>
+  </div>
+</div>
+
+<!-- WOUT TODO MODAL -->
+<div class="mo" id="mo-wout-todo">
+  <div class="md">
+    <div class="md-title" id="wout-todo-modal-title">🦁 Nieuwe taak</div>
+    <input type="hidden" id="wout-todo-edit-id" value=""/>
+    <div class="fi"><label>Project (optioneel)</label>
+      <select id="wout-todo-proj"><option value="">— Geen project —</option></select>
+    </div>
+    <div class="fi"><label>Taak omschrijving</label>
+      <textarea id="wout-todo-omschr" rows="2" placeholder="Bv: Offerte opmaken voor ECS..." style="resize:vertical"></textarea>
+    </div>
+    <div class="fi"><label>Deadline</label><input type="date" id="wout-todo-deadline"/></div>
+    <div class="md-btns">
+      <button class="btn-primary" onclick="slaWoutTaakOp()">Opslaan</button>
+      <button class="btn-danger" id="wout-todo-del-btn" style="display:none" onclick="verwijderWoutTaak()">Verwijderen</button>
+      <button class="btn-secondary" onclick="sluit('mo-wout-todo')">Annuleren</button>
+    </div>
+  </div>
+</div>
+
 </div><!-- /page -->
 
 
@@ -772,7 +899,7 @@ async function syncNaarSupabase(){
   const data={projecten:PROJECTEN,fiches:FICHES,medewerkers:MEDEWERKERS};
   try{
     // Upsert each config key
-    for(const [key,val] of Object.entries({projecten:PROJECTEN,fiches:FICHES,medewerkers:MEDEWERKERS,planning:planData,sdd:laadSDD()})){
+    for(const [key,val] of Object.entries({projecten:PROJECTEN,fiches:FICHES,medewerkers:MEDEWERKERS,planning:planData,sdd:laadSDD(),todo:laadTodo(),wout_todo:laadWoutTodo()})){
       await fetch(SB_URL+'/rest/v1/ls_config',{
         method:'POST',
         headers:{...SBH,'Prefer':'resolution=merge-duplicates'},
@@ -796,6 +923,8 @@ async function laadVanSupabase(){
       if(row.key==='medewerkers'&&Array.isArray(row.value))MEDEWERKERS=row.value;
       if(row.key==='planning'&&row.value&&typeof row.value==='object')Object.assign(planData,row.value);
       if(row.key==='sdd'&&Array.isArray(row.value))localStorage.setItem('ls10_sdd',JSON.stringify(row.value));
+      if(row.key==='todo'&&Array.isArray(row.value))localStorage.setItem('ls10_todo',JSON.stringify(row.value));
+      if(row.key==='wout_todo'&&Array.isArray(row.value))localStorage.setItem('ls10_wout_todo',JSON.stringify(row.value));
     });
     // Sla lokaal op
     slaProj();slaFiches();slaMW();slaPlanLokaal();
@@ -868,7 +997,8 @@ async function postAct(e){
         calls:e.calls,manueel:e.manueel,auto:e.auto,
         project:e.project,afs:e.afs,afspraken:e.afspraken,
         min:e.duur,duur:e.duur,
-        data_uren:e.dataUren,meet_min:e.meetMin
+        data_uren:e.dataUren,meet_min:e.meetMin,
+        data_omschr:e.omschr||''
       })
     });
     if(!r.ok){
@@ -898,7 +1028,8 @@ async function patchAct(id,data){
       body:JSON.stringify({datum:data.datum,duur:data.duur,min:data.duur,
         calls:data.calls,manueel:data.manueel,auto:data.auto,project:data.project,
         afs:data.afs||0,afspraken:data.afspraken||[],
-        data_uren:data.data_uren||0,meet_min:data.meet_min||0})
+        data_uren:data.data_uren||0,meet_min:data.meet_min||0,
+        data_omschr:data.omschr||''})
     });
   }catch(err){console.warn('Supabase patch mislukt, lokaal opgeslagen.');}
 }
@@ -1338,26 +1469,47 @@ function vulWeekOpties(selId, geselecteerd){
   const defaultOpt=document.createElement('option');
   defaultOpt.value='';defaultOpt.textContent='— Kies week —';
   sel.appendChild(defaultOpt);
-  // Genereer alle weken ISO van dit jaar en volgend jaar
+  // Genereer weken ISO - 8 weken terug t/m 26 weken vooruit
   const nu=new Date();
   const huidigWk=datumNaarWKey(dStrLocal(nu));
-  for(let jr=nu.getFullYear();jr<=nu.getFullYear()+1;jr++){
-    for(let wn=1;wn<=53;wn++){
-      const ma=wkNaarMaISO(jr+'-'+String(wn).padStart(2,'0'));
-      if(ma.getFullYear()<jr&&wn===1)continue;
-      if(ma.getFullYear()>jr+1)break;
-      const vr=new Date(ma);vr.setDate(ma.getDate()+4);
-      const fs=function(x){return x.getDate()+'/'+(x.getMonth()+1);};
-      const wk=jr+'-'+String(wn).padStart(2,'0');
-      // Verify this week actually belongs to this year
-      if(datumNaarWKey(ma.toISOString().split('T')[0]).split('-')[0]!==String(jr)&&wn<52)continue;
-      const opt=document.createElement('option');
-      opt.value=wk;
-      opt.textContent='W'+wn+' ('+jr+') - '+fs(ma)+' t/m '+fs(vr)+(wk===huidigWk?' ★':'');
-      if(wk===geselecteerd)opt.selected=true;
-      sel.appendChild(opt);
-    }
+  const mndNamen2=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  for(let i=-8;i<=26;i++){
+    const ma=getMa(i);
+    const vr=new Date(ma);vr.setDate(ma.getDate()+4);
+    const wk=datumNaarWKey(dStrLocal(ma));
+    const parts=wk.split('-');
+    const fs=function(x){return x.getDate()+' '+mndNamen2[x.getMonth()];};
+    const isHuidig=wk===huidigWk;
+    const opt=document.createElement('option');
+    opt.value=wk;
+    opt.textContent='W'+parseInt(parts[1])+' · '+fs(ma)+' – '+fs(vr)+(isHuidig?' ★':'');
+    if(wk===geselecteerd)opt.selected=true;
+    sel.appendChild(opt);
   }
+}
+
+let sddTabFilter='all';
+
+function setSddTab(tab){
+  sddTabFilter=tab;
+  ['all','sdd','demo'].forEach(t=>{
+    const btn=document.getElementById('sdd-tab-'+t);
+    if(btn){btn.style.background=t===tab?'var(--accent)':'var(--w)';btn.style.color=t===tab?'#fff':'var(--mu)';}
+  });
+  renderSDD();
+}
+
+function setSddType(type){
+  const inp=document.getElementById('sdd-type');
+  if(inp)inp.value=type;
+  ['sdd','demo'].forEach(t=>{
+    const btn=document.getElementById('sdd-type-'+t);
+    if(btn){
+      btn.style.background=t===type?'var(--accent)':'var(--w)';
+      btn.style.color=t===type?'#fff':'var(--mu)';
+      btn.style.borderRight=t==='sdd'?'1px solid var(--b1)':'none';
+    }
+  });
 }
 
 function openSddModal(idx){
@@ -1381,9 +1533,13 @@ function slaSddOp(){
   const naam=document.getElementById('sdd-naam').value.trim();
   if(!naam){alert('Naam verplicht');return;}
   const idx=parseInt(document.getElementById('sdd-edit-idx').value);
+  const type=document.getElementById('sdd-type').value||'sdd';
+  const calls=parseInt(document.getElementById('sdd-calls').value)||0;
+  const prijs=parseFloat(document.getElementById('sdd-prijs').value)||0;
+  const omschr=document.getElementById('sdd-omschr').value.trim();
   const item={
     id:idx>=0?laadSDD()[idx].id:Date.now(),
-    naam,
+    naam,type,calls,prijs,omschr,
     logo:document.getElementById('sdd-logo-data').value||'',
     start:document.getElementById('sdd-start').value||'',
     eind:document.getElementById('sdd-eind').value||'',
@@ -1434,27 +1590,26 @@ function renderSDD(){
   const lijst=laadSDD();
   const ingepland=lijst.filter(s=>!s.status||s.status==='ingepland');
   const afgerond=lijst.filter(s=>s.status==='afgerond');
+  // Apply filter
+  const gefilterd=sddTabFilter==='all'?lijst:lijst.filter(i=>i.type===sddTabFilter||(!i.type&&sddTabFilter==='sdd'));
+  const totPrijs=gefilterd.reduce((s,i)=>s+(i.prijs||0),0);
   const statsEl=document.getElementById('sdd-stats');
   if(statsEl)statsEl.innerHTML=[
-    {n:lijst.length,l:'Totaal SDD',c:'var(--tx)'},
-    {n:ingepland.length,l:'Ingepland',c:'var(--blue)'},
-    {n:afgerond.length,l:'Afgerond',c:'var(--green)'}
+    {n:gefilterd.length,l:'Totaal',c:'var(--tx)'},
+    {n:gefilterd.filter(s=>s.type==='demo').length,l:'Sales Demo',c:'var(--blue)'},
+    {n:gefilterd.filter(s=>!s.type||s.type==='sdd').length,l:'SDD',c:'var(--amber)'},
+    {n:fmtEur(totPrijs),l:'Totale waarde',c:'var(--green)'}
   ].map(b=>'<div class="stat"><div class="stat-n" style="color:'+b.c+'">'+b.n+'</div><div class="stat-l">'+b.l+'</div></div>').join('');
   const wpEl=document.getElementById('sdd-weekplan');
   if(!wpEl)return;
   function wkNaarMa(wk){return wkNaarMaISO(wk);}
   const weekMap={};
-  lijst.forEach(function(item,i){
+  gefilterd.forEach(function(item,i){
     if(!item.start)return;
-    const startMa=wkNaarMa(item.start);
-    const eindMa=item.eind?wkNaarMa(item.eind):new Date(startMa);
-    const cur=new Date(startMa);
-    while(cur<=eindMa){
-      const wk=datumNaarWKey(dStrLocal(cur));
-      if(!weekMap[wk])weekMap[wk]=[];
-      weekMap[wk].push({item:item,idx:i});
-      cur.setDate(cur.getDate()+7);
-    }
+    // item.start is now a date "2026-08-17"
+    const wk=datumNaarWKey(item.start);
+    if(!weekMap[wk])weekMap[wk]=[];
+    weekMap[wk].push({item:item,idx:i});
   });
   const weken=Object.keys(weekMap).sort();
   const vandaagWk=datumNaarWKey(dStrLocal(new Date()));
@@ -1484,8 +1639,21 @@ function renderSDD(){
       const chip=document.createElement('span');
       const isAfg=entry.item.status==='afgerond';
       chip.style.cssText='display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;cursor:pointer;background:'+(isAfg?'var(--gbg)':'var(--bbg)')+';border:1px solid '+(isAfg?'var(--gbr)':'var(--bbr)')+';color:'+(isAfg?'var(--green)':'var(--blue)');
-      if(entry.item.logo){const img=document.createElement('img');img.src=entry.item.logo;img.style.cssText='width:16px;height:16px;border-radius:3px;object-fit:cover';chip.appendChild(img);}
-      const lbl=document.createElement('strong');lbl.textContent=entry.item.naam;chip.appendChild(lbl);
+
+      const typeIcon=entry.item.type==='demo'?'🎯':'📊';
+      const wrap=document.createElement('div');
+      wrap.style.cssText='display:flex;flex-direction:column;gap:2px';
+      const row1=document.createElement('div');
+      row1.style.cssText='display:flex;align-items:center;gap:6px';
+      if(entry.item.logo){const img=document.createElement('img');img.src=entry.item.logo;img.style.cssText='width:16px;height:16px;border-radius:3px;object-fit:cover';row1.appendChild(img);}
+      const lbl=document.createElement('strong');
+      lbl.textContent=typeIcon+' '+entry.item.naam;
+      row1.appendChild(lbl);
+      if(entry.item.calls){const c2=document.createElement('span');c2.style.cssText='font-size:10px;opacity:.7';c2.textContent=entry.item.calls+' calls';row1.appendChild(c2);}
+      if(entry.item.prijs){const p=document.createElement('span');p.style.cssText='font-size:10px;font-weight:700;color:var(--green)';p.textContent=fmtEur(entry.item.prijs);row1.appendChild(p);}
+      wrap.appendChild(row1);
+      if(entry.item.omschr){const om=document.createElement('div');om.style.cssText='font-size:10px;opacity:.75;font-weight:400;font-style:italic';om.textContent=entry.item.omschr;wrap.appendChild(om);}
+      chip.appendChild(wrap);
       chip.addEventListener('click',function(){openSddModal(entry.idx);});
       projsEl.appendChild(chip);
     });
@@ -1494,6 +1662,373 @@ function renderSDD(){
   });
 }
 
+
+function downloadBackupPDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W=210,ml=14,cw=W-ml-14;
+  let y=14;
+  const nu=new Date();
+  const datumStr=nu.toLocaleDateString('nl-BE',{day:'numeric',month:'long',year:'numeric'});
+
+  // Header
+  doc.setFillColor(21,128,61);doc.roundedRect(ml,y,cw,20,3,3,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(14);
+  doc.text('Leadscore — Sessie Backup',ml+7,y+8);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text('Alle sessies t/m '+datumStr,ml+7,y+15);
+  doc.setFontSize(9);doc.setFont('helvetica','bold');
+  doc.text(activiteit.length+' sessies totaal',W-14,y+12,{align:'right'});
+  y+=26;
+
+  // Groepeer per dag
+  const perDag={};
+  activiteit.forEach(a=>{
+    if(!perDag[a.datum])perDag[a.datum]=[];
+    perDag[a.datum].push(a);
+  });
+  const dagen=Object.keys(perDag).sort().reverse();
+  const dagNamen=['zo','ma','di','wo','do','vr','za'];
+  const mndNamen=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+
+  // Tabel
+  const rows=[];
+  dagen.forEach(dag=>{
+    const d=new Date(dag);
+    const dagLbl=dagNamen[d.getDay()]+' '+d.getDate()+' '+mndNamen[d.getMonth()]+' '+d.getFullYear();
+    perDag[dag].sort((a,b)=>a.naam.localeCompare(b.naam)).forEach(a=>{
+      const parts=[];
+      if(a.calls)parts.push(a.calls+' calls');
+      if((a.manueel||0)+(a.auto||0))parts.push((a.manueel+a.auto)+' mails');
+      if(a.dataUren)parts.push('data '+a.dataUren+'u');
+      if(a.meetMin)parts.push('meeting '+a.meetMin+'u');
+      const afspCount=((a.afspraken||[]).length)||(a.afs||0);
+      if(afspCount)parts.push(afspCount+' afsp.');
+      rows.push([
+        dagLbl,
+        a.naam,
+        pNaam(a.project),
+        ((a.duur||60)/60).toFixed(1)+'u',
+        parts.join(' · ')||'—',
+        a.omschr||''
+      ]);
+    });
+  });
+
+  doc.autoTable({
+    startY:y,
+    head:[['Datum','Wie','Project','Uren','Activiteit','Omschrijving']],
+    body:rows,
+    theme:'grid',
+    headStyles:{fillColor:[21,128,61],textColor:255,fontSize:7,fontStyle:'bold'},
+    bodyStyles:{fontSize:7},
+    columnStyles:{
+      0:{cellWidth:24},1:{cellWidth:16},2:{cellWidth:22},
+      3:{cellWidth:10,halign:'right'},4:{cellWidth:40,overflow:'linebreak'},
+      5:{cellWidth:40,overflow:'linebreak',textColor:[107,118,133],fontStyle:'italic'}
+    },
+    margin:{left:ml,right:14},
+    styles:{cellPadding:2,lineColor:[221,226,234],overflow:'linebreak'}
+  });
+
+  // Footer
+  const pH=doc.internal.pageSize.height;
+  doc.setDrawColor(21,128,61);doc.setLineWidth(0.4);doc.line(ml,pH-12,W-14,pH-12);
+  doc.setTextColor(21,128,61);doc.setFontSize(7);doc.setFont('helvetica','bold');
+  doc.text('Leadscore',ml,pH-7);
+  doc.setTextColor(173,181,189);doc.setFont('helvetica','normal');
+  doc.text('Backup '+datumStr+' · '+activiteit.length+' sessies',W-14,pH-7,{align:'right'});
+
+  doc.save('Leadscore_Backup_'+nu.toISOString().split('T')[0]+'.pdf');
+}
+
+function setInvType(type){
+  const isCalls = type === 'calls';
+  document.getElementById('inv-mode-calls').style.display = isCalls ? 'block' : 'none';
+  document.getElementById('inv-mode-data').style.display = isCalls ? 'none' : 'block';
+  document.getElementById('inv-type-calls').style.background = isCalls ? 'var(--accent)' : 'var(--w)';
+  document.getElementById('inv-type-calls').style.color = isCalls ? '#fff' : 'var(--mu)';
+  document.getElementById('inv-type-data').style.background = isCalls ? 'var(--w)' : 'var(--accent)';
+  document.getElementById('inv-type-data').style.color = isCalls ? 'var(--mu)' : '#fff';
+}
+
+async function slaDataOp(){
+  const msg = document.getElementById('data-msg');
+  const wie = document.getElementById('data-wie').value || naam;
+  if(!wie){msg.textContent='⚠ Kies medewerker';msg.style.color='var(--red)';return;}
+  const datum = document.getElementById('data-datum').value;
+  if(!datum){msg.textContent='⚠ Vul datum in';msg.style.color='var(--red)';return;}
+  const projId = document.getElementById('data-proj').value;
+  if(!projId){msg.textContent='⚠ Kies project';msg.style.color='var(--red)';return;}
+  const omschr = document.getElementById('data-omschr').value.trim();
+  if(!omschr){msg.textContent='⚠ Vul omschrijving in';msg.style.color='var(--red)';return;}
+
+  // Get duur
+  const duurSel = document.getElementById('data-duur');
+  let duur = 60;
+  if(duurSel.value === 'custom'){
+    duur = Math.round((parseFloat(document.getElementById('data-duur-custom').value)||1)*60);
+  } else {
+    duur = parseInt(duurSel.value)||60;
+  }
+
+  const e = {
+    id: Date.now(),
+    naam: wie,
+    datum,
+    duur,
+    calls: 0,
+    manueel: 0,
+    auto: 0,
+    project: projId,
+    afs: 0,
+    afspraken: [],
+    dataUren: duur/60,
+    meetMin: 0,
+    omschr: '[DATA] '+omschr,
+    isData: true
+  };
+
+  msg.textContent='Opslaan...';msg.style.color='var(--mu)';
+  await postAct(e);
+  msg.textContent='✓ Data sessie geregistreerd!';msg.style.color='var(--green)';
+  setTimeout(()=>msg.textContent='',3000);
+
+  // Reset
+  document.getElementById('data-omschr').value='';
+  renderLog();renderDash();
+}
+
+// ── DATA TODO ────────────────────────────────────────────────────────
+function laadTodo(){
+  try{const d=localStorage.getItem('ls10_todo');return d?JSON.parse(d):[];}catch(e){return[];}
+}
+function slaTodo(lijst){
+  localStorage.setItem('ls10_todo',JSON.stringify(lijst));
+  // Sync naar Supabase config
+  syncNaarSupabase();
+}
+
+function openTodoModal(){
+  // Populate dropdowns
+  const ps=document.getElementById('todo-proj');
+  if(ps){ps.innerHTML='<option value="">— Project —</option>'+PROJECTEN.map(p=>'<option value="'+p.id+'">'+p.naam+'</option>').join('');}
+  const ws=document.getElementById('todo-wie');
+  if(ws){ws.innerHTML='<option value="">— Wie ben jij? —</option>'+MEDEWERKERS.map(m=>'<option value="'+m.naam+'"'+(m.naam===naam?' selected':'')+'>'+m.naam+'</option>').join('');}
+  const omschr=document.getElementById('todo-omschr');
+  if(omschr)omschr.value='';
+  const deadlineEl=document.getElementById('todo-deadline');
+  if(deadlineEl){const nw=new Date();nw.setDate(nw.getDate()+7);deadlineEl.value=nw.toISOString().split('T')[0];}
+  document.getElementById('mo-todo').classList.add('on');
+}
+
+function slaAanvraagOp(){
+  const proj=document.getElementById('todo-proj').value;
+  const omschr=document.getElementById('todo-omschr').value.trim();
+  const wie=document.getElementById('todo-wie').value||naam;
+  const deadline=document.getElementById('todo-deadline').value;
+  if(!proj){alert('Kies een project');return;}
+  if(!omschr){alert('Vul een omschrijving in');return;}
+  if(!deadline){alert('Vul een deadline in');return;}
+  if(!wie){alert('Kies wie je bent');return;}
+  const lijst=laadTodo();
+  lijst.push({id:Date.now(),proj,projNaam:pNaam(proj),omschr,wie,deadline,datum:new Date().toISOString().split('T')[0],status:'open'});
+  slaTodo(lijst);
+  sluit('mo-todo');
+  renderTodoLijst();
+}
+
+function renderTodoLijst(){
+  const lijst=laadTodo().filter(t=>t.status==='open').sort((a,b)=>(a.deadline||'9999').localeCompare(b.deadline||'9999'));
+  const el=document.getElementById('todo-lijst');
+  const cnt=document.getElementById('todo-count');
+  if(cnt)cnt.textContent=lijst.length;
+  if(!el)return;
+  if(!lijst.length){
+    el.innerHTML='<div style="font-size:12px;color:var(--mu);font-style:italic;padding:4px 0">Geen openstaande aanvragen.</div>';
+    return;
+  }
+  el.innerHTML=lijst.map((t,i)=>{
+    const fi=getFiche(t.proj);
+    const logoHtml=fi&&fi.logo?'<img src="'+fi.logo+'" style="width:18px;height:18px;border-radius:3px;object-fit:cover;flex-shrink:0"/>':'';
+    return'<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 10px;background:var(--bbg);border:1px solid var(--bbr);border-radius:var(--r);margin-bottom:6px">'+
+      '<div style="flex:1">'+
+      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">'+
+      logoHtml+
+      '<span style="font-size:12px;font-weight:700;color:var(--blue)">'+t.projNaam+'</span>'+
+      '<span style="font-size:10px;color:var(--mu)">· '+t.wie+'</span>'+
+      (t.deadline?'<span style="font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px;margin-left:4px;background:var(--abg);color:var(--amber)">⏰ '+fmtDate(t.deadline)+'</span>':'')+
+      '</div>'+
+      '<div style="font-size:12px;color:var(--tx)">'+t.omschr+'</div>'+
+      '</div>'+
+      '<button data-tid="'+t.id+'" onclick="verwerkAanvraag(this)" style="padding:4px 10px;background:var(--accent);color:#fff;border:none;border-radius:var(--r);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap">✓ Verwerk</button>'+
+      '</div>';
+  }).join('');
+}
+
+function verwerkAanvraag(btn){
+  const tid=parseInt(btn.getAttribute('data-tid'));
+  const lijst=laadTodo();
+  const todo=lijst.find(t=>t.id===tid);
+  if(!todo)return;
+  // Pre-fill data sessie formulier
+  setInvType('data');
+  const projSel=document.getElementById('data-proj');
+  if(projSel){projSel.innerHTML='<option value="">— Project —</option>'+PROJECTEN.map(p=>'<option value="'+p.id+'">'+p.naam+'</option>').join('');projSel.value=todo.proj;}
+  const omschrEl=document.getElementById('data-omschr');
+  if(omschrEl)omschrEl.value=todo.omschr+' (aanvraag van '+todo.wie+')';
+  const datumEl=document.getElementById('data-datum');
+  if(datumEl)datumEl.value=new Date().toISOString().split('T')[0];
+  // Mark as processed
+  const item=lijst.find(t=>t.id===tid);
+  if(item)item.status='verwerkt';
+  slaTodo(lijst);
+  renderTodoLijst();
+  // Scroll to data form
+  document.getElementById('inv-mode-data').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ── WOUT TODO ────────────────────────────────────────────────────────
+function laadWoutTodo(){
+  try{const d=localStorage.getItem('ls10_wout_todo');return d?JSON.parse(d):[];}catch(e){return[];}
+}
+function slaWoutTodo(lijst){
+  localStorage.setItem('ls10_wout_todo',JSON.stringify(lijst));
+  syncNaarSupabase();
+}
+
+let woutTodoOpen=false;
+function toggleWoutTodo(){
+  woutTodoOpen=!woutTodoOpen;
+  const panel=document.getElementById('wout-todo-panel');
+  const btn=document.getElementById('wout-todo-btn');
+  if(panel)panel.style.display=woutTodoOpen?'block':'none';
+  if(btn){
+    btn.style.background=woutTodoOpen?'var(--gbg)':'var(--w)';
+    btn.style.color=woutTodoOpen?'var(--green)':'var(--mu)';
+    btn.style.borderColor=woutTodoOpen?'var(--gbr)':'var(--b1)';
+  }
+  if(woutTodoOpen)renderWoutTodo();
+}
+
+function openWoutTodoModal(id){
+  const isNew=!id;
+  document.getElementById('wout-todo-modal-title').textContent=isNew?'🦁 Nieuwe taak':'🦁 Taak bewerken';
+  document.getElementById('wout-todo-edit-id').value=id||'';
+  // Populate project dropdown
+  const ps=document.getElementById('wout-todo-proj');
+  if(ps){ps.innerHTML='<option value="">— Geen project —</option>'+PROJECTEN.map(p=>'<option value="'+p.id+'">'+p.naam+'</option>').join('');}
+  // Set default deadline = volgende week
+  const dl=document.getElementById('wout-todo-deadline');
+  if(dl&&isNew){const nw=new Date();nw.setDate(nw.getDate()+7);dl.value=nw.toISOString().split('T')[0];}
+  if(!isNew){
+    const taak=laadWoutTodo().find(t=>t.id==id);
+    if(taak){
+      const ps2=document.getElementById('wout-todo-proj');
+      if(ps2)ps2.value=taak.proj||'';
+      const om=document.getElementById('wout-todo-omschr');
+      if(om)om.value=taak.omschr||'';
+      if(dl)dl.value=taak.deadline||'';
+    }
+  } else {
+    const om=document.getElementById('wout-todo-omschr');
+    if(om)om.value='';
+  }
+  document.getElementById('wout-todo-del-btn').style.display=isNew?'none':'block';
+  document.getElementById('mo-wout-todo').classList.add('on');
+}
+
+function slaWoutTaakOp(){
+  const omschr=document.getElementById('wout-todo-omschr').value.trim();
+  const deadline=document.getElementById('wout-todo-deadline').value;
+  if(!omschr){alert('Vul een omschrijving in');return;}
+  if(!deadline){alert('Vul een deadline in');return;}
+  const id=document.getElementById('wout-todo-edit-id').value;
+  const proj=document.getElementById('wout-todo-proj').value;
+  const lijst=laadWoutTodo();
+  if(id){
+    const idx=lijst.findIndex(t=>t.id==id);
+    if(idx>=0)lijst[idx]={...lijst[idx],proj,omschr,deadline};
+  } else {
+    lijst.push({id:Date.now(),proj,projNaam:proj?pNaam(proj):'',omschr,deadline,gedaan:false,aangemaakt:new Date().toISOString().split('T')[0]});
+  }
+  slaWoutTodo(lijst);
+  sluit('mo-wout-todo');
+  renderWoutTodo();
+}
+
+function verwijderWoutTaak(){
+  const id=document.getElementById('wout-todo-edit-id').value;
+  if(!id||!confirm('Taak verwijderen?'))return;
+  const lijst=laadWoutTodo().filter(t=>t.id!=id);
+  slaWoutTodo(lijst);sluit('mo-wout-todo');renderWoutTodo();
+}
+
+function toggleWoutGedaan(id){
+  const lijst=laadWoutTodo();
+  const t=lijst.find(x=>x.id==id);
+  if(t)t.gedaan=!t.gedaan;
+  slaWoutTodo(lijst);renderWoutTodo();
+}
+
+function renderWoutTodo(){
+  const el=document.getElementById('wout-todo-agenda');
+  if(!el)return;
+  // Get start of current selected week (from planOff)
+  const ma=getMa(weekOff||0);
+  const weekStart=dStrLocal(ma);
+  const lijst=laadWoutTodo().filter(t=>{
+    // Toon taken waarvan deadline >= start van geselecteerde week
+    return !t.deadline||(t.deadline>=weekStart);
+  }).sort((a,b)=>{
+    if(a.gedaan!==b.gedaan)return a.gedaan?1:-1;
+    return (a.deadline||'9999').localeCompare(b.deadline||'9999');
+  });
+  if(!lijst.length){
+    el.innerHTML='<div style="font-size:13px;color:var(--mu);font-style:italic;padding:8px 0">Geen taken. Klik + Taak om te beginnen.</div>';
+    return;
+  }
+  // Group by deadline week
+  const perWeek={};
+  lijst.forEach(t=>{
+    const dl=t.deadline||'9999-99-99';
+    const d=new Date(dl);
+    const dag=d.getDay()||7;
+    d.setDate(d.getDate()-dag+1);
+    const wk=d.toISOString().split('T')[0];
+    if(!perWeek[wk])perWeek[wk]=[];
+    perWeek[wk].push(t);
+  });
+  const mndNamen=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const dagNamen=['zo','ma','di','wo','do','vr','za'];
+  const vandaag=new Date().toISOString().split('T')[0];
+  el.innerHTML=Object.entries(perWeek).sort((a,b)=>a[0].localeCompare(b[0])).map(([wk,taken])=>{
+    const ma=new Date(wk),vr=new Date(wk);vr.setDate(ma.getDate()+4);
+    const fs=d=>d.getDate()+' '+mndNamen[d.getMonth()];
+    const isDezeWeek=wk<=vandaag&&vandaag<=vr.toISOString().split('T')[0];
+    return'<div style="margin-bottom:14px">'+
+      '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:'+(isDezeWeek?'var(--green)':'var(--mu)')+';margin-bottom:7px;padding:5px 10px;background:'+(isDezeWeek?'var(--gbg)':'var(--s1)')+';border-radius:var(--r);border-left:3px solid '+(isDezeWeek?'var(--gbr)':'var(--b2)')+'">'+
+      (isDezeWeek?'🦁 Deze week · ':'')+'Deadline '+fs(ma)+' – '+fs(vr)+'</div>'+
+      taken.map(t=>{
+        const fi=getFiche(t.proj||'');
+        const logoHtml=fi&&fi.logo?'<img src="'+fi.logo+'" style="width:16px;height:16px;border-radius:3px;object-fit:cover;flex-shrink:0"/>':'';
+        const dlStr=t.deadline?dagNamen[new Date(t.deadline).getDay()]+' '+new Date(t.deadline).getDate()+' '+mndNamen[new Date(t.deadline).getMonth()]:'';
+        return'<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--w);border:1px solid '+(t.gedaan?'var(--b1)':'var(--b1)')+';border-radius:var(--r);margin-bottom:6px;opacity:'+(t.gedaan?'0.55':'1')+'">'+
+          '<input type="checkbox" '+(t.gedaan?'checked':'')+' onchange="toggleWoutGedaan('+t.id+')" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)"/>'+
+          '<div style="flex:1">'+
+          '<div style="display:flex;align-items:center;gap:6px">'+
+          logoHtml+
+          '<span style="font-size:13px;font-weight:600;'+(t.gedaan?'text-decoration:line-through;color:var(--mu)':'')+'" onclick="openWoutTodoModal('+t.id+')" style2="cursor:pointer">'+t.omschr+'</span>'+
+          '</div>'+
+          (t.proj?'<div style="font-size:11px;color:var(--mu);margin-top:2px">'+pNaam(t.proj)+(dlStr?' · ⏰ '+dlStr:'')+'</div>':''+
+          (dlStr?'<div style="font-size:11px;color:var(--mu);margin-top:2px">⏰ '+dlStr+'</div>':''))+
+          '</div>'+
+          '<button onclick="openWoutTodoModal('+t.id+')" style="font-size:11px;padding:3px 8px;border:1px solid var(--b1);border-radius:var(--r);background:var(--s1);cursor:pointer">✏</button>'+
+          '</div>';
+      }).join('')+
+      '</div>';
+  }).join('');
+}
 
 async function init(){
   laad();
@@ -1544,7 +2079,7 @@ function nav(p){
     document.getElementById('pnl-'+x).classList.toggle('on',x===p);
   });
   if(p==='dash'){setDF(dashFilter);}
-  if(p==='invoer'){vulInvoerDropdowns();updWiePicker();renderLog();}
+  if(p==='invoer'){vulInvoerDropdowns();updWiePicker();renderLog();renderTodoLijst();}
   if(p==='planning'){renderPlanning();updPlanInline();}
   if(p==='pdf'){renderPDF();}
   if(p==='admin'&&adminOk)setAdmTab('proj');
@@ -1560,6 +2095,7 @@ function renderAlles(){
 function verschuif(d){weekOff+=d;updW();renderAlles();}
 function updW(){
   document.getElementById('week-lbl').textContent=fmtW(weekOff);
+  if(woutTodoOpen)renderWoutTodo();
   document.getElementById('plan-sub').textContent=fmtW(weekOff);
   document.getElementById('pdf-sub').textContent=fmtW(weekOff);
 }
@@ -1713,7 +2249,16 @@ function vulInvoerDropdowns(){
       MEDEWERKERS.map(function(m){return'<option value="'+m.naam+'"'+(m.naam===naam?' selected':'')+'>'+m.naam+'</option>';}).join('');
     wSel.value=naam;
   }
-  const wie2Sel=document.getElementById('inv-wie2');
+  // Data mode dropdowns
+  const dataWieSel=document.getElementById('data-wie');
+  if(dataWieSel){dataWieSel.innerHTML='<option value="">— Kies medewerker —</option>'+
+    MEDEWERKERS.map(m=>'<option value="'+m.naam+'"'+(m.naam===naam?' selected':'')+'>'+m.naam+'</option>').join('');}
+  const dataProjSel=document.getElementById('data-proj');
+  if(dataProjSel){dataProjSel.innerHTML='<option value="">— Project —</option>'+
+    PROJECTEN.map(p=>'<option value="'+p.id+'">'+p.naam+'</option>').join('');}
+  const dataDatumEl=document.getElementById('data-datum');
+  if(dataDatumEl)dataDatumEl.value=new Date().toISOString().split('T')[0];
+  const dataWie2Sel=document.getElementById('inv-wie2');
   if(wie2Sel){wie2Sel.innerHTML='<option value="">— Geen —</option>'+MEDEWERKERS.map(m=>'<option value="'+m.naam+'">'+m.naam+'</option>').join('');}
   const pSel=document.getElementById('inv-proj');
   if(pSel)pSel.innerHTML='<option value="">— Project —</option>'+
@@ -1790,6 +2335,11 @@ function checkMeetLimiet(){
     warn.textContent=(tot>max?'⚠ Over':'✓')+' '+tot.toFixed(2)+'u / '+max+'u max/maand';
   }
 }
+function syncDataDuur(v){
+  const wrap=document.getElementById('data-duur-custom-wrap');
+  if(wrap)wrap.style.display=v==='custom'?'flex':'none';
+}
+
 function syncDuurCustom(v){
   const wrap=document.getElementById('inv-duur-custom-wrap');
   if(!wrap)return;

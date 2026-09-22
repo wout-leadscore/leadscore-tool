@@ -243,7 +243,7 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
     <div class="g3">
       <div class="fi"><label>Cold calls</label><input type="number" id="inv-calls" min="0" placeholder="0"/></div>
       <div class="fi"><label>Manuele mails</label><input type="number" id="inv-mailm" min="0" placeholder="0"/></div>
-      <div class="fi"><label>Auto mails</label><input type="number" id="inv-maila" min="0" placeholder="0"/></div>
+
     </div>
     <div class="g2">
       <div class="fi">
@@ -256,6 +256,10 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
         <input type="number" id="inv-meet" min="0" step="0.25" placeholder="0" oninput="checkMeetLimiet()"/>
         <div id="inv-meet-warn" style="display:none;font-size:11px;margin-top:4px;padding:5px 8px;border-radius:4px"></div>
       </div>
+    </div>
+    <div class="fi">
+      <label>Sales messaging &amp; optimalisatie (u)</label>
+      <input type="number" id="inv-sales" min="0" step="0.5" placeholder="0"/>
     </div>
     <div class="fi"><label>Omschrijving werkzaamheden</label>
       <textarea id="inv-omschr" rows="2" placeholder="Bv: Cold calling sector technologie..." style="resize:vertical"></textarea>
@@ -473,49 +477,6 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
     </div>
   </div>
 </div>
-<!-- TAAK MODAL -->
-<div class="mo" id="mo-taak">
-  <div class="md" style="max-width:400px">
-    <div class="md-title">+ Taak toevoegen</div>
-    <div class="fi"><label>Omschrijving</label>
-      <textarea id="taak-omschr" rows="3" placeholder="Beschrijf precies wat er moet gebeuren zodat er geen twijfel is..." style="resize:vertical"></textarea>
-    </div>
-    <div class="g2">
-      <div class="fi"><label>Type</label>
-        <select id="taak-type">
-          <option value="calls">📞 Calls</option>
-          <option value="data">🗄 Data/scraping</option>
-          <option value="meeting">🤝 Meeting</option>
-          <option value="sales">💡 Sales messaging</option>
-          <option value="algemeen">📋 Algemeen</option>
-        </select>
-      </div>
-      <div class="fi"><label>Dag (optioneel)</label>
-        <select id="taak-dag">
-          <option value="">— Geen voorkeur —</option>
-          <option value="ma">Maandag</option>
-          <option value="di">Dinsdag</option>
-          <option value="wo">Woensdag</option>
-          <option value="do">Donderdag</option>
-          <option value="vr">Vrijdag</option>
-        </select>
-      </div>
-    </div>
-    <div class="fi"><label>Tijdsindicatie (optioneel)</label>
-      <div style="display:flex;align-items:center;gap:8px">
-        <input type="number" id="taak-tijd" min="0" step="0.5" placeholder="bv. 2" style="width:80px"/>
-        <span style="font-size:13px;color:var(--mu)">uur</span>
-      </div>
-    </div>
-    <div class="md-btns">
-      <button class="btn-primary" onclick="slaaTaakOp(false)">+ Nog een taak</button>
-      <button class="btn-primary" onclick="slaaTaakOp(true)">Opslaan &amp; sluiten</button>
-      <button class="btn-secondary" onclick="sluit('mo-taak')">Annuleren</button>
-    </div>
-  </div>
-</div>
-
-
 </div><!-- /page -->
 
 
@@ -911,7 +872,7 @@ async function postAct(e){
         calls:e.calls,manueel:e.manueel,auto:e.auto,
         project:e.project,afs:e.afs,afspraken:e.afspraken,
         min:e.duur,duur:e.duur,
-        data_uren:e.dataUren,meet_min:e.meetMin
+        data_uren:e.dataUren,meet_min:e.meetMin,sales_opt:e.salesOpt||0
       })
     });
     if(!r.ok){
@@ -1013,9 +974,9 @@ function getTarieven(projId){
 function berekenOmzet(acts,projId){
   const t=getTarieven(projId);
   return acts.reduce((s,a)=>{
-    if(t.model==='uur')return s+((a.duur||60)/60)*t.uur+(a.meetMin||0)*t.meet;
+    if(t.model==='uur')return s+((a.duur||60)/60)*t.uur+(a.meetMin||0)*t.meet+(a.salesOpt||0)*85;
     return s+(a.calls||0)*t.call+(a.manueel||0)*t.mailM+(a.auto||0)*t.mailA
-      +(a.dataUren||0)*t.data+(a.meetMin||0)*t.meet;
+      +(a.dataUren||0)*t.data+(a.meetMin||0)*t.meet+(a.salesOpt||0)*85;
   },0);
 }
 
@@ -1538,15 +1499,46 @@ function renderSDD(){
 }
 
 
+async function init(){
+  laad();
+  laadActLokaal();
+  // Laad config van Supabase (overschrijft lokale data als nieuwer)
+  laadVanSupabase().then(ok=>{if(ok){vulInvoerDropdowns();renderPlanning();}});
+  // Check login
+  const ingelogd=getIngelogd();
+  if(!ingelogd){
+    document.getElementById('login-screen').style.display='flex';
+    document.getElementById('welcome-screen').style.display='none';
+  } else {
+    document.getElementById('login-screen').style.display='none';
+    const mw=MEDEWERKERS.find(m=>m.email&&m.email.toLowerCase()===ingelogd);
+    naam=mw?mw.naam:(MEDEWERKERS.length?MEDEWERKERS[0].naam:'');
+  }
+  updW();
+  setDF('week');
+  document.getElementById('inv-datum').value=new Date().toISOString().split('T')[0];
+  await laadActiviteit();
+  renderDash();
+  vulInvoerDropdowns();
+  renderPlanning();
+  setInterval(async()=>{await laadActiviteit();if(document.querySelector('.pnl.on')?.id==='pnl-dash')renderDash();},30000);
+  (()=>{
+    const Q=["Lions don't lose sleep over the opinions of sheep.","Elke call is een stap dichter bij de deal.","Vandaag de dag dat je het verschil maakt.","Winnaars bellen. Verliezers twijfelen.","Je pipeline vult zich niet vanzelf maar jij wel.","Hard werk vandaag, resultaten morgen.","Ready to rumble. Laat ze maar komen.","De beste tijd om te bellen is nu.","Geen nee gehoord? Dan heb je te weinig gebeld.","Champions worden gemaakt op moeilijke momenten.","Vandaag schrijven we geschiedenis.","Koffie gedronken. Knokkels geknakt. Let's go."];
+    const D=["zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag"];
+    const M=["januari","februari","maart","april","mei","juni","juli","augustus","september","oktober","november","december"];
+    const n=new Date();
+    const qEl=document.getElementById('welcome-quote');
+    const dEl=document.getElementById('welcome-datum');
+    if(qEl)qEl.textContent='"'+Q[n.getDay()%Q.length]+'"';
+    if(dEl)dEl.textContent=D[n.getDay()]+' '+n.getDate()+' '+M[n.getMonth()]+' '+n.getFullYear();
+  })();
+}
 
+// ── NAV ─────────────────────────────────────────────────────────────
 function toonWelkom(){
   const ws=document.getElementById('welcome-screen');
   if(ws)ws.style.display='flex';
 }
-function verwijderBlokBtn(btn){
-  verwijderBlok(btn.getAttribute('data-mw'),btn.getAttribute('data-proj'));
-}
-
 function sluit(id){document.getElementById(id).classList.remove('on');}
 function mKey(n){return(n||'').replace(/[^a-zA-Z0-9]/g,'_');}
 
@@ -1842,9 +1834,10 @@ async function slaKPIOp(){
   const duur=getDuurWaarde();
   const calls=parseInt(document.getElementById('inv-calls').value)||0;
   const manueel=parseInt(document.getElementById('inv-mailm').value)||0;
-  const auto=parseInt(document.getElementById('inv-maila').value)||0;
+  const auto=0;
   const dataUren=parseFloat(document.getElementById('inv-data').value)||0;
   const meetMin=parseFloat(document.getElementById('inv-meet').value)||0;
+  const salesOpt=parseFloat(document.getElementById('inv-sales').value)||0;
   const omschr=document.getElementById('inv-omschr').value.trim();
   // Afspraken verdelen bij 2 personen
   let afs1=afs, afs2=[];
@@ -1863,6 +1856,7 @@ async function slaKPIOp(){
     project:projId,afs:afs1.length,afspraken:afs1,
     dataUren:wie2?dataUren/2:dataUren,
     meetMin:wie2?meetMin/2:meetMin,
+    salesOpt:wie2?salesOpt/2:salesOpt,
     omschr:wie2?omschr+' [50/50 met '+wie2+']':omschr
   };
   msg.textContent='Opslaan...';msg.style.color='var(--mu)';
@@ -1879,7 +1873,7 @@ async function slaKPIOp(){
   }
   msg.textContent='✓ Geregistreerd!';msg.style.color='var(--green)';
   setTimeout(()=>msg.textContent='',2500);
-  ['inv-calls','inv-mailm','inv-maila','inv-data','inv-meet','inv-afs-n'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['inv-calls','inv-mailm','inv-data','inv-meet','inv-afs-n'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const omEl=document.getElementById('inv-omschr');if(omEl)omEl.value='';
   document.getElementById('inv-afs-v').innerHTML='';
   renderLog();renderDash();updWiePicker();
@@ -2071,6 +2065,7 @@ function updPlanInline(){
         '<div style="font-size:10px;color:var(--mu)">'+vrij.toFixed(1)+'u vrij</div></div>'+
         '<input type="number" class="pm-uren" data-naam="'+m.naam+'" value="'+(bestaand?bestaand.uren:0)+'" min="0" max="38" step="0.5" '+
         'style="width:48px;font-size:13px;font-weight:700;padding:4px 5px;border:1.5px solid var(--b1);border-radius:var(--r);text-align:center;font-family:var(--fm)" '+
+        'style="width:48px;font-size:13px;font-weight:700;padding:4px 5px;border:1.5px solid var(--b1);border-radius:var(--r);text-align:center;font-family:var(--fm)" '+
         'onchange="hiPMR(this)" oninput="hiPMR(this)" />'+
 
         '</div>';
@@ -2090,8 +2085,7 @@ function slaPlanning(){
     const key=mNaam+'_'+wk;
     if(!planData[key])planData[key]={blokken:[]};
     planData[key].blokken=planData[key].blokken.filter(b=>b.projId!==projId);
-    const oud=planData[key].blokken.find(b=>b.projId===projId);
-    planData[key].blokken.push({projId,naam:proj.naam,uren,kleur,taken:oud?oud.taken||[]:[]});
+    planData[key].blokken.push({projId,naam:proj.naam,uren,kleur});
     count++;
   });
   if(!count){alert('Geef minstens 1 persoon uren in');return;}
@@ -2105,80 +2099,9 @@ function clearWeekPlanning(){
   MEDEWERKERS.forEach(m=>{const key=m.naam+'_'+wk;if(planData[key])planData[key]={blokken:[]};});
   slaPlan();renderPlanning();renderDash();
 }
-function openTaakModal(mwNaam,projId){
-  const mo=document.getElementById('mo-taak');
-  mo.setAttribute('data-mw',mwNaam);
-  mo.setAttribute('data-proj',projId);
-  document.getElementById('taak-omschr').value='';
-  document.getElementById('taak-type').value='calls';
-  document.getElementById('taak-dag').value='';
-  document.getElementById('taak-tijd').value='';
-  mo.classList.add('on');
+function verwijderBlokBtn(btn){
+  verwijderBlok(btn.getAttribute('data-mw'),btn.getAttribute('data-proj'));
 }
-
-function slaaTaakOp(sluiten){
-  const mo=document.getElementById('mo-taak');
-  const mwNaam=mo.getAttribute('data-mw');
-  const projId=mo.getAttribute('data-proj');
-  const omschr=document.getElementById('taak-omschr').value.trim();
-  if(!omschr){alert('Vul een taak in');return;}
-  const type=document.getElementById('taak-type').value;
-  const dag=document.getElementById('taak-dag').value||null;
-  const tijd=parseFloat(document.getElementById('taak-tijd').value)||null;
-  const wk=wKey(weekOff);
-  const key=mwNaam+'_'+wk;
-  if(!planData[key])planData[key]={blokken:[]};
-  const blok=planData[key].blokken.find(b=>b.projId===projId);
-  if(!blok)return;
-  if(!blok.taken)blok.taken=[];
-  blok.taken.push({id:Date.now(),omschr,type,dag,tijd,gedaan:false});
-  slaPlanLokaal();slaPlan();
-  // Reset velden voor volgende taak
-  document.getElementById('taak-omschr').value='';
-  document.getElementById('taak-tijd').value='';
-  document.getElementById('taak-dag').value='';
-  if(sluiten){sluit('mo-taak');}
-  renderPlanning();
-}
-
-function taakToggle(mwNaam,projId,taakId){
-  const wk=wKey(weekOff);
-  const key=mwNaam+'_'+wk;
-  if(!planData[key])return;
-  const blok=planData[key].blokken.find(b=>b.projId===projId);
-  if(!blok||!blok.taken)return;
-  const taak=blok.taken.find(t=>t.id==taakId);
-  if(!taak)return;
-  if(taak.gedaan){
-    taak.gedaan=false;
-    slaPlanLokaal();slaPlan();
-    renderPlanning();
-    return;
-  }
-  // Mark gedaan
-  taak.gedaan=true;
-  slaPlanLokaal();slaPlan();
-  renderPlanning();
-  // Pre-fill sessie invoer
-  const projSel=document.getElementById('inv-proj');
-  if(projSel){
-    projSel.innerHTML='<option value="">— Project —</option>'+PROJECTEN.map(p=>'<option value="'+p.id+'">'+p.naam+'</option>').join('');
-    projSel.value=projId;
-  }
-  const wieSel=document.getElementById('inv-wie');
-  if(wieSel)wieSel.value=mwNaam;
-  if(typeof updWiePicker==='function')updWiePicker();
-  const omschrEl=document.getElementById('inv-omschr');
-  if(omschrEl)omschrEl.value=taak.omschr;
-  // Toast
-  const msg=document.createElement('div');
-  msg.style.cssText='position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:300;background:#1d4ed8;color:#fff;padding:14px 22px;border-radius:var(--r);font-size:14px;font-weight:700;box-shadow:var(--sh2);text-align:center;min-width:280px';
-  msg.innerHTML='⚠️ Vergeet niet je sessie te registreren!<br><span style="font-size:12px;font-weight:400;opacity:.9">Vul calls, mails en afspraken in bij sessie invoer</span>';
-  document.body.appendChild(msg);
-  setTimeout(()=>msg.remove(),5000);
-  nav('invoer');
-}
-
 
 function verwijderBlok(mNaam,projId){
   const key=mNaam+'_'+wKey(weekOff);
@@ -2217,42 +2140,10 @@ function renderPlanning(){
       (blokken.length?blokken.map(b=>{
         const fi=getFiche(b.projId);
         const icon=fi.logo?'<div style="width:16px;height:16px;border-radius:3px;overflow:hidden;flex-shrink:0"><img src="'+fi.logo+'" style="width:100%;height:100%;object-fit:cover"/></div>':'<div style="width:8px;height:8px;border-radius:2px;flex-shrink:0;background:'+b.kleur+'"></div>';
-        return(function(){
-        const taken=b.taken||[];
-        const icT={calls:'📞',data:'🗄',meeting:'🤝',sales:'💡',algemeen:'📋'};
-        const dagK={ma:'Ma',di:'Di',wo:'Wo',do:'Do',vr:'Vr'};
-        return'<div style="padding:5px 0;border-bottom:1px solid var(--s1)">'+
-          '<div style="display:flex;align-items:center;gap:7px">'+icon+
-          '<div style="flex:1;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+b.naam+'</div>'+
+        return'<div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--s1)">'+icon+
+          '<div style="flex:1;font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+b.naam+'</div>'+
           '<div style="font-size:12px;font-family:var(--fm);font-weight:600;color:var(--su)">'+b.uren+'u</div>'+
-          '<button data-mw="'+m.naam+'" data-proj="'+b.projId+'" onclick="openTaakModal(this.dataset.mw,this.dataset.proj)" style="font-size:11px;font-weight:700;padding:2px 7px;border:none;background:var(--bbg);color:var(--blue);border-radius:3px;cursor:pointer;margin-right:4px">+ Taak</button>'+
-          '<button data-mw="'+m.naam+'" data-proj="'+b.projId+'" onclick="verwijderBlokBtn(this)" style="border:none;background:none;cursor:pointer;color:var(--mu);font-size:14px;padding:0;line-height:1">×</button>'+
-          '</div>'+
-          (taken.length?
-            '<div style="padding:4px 0 2px 24px;margin-top:4px">'+
-            taken.slice().sort(function(a,b){
-              const ord={ma:0,di:1,wo:2,do:3,vr:4};
-              const aOrd=a.dag?ord[a.dag]??5:5;
-              const bOrd=b.dag?ord[b.dag]??5:5;
-              return aOrd-bOrd;
-            }).map(function(t){
-              return'<div style="padding:6px 8px;margin-bottom:4px;background:'+(t.gedaan?'var(--s1)':'var(--w)')+';border:1px solid var(--b1);border-radius:var(--r);opacity:'+(t.gedaan?'0.6':'1')+'">'+
-                '<div style="display:flex;align-items:flex-start;gap:8px">'+
-                '<input type="checkbox" '+(t.gedaan?'checked':'')+
-                ' data-mw="'+m.naam+'" data-proj="'+b.projId+'" data-tid="'+t.id+'"'+
-                ' onchange="taakToggle(this.dataset.mw,this.dataset.proj,this.dataset.tid)"'+
-                ' style="width:15px;height:15px;cursor:pointer;accent-color:var(--accent);margin-top:2px;flex-shrink:0"/>'+
-                '<div style="flex:1">'+
-                '<div style="font-size:13px;font-weight:600;'+(t.gedaan?'text-decoration:line-through;':'')+'color:var(--tx)">'+
-                (icT[t.type]||'📋')+' '+t.omschr+'</div>'+
-                '<div style="display:flex;gap:5px;margin-top:4px">'+
-                (t.tijd?'<span style="font-size:11px;color:var(--mu);background:var(--s1);padding:2px 7px;border-radius:3px;border:1px solid var(--b1)">⏱ '+t.tijd+'u</span>':'')+
-                (t.dag?'<span style="font-size:11px;color:var(--mu);background:var(--s1);padding:2px 7px;border-radius:3px;border:1px solid var(--b1)">📅 '+dagK[t.dag]+'</span>':'')+
-                '</div>'+
-                '</div></div></div>';
-            }).join('')+
-            '</div>':'')+'</div>';
-      })()
+          '<button data-mw="'+m.naam+'" data-proj="'+b.projId+'" onclick="verwijderBlokBtn(this)" style="border:none;background:none;cursor:pointer;color:var(--mu);font-size:14px;padding:0;line-height:1">×</button></div>';
       }).join(''):'<div style="font-size:12px;color:var(--mu);font-style:italic;padding:3px 0">Niets ingepland</div>')+
       '</div></div>';
   }).join('');

@@ -804,6 +804,26 @@ async function laadVanSupabase(){
     // Sla lokaal op
     slaProj();slaFiches();slaMW();slaPlanLokaal();
     console.log('Config geladen van Supabase');
+    // Laad sessies van Supabase
+    try{
+      const r2=await fetch(SB_URL+'/rest/v1/ls_activiteit?select=*&order=datum.desc&limit=500',{headers:SBH});
+      if(r2.ok){
+        const rows2=await r2.json();
+        if(Array.isArray(rows2)&&rows2.length){
+          activiteit=rows2.map(function(r){return{
+            id:r.id,naam:r.naam,datum:r.datum,duur:r.duur||r.min||60,
+            calls:r.calls||0,manueel:r.manueel||0,auto:r.auto||0,
+            project:r.project||'',afs:r.afs||0,
+            afspraken:r.afspraken||[],
+            dataUren:r.data_uren||0,meetMin:r.meet_min||0,
+            salesOpt:r.sales_opt||0,
+            omschr:r.data_omschr||''
+          };});
+          slaActOp();
+          console.log('Sessies geladen van Supabase: '+activiteit.length);
+        }
+      }
+    }catch(e2){console.warn('Sessies laden mislukt:',e2);}
     return true;
   }catch(e){console.warn('Laden mislukt:',e);return false;}
 }
@@ -872,7 +892,7 @@ async function postAct(e){
         calls:e.calls,manueel:e.manueel,auto:e.auto,
         project:e.project,afs:e.afs,afspraken:e.afspraken,
         min:e.duur,duur:e.duur,
-        data_uren:e.dataUren,meet_min:e.meetMin,sales_opt:e.salesOpt||0
+        data_uren:e.dataUren,meet_min:e.meetMin,sales_opt:e.salesOpt||0,data_omschr:e.omschr||''
       })
     });
     if(!r.ok){
@@ -1866,14 +1886,14 @@ async function slaKPIOp(){
       id:Date.now()+1,naam:wie2,datum,duur:Math.round(duur/2),
       calls:Math.round(calls/2),manueel:Math.round(manueel/2),auto:Math.round(auto/2),
       project:projId,afs:afs2.length,afspraken:afs2.map(af=>({...af,door:wie2})),
-      dataUren:dataUren/2,meetMin:meetMin/2,
+      dataUren:dataUren/2,meetMin:meetMin/2,salesOpt:salesOpt/2,
       omschr:omschr+' [50/50 met '+wie+']'
     };
     await postAct(e2);
   }
   msg.textContent='✓ Geregistreerd!';msg.style.color='var(--green)';
   setTimeout(()=>msg.textContent='',2500);
-  ['inv-calls','inv-mailm','inv-data','inv-meet','inv-afs-n'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['inv-calls','inv-mailm','inv-data','inv-meet','inv-sales','inv-afs-n'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const omEl=document.getElementById('inv-omschr');if(omEl)omEl.value='';
   document.getElementById('inv-afs-v').innerHTML='';
   renderLog();renderDash();updWiePicker();

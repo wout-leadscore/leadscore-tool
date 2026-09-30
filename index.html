@@ -260,6 +260,9 @@ label{font-size:11px;color:var(--mu);letter-spacing:.06em;text-transform:upperca
     <div class="fi"><label>Sales messaging &amp; optimalisatie (u)</label>
       <input type="number" id="inv-sales" min="0" step="0.5" placeholder="0"/>
     </div>
+    <div class="fi"><label>Leads ingeladen</label>
+      <input type="number" id="inv-leads" min="0" placeholder="0" style="max-width:140px"/>
+    </div>
     <div class="fi"><label>Omschrijving werkzaamheden</label>
       <textarea id="inv-omschr" rows="2" placeholder="Bv: Cold calling sector technologie..." style="resize:vertical"></textarea>
     </div>
@@ -871,7 +874,7 @@ async function postAct(e){
         calls:e.calls,manueel:e.manueel,auto:e.auto,
         project:e.project,afs:e.afs,afspraken:e.afspraken,
         min:e.duur,duur:e.duur,
-        data_uren:e.dataUren,meet_min:e.meetMin,sales_opt:e.salesOpt||0
+        data_uren:e.dataUren,meet_min:e.meetMin,sales_opt:e.salesOpt||0,leads:e.leads||0
       })
     });
     if(!r.ok){
@@ -1851,6 +1854,7 @@ async function slaKPIOp(){
   const auto=0;
   const dataUren=parseFloat(document.getElementById('inv-data').value)||0;
   const meetMin=parseFloat(document.getElementById('inv-meet').value)||0;
+  const leads=parseInt(document.getElementById('inv-leads').value)||0;
   const salesOpt=parseFloat(document.getElementById('inv-sales').value)||0;
   const omschr=document.getElementById('inv-omschr').value.trim();
   // Afspraken verdelen bij 2 personen
@@ -1870,6 +1874,7 @@ async function slaKPIOp(){
     project:projId,afs:afs1.length,afspraken:afs1,
     dataUren:wie2?dataUren/2:dataUren,
     meetMin:wie2?meetMin/2:meetMin,
+    leads:leads,
     salesOpt:wie2?salesOpt/2:salesOpt,
     omschr:wie2?omschr+' [50/50 met '+wie2+']':omschr
   };
@@ -1887,7 +1892,7 @@ async function slaKPIOp(){
   }
   msg.textContent='✓ Geregistreerd!';msg.style.color='var(--green)';
   setTimeout(()=>msg.textContent='',2500);
-  ['inv-calls','inv-mailm','inv-data','inv-meet','inv-sales','inv-afs-n'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['inv-calls','inv-mailm','inv-data','inv-meet','inv-sales','inv-leads','inv-afs-n'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   const omEl=document.getElementById('inv-omschr');if(omEl)omEl.value='';
   document.getElementById('inv-afs-v').innerHTML='';
   renderLog();renderDash();updWiePicker();
@@ -2232,7 +2237,7 @@ function openPDF(projId){
   const dagLog=pAct.map(a=>{
     const d=new Date(a.datum);
     const parts=[a.calls?a.calls+' calls':'',((a.manueel||0)+(a.auto||0))?(a.manueel+a.auto)+' mails':'',a.afs?a.afs+' afsp.':'',a.dataUren?'Data '+a.dataUren+'u':'',a.meetMin?'Meeting '+a.meetMin+'u':''].filter(Boolean);
-    return{datum:dagNamen[d.getDay()]+' '+d.getDate()+' '+mndNamen[d.getMonth()],naam:a.naam,uren:((a.duur||60)/60),notities:parts.join(' · ')||'—',omschr:a.omschr||''};
+    return{datum:dagNamen[d.getDay()]+' '+d.getDate()+' '+mndNamen[d.getMonth()],naam:a.naam,uren:((a.duur||60)/60),notities:parts.join(' · ')||'—',omschr:a.omschr||'',leads:a.leads||0};
   });
   const ppMap={};
   pAct.forEach(a=>{if(!ppMap[a.naam])ppMap[a.naam]={calls:0,mails:0,afs:0,uren:0};
@@ -2272,8 +2277,8 @@ function buildRapport(d){
     '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#f0f2f5"><th style="padding:8px 10px;border:1px solid #dde2ea;text-align:left">Naam</th><th style="padding:8px 10px;border:1px solid #dde2ea;text-align:left">Calls</th><th style="padding:8px 10px;border:1px solid #dde2ea;text-align:left">Mails</th><th style="padding:8px 10px;border:1px solid #dde2ea;text-align:left;color:#15803d">Afsp.</th></tr></thead>'+
     '<tbody>'+Object.entries(d.ppMap).map(([n,s],i)=>'<tr '+(i%2===0?'style="background:#f0f2f5"':'')+'><td style="padding:8px 10px;border:1px solid #dde2ea;font-weight:600">'+n+'</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-family:monospace">'+s.calls+'</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-family:monospace">'+s.mails+'</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-family:monospace;font-weight:700;color:#15803d">'+s.afs+'</td></tr>').join('')+'</tbody></table></div>':'')+
     (d.dagLog.length?'<div style="margin-bottom:18px"><div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7685;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #dde2ea">Sessie overzicht</div>'+
-    '<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#f0f2f5"><th style="padding:7px 10px;border:1px solid #dde2ea;text-align:left">Datum</th><th style="padding:7px 10px;border:1px solid #dde2ea;text-align:left">Wie</th><th style="padding:7px 10px;border:1px solid #dde2ea;text-align:left">Uren</th><th style="padding:7px 10px;border:1px solid #dde2ea;text-align:left">Activiteit</th><th style="padding:7px 10px;border:1px solid #dde2ea;text-align:left">Omschrijving</th></tr></thead>'+
-    '<tbody>'+d.dagLog.map((r,i)=>'<tr style="background:'+(i%2===0?'#fff':'#f0f2f5')+'"><td style="padding:7px 10px;border:1px solid #dde2ea;font-family:monospace">'+r.datum+'</td><td style="padding:7px 10px;border:1px solid #dde2ea;font-weight:600">'+r.naam+'</td><td style="padding:7px 10px;border:1px solid #dde2ea;font-family:monospace;font-weight:700;color:#15803d">'+r.uren+'u</td><td style="padding:7px 10px;border:1px solid #dde2ea">'+r.notities+'</td><td style="padding:7px 10px;border:1px solid #dde2ea;color:#6b7685;font-size:10px">'+(r.omschr||'')+'</td></tr>').join('')+'</tbody></table></div>':'')+
+    '<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="background:#f0f2f5"><th style="padding:7px 10px;border:1px solid #dde2ea;text-align:left">Datum</th><th style="padding:7px 10px;border:1px solid #dde2ea;text-align:left">Wie</th><th style="padding:7px 10px;border:1px solid #dde2ea;text-align:left">Uren</th><th style="padding:7px 10px;border:1px solid #dde2ea;text-align:left">Activiteit</th><th style="padding:7px 10px;border:1px solid #dde2ea;text-align:left">Omschrijving</th><th style="padding:7px 10px;border:1px solid #dde2ea;text-align:left">Leads</th></tr></thead>'+
+    '<tbody>'+d.dagLog.map((r,i)=>'<tr style="background:'+(i%2===0?'#fff':'#f0f2f5')+'"><td style="padding:7px 10px;border:1px solid #dde2ea;font-family:monospace">'+r.datum+'</td><td style="padding:7px 10px;border:1px solid #dde2ea;font-weight:600">'+r.naam+'</td><td style="padding:7px 10px;border:1px solid #dde2ea;font-family:monospace;font-weight:700;color:#15803d">'+r.uren+'u</td><td style="padding:7px 10px;border:1px solid #dde2ea">'+r.notities+'</td><td style="padding:7px 10px;border:1px solid #dde2ea;color:#6b7685;font-size:10px">'+(r.omschr||'')+'</td>'+(r.leads?'<td style="padding:7px 10px;border:1px solid #dde2ea;font-family:monospace;font-weight:700;color:#1d4ed8">'+r.leads+'</td>':'<td style="padding:7px 10px;border:1px solid #dde2ea;color:#adb5bd">—</td>')+'</tr>').join('')+'</tbody></table></div>':'')+
     (d.alleAfs.length?'<div style="margin-bottom:18px"><div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7685;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #dde2ea">Afspraken ('+d.alleAfs.length+')</div>'+
     '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#15803d"><th style="padding:8px 10px;border:1px solid #166534;text-align:left;color:#fff">#</th><th style="padding:8px 10px;border:1px solid #166534;text-align:left;color:#fff">Naam</th><th style="padding:8px 10px;border:1px solid #166534;text-align:left;color:#fff">Datum</th><th style="padding:8px 10px;border:1px solid #166534;text-align:left;color:#fff">Type</th><th style="padding:8px 10px;border:1px solid #166534;text-align:left;color:#fff">Door</th></tr></thead>'+
     '<tbody>'+d.alleAfs.map((af,i)=>'<tr style="background:'+(i%2===0?'#fff':'#f0f2f5')+'"><td style="padding:8px 10px;border:1px solid #dde2ea;color:#adb5bd">'+( i+1)+'</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-weight:600">'+(af.naam||'?')+'</td><td style="padding:8px 10px;border:1px solid #dde2ea;font-family:monospace">'+fmtDate(af.datum)+'</td><td style="padding:8px 10px;border:1px solid #dde2ea">'+(af.type==='online'?'🌐 Online':'🤝 Fysiek')+'</td><td style="padding:8px 10px;border:1px solid #dde2ea">'+(af.door||'—')+'</td></tr>').join('')+'</tbody></table></div>':'')+
